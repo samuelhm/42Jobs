@@ -1,0 +1,18 @@
+# =============================================================================
+# BimbaJobs - Docker Compose Prod (añadidos de PRODUCCIÓN)
+# Uso: docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+# Este archivo SÍ se despliega en el VPS
+# =============================================================================
+
+services:
+  # ─── Frontend (prod: conectar a red_proxy de NPM) ────────
+  frontend:
+    networks:
+      - internal
+      - red_proxy
+
+# ─── Networks ──────────────────────────────────────────────
+networks:
+  red_proxy:
+    external: true
+    name: red_proxy

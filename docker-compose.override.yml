@@ -1,0 +1,35 @@
+# =============================================================================
+# BimbaJobs - Docker Compose Override (DESARROLLO)
+# Se carga automáticamente con: docker compose up -d
+# Este archivo NO se despliega en producción
+# =============================================================================
+
+services:
+  # ─── PostgreSQL (dev: puerto expuesto) ───────────────────
+  db:
+    ports:
+      - "5432:5432"
+
+  # ─── Backend (dev: dotnet watch hot-reload) ───────────
+  backend:
+    build:
+      target: development
+    volumes:
+      - ./backend/src:/app/src
+    ports:
+      - "${BACKEND_PORT:-8080}:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+
+  # ─── Frontend (dev: browser-sync con live-reload) ────────
+  frontend:
+    build:
+      target: development
+    volumes:
+      - ./frontend/public:/app/public:ro
+      - ./frontend/bs-config.cjs:/app/bs-config.cjs:ro
+    ports:
+      - "${FRONTEND_PORT:-3000}:${FRONTEND_PORT:-3000}"
+    environment:
+      NODE_ENV: development
+      BACKEND_URL: http://backend:8080
