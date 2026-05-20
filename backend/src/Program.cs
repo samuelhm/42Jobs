@@ -41,7 +41,7 @@ var connectionString = string.IsNullOrEmpty(databaseUrl)
     : DatabaseUrlParser.ToConnectionString(databaseUrl);
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(connectionString!));
+    options.UseNpgsql(connectionString!).UseSnakeCaseNamingConvention());
 
 var app = builder.Build();
 
