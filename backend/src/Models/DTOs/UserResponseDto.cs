@@ -17,3 +17,11 @@ public class UserResponseDto
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 }
+
+public class UserCreateResponseDto
+{
+    public Guid Id { get; set; }
+    public string Email { get; set; } = string.Empty;
+    public bool Junior { get; set; }
+    public DateTime CreatedAt { get; set; }
+}

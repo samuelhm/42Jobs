@@ -10,22 +10,32 @@ namespace src.Controllers;
 [Route("api/users")]
 public class UsersController : ControllerBase
 {
+    private readonly ILogger<UsersController> _logger;
+    private readonly AppDbContext _db;
+
+    public UsersController(ILogger<UsersController> logger, AppDbContext db)
+    {
+        _logger = logger;
+        _db = db;
+    }
+
     [HttpGet("{id:guid}")]
-    public async Task<IActionResult> Get(
-        [FromRoute] Guid id,
-        [FromServices] AppDbContext db)
+    public async Task<IActionResult> Get([FromRoute] Guid id)
     {
         throw new NotImplementedException();
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create(
-        [FromBody] CreateUserDto body,
-        [FromServices] AppDbContext db)
+    public async Task<IActionResult> Create([FromBody] CreateUserDto body)
     {
-        var emailExists = await db.Users.AnyAsync(u => u.Email == body.Email);
+        _logger.LogInformation("Registration attempt for email {Email}", body.Email);
+
+        var emailExists = await _db.Users.AnyAsync(u => u.Email == body.Email);
         if (emailExists)
+        {
+            _logger.LogWarning("Registration failed: email {Email} already in use", body.Email);
             return Conflict(new { error = "Email already registered" });
+        }
 
         var user = new User
         {
@@ -33,43 +43,45 @@ public class UsersController : ControllerBase
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(body.Password),
         };
 
-        db.Users.Add(user);
-        await db.SaveChangesAsync();
+        _db.Users.Add(user);
 
-        var response = new UserResponseDto
+        try
+        {
+            await _db.SaveChangesAsync();
+            _logger.LogInformation("User {UserId} registered successfully ({Email})", user.Id, user.Email);
+        }
+        catch (DbUpdateException ex)
+            when (ex.InnerException is Npgsql.PostgresException pgEx
+                  && pgEx.SqlState == "23505")
+        {
+            _logger.LogWarning("Race condition: email {Email} already taken during insert", body.Email);
+            return Conflict(new { error = "Email already registered" });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error saving user {Email}", body.Email);
+            return StatusCode(500, new { error = "An unexpected error occurred" });
+        }
+
+        var response = new UserCreateResponseDto
         {
             Id = user.Id,
             Email = user.Email,
-            Name = user.Name,
-            LastName = user.LastName,
-            Phone = user.Phone,
-            Address = user.Address,
-            LinkedinUrl = user.LinkedinUrl,
-            WebsiteUrl = user.WebsiteUrl,
-            GithubUrl = user.GithubUrl,
             Junior = user.Junior,
-            Presentation = user.Presentation,
-            AvatarUrl = user.AvatarUrl,
             CreatedAt = user.CreatedAt,
-            UpdatedAt = user.UpdatedAt
         };
 
         return Created($"/api/users/{user.Id}", response);
     }
 
     [HttpPatch("{id:guid}")]
-    public async Task<IActionResult> Patch(
-        [FromRoute] Guid id,
-        [FromBody] UpdateUserDto body,
-        [FromServices] AppDbContext db)
+    public async Task<IActionResult> Patch([FromRoute] Guid id,[FromBody] UpdateUserDto body)
     {
         throw new NotImplementedException();
     }
 
     [HttpDelete("{id:guid}")]
-    public async Task<IActionResult> Delete(
-        [FromRoute] Guid id,
-        [FromServices] AppDbContext db)
+    public async Task<IActionResult> Delete([FromRoute] Guid id)
     {
         throw new NotImplementedException();
     }
