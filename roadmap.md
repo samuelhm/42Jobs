@@ -2,18 +2,7 @@
 
 ## Checkpoint actual
 
-**Fase 1 — Backend base con Entity Framework Core**
-
-- [x] 0.1 Setup Docker (docker-compose, Dockerfiles, Makefile)
-- [x] 0.2 Migraciones SQL de base de datos (11 tablas)
-- [x] 0.3 Frontend temporal vanilla JS (index.html, api.js, ui.js, profile.js)
-- [x] 0.4 Proyecto .NET 10 vacío (Program.cs con "Hello World!")
-- [x] 1.1 Instalar paquetes NuGet necesarios (EF Core, Npgsql, etc.)
-- [x] 1.2 Crear modelos C# para cada tabla de la base de datos (14 tablas)
-- [x] 1.3 Crear DbContext con configuración de relaciones y mapeo (Fluent API)
-- [x] 1.4 Configurar connection string + parser de DATABASE_URL
-- [x] 1.5 Registrar DbContext en Program.cs (DI container)
-- [ ] 1.6 Verificar conexión a PostgreSQL y scaffolding
+**Fase 2 — Endpoints del backend (casi completo) y Fase 5 — APIs externas (completo)**
 
 ---
 
@@ -23,73 +12,132 @@
 
 | Checkpoint | Estado |
 |------------|--------|
-| Docker Compose + Dockerfiles | ✅ Listo |
-| Migraciones SQL (11 archivos) | ✅ Listo |
-| Frontend temporal vanilla JS | ✅ Listo |
-| Proyecto .NET 9 vacío | ✅ Listo |
-| AGENTS.md | ✅ Creado |
-| roadmap.md | ✅ Creado |
+| Docker Compose + Dockerfiles | ✅ |
+| Migraciones SQL (17 archivos) | ✅ |
+| Frontend temporal vanilla JS | ✅ |
+| Proyecto .NET 10 vacío | ✅ |
 
-### Fase 1 — Backend base con Entity Framework Core (EN PROGRESO 🔄)
+### Fase 1 — Backend base con Entity Framework Core (COMPLETADA ✅)
 
 | Checkpoint | Estado |
 |------------|--------|
-| Paquetes NuGet (EF Core, Npgsql) | ✅ Listo |
-| Modelos C# (tablas DB) | ✅ Listo |
-| DbContext + mapeo (Fluent API) | ✅ Listo |
-| Connection string + DI | ✅ Listo |
-| Verificar conexión | ⬚ Pendiente |
+| Paquetes NuGet (EF Core, Npgsql, BCrypt, JWT) | ✅ |
+| Modelos C# (15 entidades + DTOs) | ✅ |
+| DbContext + mapeo Fluent API (15 entidades) | ✅ |
+| Connection string + DatabaseUrlParser | ✅ |
+| EFCore.NamingConventions (snake_case) | ✅ |
+| Migraciones aplicadas y verificadas | ✅ |
 
-### Fase 2 — Endpoints del backend
+### Fase 2 — Endpoints del backend (17/25 completados)
+
+| Endpoint | Estado | Controlador |
+|----------|--------|-------------|
+| POST /api/users | ✅ | UsersController.Create |
+| POST /api/users/login | ✅ | UsersController.Login |
+| POST /api/users/logout | ✅ | UsersController.Logout |
+| GET /api/users/{id} | ✅ | UsersController.Get |
+| PATCH /api/users/{id} | ✅ | UsersController.Patch |
+| DELETE /api/users/{id} | ✅ | UsersController.Delete |
+| POST /api/categories | ✅ | CategoriesController.Create |
+| DELETE /api/categories/{id}/follow | ✅ | CategoriesController.Unfollow |
+| POST /api/categories/{id}/fetch | ✅ | CategoriesController.FetchJobs |
+| GET /api/categories/{id}/fetch/{jobId} | ✅ | CategoriesController.GetFetchStatus |
+| GET /api/categories | ⬚ | (list with job counts) |
+| GET /api/categories/{id}/jobs | ⬚ | (jobs for category) |
+| GET /api/categories/{id}/keywords | ⬚ | (keywords for category) |
+| GET /api/profile | ✅ | ProfileController.Get |
+| PUT /api/profile | ✅ | ProfileController.Update |
+| GET /api/languages | ✅ | LanguagesController.GetAll |
+| POST /api/languages | ✅ | LanguagesController.Create |
+| PUT /api/languages/{id} | ✅ | LanguagesController.Update |
+| DELETE /api/languages/{id} | ✅ | LanguagesController.Delete |
+| GET /api/certifications | ✅ | CertificationsController.GetAll |
+| POST /api/certifications | ✅ | CertificationsController.Create |
+| PUT /api/certifications/{id} | ✅ | CertificationsController.Update |
+| DELETE /api/certifications/{id} | ✅ | CertificationsController.Delete |
+| GET /api/education | ✅ | EducationController.GetAll |
+| POST /api/education | ✅ | EducationController.Create |
+| PUT /api/education/{id} | ✅ | EducationController.Update |
+| DELETE /api/education/{id} | ✅ | EducationController.Delete |
+| GET /api/projects | ✅ | ProjectsController.GetAll |
+| POST /api/projects | ✅ | ProjectsController.Create |
+| PUT /api/projects/{id} | ✅ | ProjectsController.Update |
+| DELETE /api/projects/{id} | ✅ | ProjectsController.Delete |
+| GET /api/experiences | ✅ | ExperiencesController.GetAll |
+| POST /api/experiences | ✅ | ExperiencesController.Create |
+| PUT /api/experiences/{id} | ✅ | ExperiencesController.Update |
+| DELETE /api/experiences/{id} | ✅ | ExperiencesController.Delete |
+| GET /api/keywords | ✅ | KeywordsController.GetAll |
+| PATCH /api/keywords/{id} | ✅ | KeywordsController.UpdateStatus |
+| PATCH /api/jobs/{id}/notes | ⬚ | (update job notes) |
+| DELETE /api/jobs/{id} | ⬚ | (delete job) |
+| PATCH /api/jobs/{id}/refresh | ⬚ | (re-fetch job details) |
+| POST /api/jobs/manual | ⬚ | (create manual job) |
+| POST /api/cv/generate/{jobId} | ⬚ | (AI CV generation) |
+
+### Fase 3 — Autenticación de usuarios (COMPLETADA ✅)
 
 | Checkpoint | Estado |
 |------------|--------|
-| GET /api/categories | ⬚ Pendiente |
-| GET /api/categories/{id}/jobs | ⬚ Pendiente |
-| GET /api/categories/{id}/keywords | ⬚ Pendiente |
-| GET /api/keywords | ⬚ Pendiente |
-| PATCH /api/keywords/{id} | ⬚ Pendiente |
-| GET /api/jobs | ⬚ Pendiente |
-| PATCH /api/jobs/{id}/notes | ⬚ Pendiente |
-| PATCH /api/jobs/{id}/refresh | ⬚ Pendiente |
-| DELETE /api/jobs/{id} | ⬚ Pendiente |
-| POST /api/jobs/manual | ⬚ Pendiente |
-| GET /api/profile | ⬚ Pendiente |
-| PUT /api/profile | ⬚ Pendiente |
-| CRUD /api/languages | ⬚ Pendiente |
-| CRUD /api/certifications | ⬚ Pendiente |
-| CRUD /api/education | ⬚ Pendiente |
-| CRUD /api/projects | ⬚ Pendiente |
-| CRUD /api/experiences | ⬚ Pendiente |
-| POST /api/cv/generate/{jobId} | ⬚ Pendiente |
+| JWT + cookie auth (`bimbajobs_auth`) | ✅ |
+| Registro (BCrypt hash) | ✅ |
+| Login (JWT generation) | ✅ |
+| Logout (cookie deletion) | ✅ |
+| [Authorize] en todos los controladores | ✅ |
+| GetUserId() desde JWT claims | ✅ |
 
-### Fase 3 — Autenticación de usuarios
+### Fase 4 — Frontend definitivo (PENDIENTE ⬚)
 
 | Checkpoint | Estado |
 |------------|--------|
-| Diseñar esquema de auth (JWT) | ⬚ Pendiente |
-| Registro y login | ⬚ Pendiente |
-| Proteger endpoints | ⬚ Pendiente |
+| Decidir tecnología (React / Vue / JS vanilla) | ⬚ |
+| Re-implementar con la tecnología elegida | ⬚ |
 
-### Fase 4 — Frontend definitivo
-
-| Checkpoint | Estado |
-|------------|--------|
-| Decidir tecnología (React / Vue / JS vanilla escalable) | ⬚ Pendiente |
-| Re-implementar con la tecnología elegida | ⬚ Pendiente |
-
-### Fase 5 — APIs externas
+### Fase 5 — APIs externas (COMPLETADA ✅)
 
 | Checkpoint | Estado |
 |------------|--------|
-| GET /api/fetchLinkedinSimple | ⬚ Pendiente |
-| Integración LLM para generación de CV | ⬚ Pendiente |
+| LinkedIn RapidAPI (búsqueda + detalles) | ✅ LinkedInApiService |
+| Gemini LLM (filtro relevancia + junior) | ✅ GeminiService |
+| Gemini LLM (extracción keywords) | ✅ GeminiService |
+| Background job queue (Channel<T>) | ✅ JobFetchOrchestrator |
+| Procesamiento paralelo (SemaphoreSlim ×3) | ✅ |
+| Rate limiting (3 horas por categoría) | ✅ last_fetched_at |
+| Progress polling (GET status) | ✅ |
+| Auto-follow al hacer fetch | ✅ |
+| Categorías compartidas (sin duplicar API calls) | ✅ |
+| OpenAI CV generation | ⬚ |
 
 ---
 
-## Convención de actualización
+## Resumen de controladores implementados
 
-Cada vez que se complete un checkpoint:
-1. Marcarlo como `[x]` en su fase correspondiente
-2. Actualizar la sección **Checkpoint actual** al inicio de este archivo
-3. Si se añaden nuevos checkpoints, reflejarlos en la fase adecuada
+| # | Controlador | Archivo | Métodos |
+|---|-------------|---------|---------|
+| 1 | HealthController | `Controllers/HealthController.cs` | GET /, GET /db-test |
+| 2 | UsersController (partial) | `Controllers/Users/*.cs` (7 files) | POST, GET, PATCH, DELETE, login, logout |
+| 3 | CategoriesController | `Controllers/CategoriesController.cs` | POST, DELETE follow, POST fetch, GET status |
+| 4 | ProfileController | `Controllers/ProfileController.cs` | GET, PUT |
+| 5 | LanguagesController | `Controllers/LanguagesController.cs` | GET, POST, PUT, DELETE |
+| 6 | CertificationsController | `Controllers/CertificationsController.cs` | GET, POST, PUT, DELETE |
+| 7 | EducationController | `Controllers/EducationController.cs` | GET, POST, PUT, DELETE |
+| 8 | ProjectsController | `Controllers/ProjectsController.cs` | GET, POST, PUT, DELETE |
+| 9 | ExperiencesController | `Controllers/ExperiencesController.cs` | GET, POST, PUT, DELETE |
+| 10 | KeywordsController | `Controllers/KeywordsController.cs` | GET, PATCH |
+
+## Servicios implementados
+
+| # | Servicio | Archivo | Tipo |
+|---|----------|---------|------|
+| 1 | JwtService | `Services/JwtService.cs` | Singleton |
+| 2 | LinkedInApiService | `Services/LinkedInApiService.cs` | Typed HttpClient |
+| 3 | GeminiService | `Services/GeminiService.cs` | Typed HttpClient |
+| 4 | JobFetchOrchestrator | `Services/JobFetchOrchestrator.cs` | BackgroundService |
+
+## Próximos pasos
+
+1. Completar endpoints de jobs (notes, refresh, delete, manual)
+2. Implementar GET /api/categories (con job counts)
+3. Implementar GET /api/categories/{id}/jobs y /keywords
+4. Implementar POST /api/cv/generate/{jobId}
+5. Decidir y construir el frontend definitivo

@@ -17,7 +17,7 @@ Este es un proyecto **personal de aprendizaje**. El objetivo principal no es ent
 
 | Capa | Tecnología | Detalles |
 |------|-----------|----------|
-| Backend | .NET 9 (ASP.NET Core) | Web API MVC, C# |
+| Backend | .NET 10 (ASP.NET Core) | Web API MVC, C#, EF Core, JWT |
 | Base de datos | PostgreSQL 16 | Migraciones SQL en `database/migrations/` |
 | Frontend actual | HTML/CSS/JS vanilla | Temporal, en `frontend/public/` |
 | Frontend futuro | React, Vue o JS vanilla escalable | A decidir por el usuario |
@@ -37,11 +37,16 @@ bimjobsnet/
 ├── backend/
 │   ├── Dockerfile
 │   └── src/
-│       ├── src.csproj         ← Proyecto .NET 9 vacío
-│       ├── Program.cs         ← Entry point (solo "Hello World!")
-│       └── appsettings.json
+│       ├── src.csproj              ← Proyecto .NET 10 con EF Core, Npgsql, JWT, BCrypt
+│       ├── Program.cs              ← Entry point (JWT, DbContext, servicios, JSON snake_case)
+│       ├── appsettings.json
+│       ├── Controllers/            ← 11 controladores (Users, Categories, Profile, CRUDs...)
+│       ├── Data/AppDbContext.cs    ← EF Core DbContext (Fluent API, 15 entidades)
+│       ├── Models/                 ← 15 modelos C# + DTOs
+│       ├── Services/               ← JWT, LinkedIn, Gemini, JobFetchOrchestrator
+│       └── Utils/                  ← DatabaseUrlParser
 ├── database/
-│   └── migrations/            ← 11 archivos SQL (categorías, keywords, jobs, perfil...)
+│   └── migrations/            ← 17 archivos SQL (categorías, keywords, jobs, perfil, user_categories...)
 ├── frontend/
 │   ├── Dockerfile
 │   ├── nginx.conf
@@ -54,18 +59,18 @@ bimjobsnet/
 
 ## Estado actual del proyecto
 
-1. **Base de datos:** ✅ Las migraciones SQL están listas y son funcionales. Las tablas cubren: categorías, empresas, keywords, jobs, perfil de usuario, idiomas, certificaciones, educación, proyectos y experiencias laborales.
-2. **Backend:** ❌ Vacío. Solo tiene `Hello World!` en `Program.cs`. No hay controladores, modelos, Entity Framework ni autenticación.
-3. **Frontend:** ⚠️ Temporal. Es una SPA en vanilla JS que asume que existen ~25 endpoints REST que aún no están implementados en el backend. El usuario quiere reemplazarlo por React, Vue o JS vanilla escalable (a decidir).
+1. **Base de datos:** ✅ Migraciones SQL con 17 archivos. Tablas: categorías, empresas, keywords, jobs, perfil de usuario, idiomas, certificaciones, educación, proyectos, experiencias, user_providers, user_jobs, user_categories, resumes, y tablas M2M (job_keywords, project_keywords, work_experience_keywords).
+2. **Backend:** ✅ Funcional. 11 controladores REST con autenticación JWT vía cookie (`bimbajobs_auth`). EF Core con snake_case naming convention. Servicios: LinkedIn RapidAPI, Gemini (filtro + keywords), background job queue con Channel<T> para fetch de trabajos con rate-limiting de 3h.
+3. **Frontend:** ⚠️ Temporal. SPA en vanilla JS que espera endpoints REST. Formato de respuesta `{ success, data }` con snake_case. El usuario quiere reemplazarlo por React, Vue o JS vanilla escalable (a decidir).
 
 ## Próximos pasos (visión general)
 
-1. Levantar el backend .NET con una API MVC funcional (controladores, modelos, servicios).
-2. Conectar el backend a PostgreSQL vía Entity Framework Core.
-3. Implementar autenticación de usuarios.
-4. Implementar los endpoints que espera el frontend.
-5. Decidir y construir el frontend definitivo (React / Vue / JS vanilla escalable).
-6. Integrar APIs externas (LinkedIn, LLMs).
+1. ✅ Backend .NET con API MVC funcional (controladores, modelos, servicios).
+2. ✅ Conexión a PostgreSQL vía Entity Framework Core.
+3. ✅ Autenticación de usuarios (JWT + cookies).
+4. ✅ Endpoints del frontend (17/19 implementados).
+5. ⬚ Decidir y construir el frontend definitivo (React / Vue / JS vanilla escalable).
+6. ✅ APIs externas (LinkedIn RapidAPI + Gemini filtro/keywords).
 
 ## Cómo trabajar
 
