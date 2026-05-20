@@ -6,4 +6,5 @@ public class Category
     public string Name { get; set; } = string.Empty;
 
     public List<Job> Jobs { get; set; } = [];
+    public List<UserCategory> UserCategories { get; set; } = [];
 }

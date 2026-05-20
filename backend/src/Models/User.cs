@@ -25,5 +25,6 @@ public class User
     public List<WorkExperience> WorkExperiences { get; set; } = [];
     public List<UserProvider> UserProviders { get; set; } = [];
     public List<Resume> Resumes { get; set; } = [];
+    public List<UserCategory> UserCategories { get; set; } = [];
     public List<UserJob> UserJobs { get; set; } = [];
 }

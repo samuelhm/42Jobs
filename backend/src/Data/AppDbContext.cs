@@ -16,6 +16,7 @@ public class AppDbContext : DbContext
     public DbSet<Project> Projects => Set<Project>();
     public DbSet<WorkExperience> WorkExperiences => Set<WorkExperience>();
     public DbSet<UserProvider> UserProviders => Set<UserProvider>();
+    public DbSet<UserCategory> UserCategories => Set<UserCategory>();
     public DbSet<UserJob> UserJobs => Set<UserJob>();
     public DbSet<Resume> Resumes => Set<Resume>();
 
@@ -308,6 +309,29 @@ public class AppDbContext : DbContext
 
             entity.HasIndex(u => u.UserId).HasDatabaseName("idx_user_jobs_user");
             entity.HasIndex(u => u.JobId).HasDatabaseName("idx_user_jobs_job");
+        });
+
+        // ── UserCategory ──────────────────────────────────────
+        modelBuilder.Entity<UserCategory>(entity =>
+        {
+            entity.ToTable("user_categories");
+            entity.HasKey(uc => new { uc.UserId, uc.CategoryId });
+            entity.Property(uc => uc.CreatedAt)
+                  .HasDefaultValueSql("NOW()")
+                  .ValueGeneratedOnAdd();
+
+            entity.HasOne(uc => uc.User)
+                  .WithMany(u => u.UserCategories)
+                  .HasForeignKey(uc => uc.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(uc => uc.Category)
+                  .WithMany(c => c.UserCategories)
+                  .HasForeignKey(uc => uc.CategoryId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(uc => uc.UserId).HasDatabaseName("idx_user_categories_user");
+            entity.HasIndex(uc => uc.CategoryId).HasDatabaseName("idx_user_categories_category");
         });
 
         // ── Resume ───────────────────────────────────────────
