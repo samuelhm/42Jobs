@@ -12,6 +12,23 @@ builder.Services.AddControllers();
 
 builder.Services.AddSingleton<JwtService>();
 
+builder.Services.AddHttpClient<LinkedInApiService>(client =>
+{
+    client.BaseAddress = new Uri($"https://{Environment.GetEnvironmentVariable("LINKEDIN_API_HOST")}/");
+    client.DefaultRequestHeaders.Add("x-rapidapi-key", Environment.GetEnvironmentVariable("LINKEDIN_API_KEY"));
+    client.DefaultRequestHeaders.Add("x-rapidapi-host", Environment.GetEnvironmentVariable("LINKEDIN_API_HOST"));
+});
+
+builder.Services.AddHttpClient<GeminiService>(client =>
+{
+    var apiKey = Environment.GetEnvironmentVariable("LLM_GOOGLE_API_KEY");
+    client.BaseAddress = new Uri($"https://generativelanguage.googleapis.com/");
+    client.DefaultRequestHeaders.Add("x-goog-api-key", apiKey);
+});
+
+builder.Services.AddSingleton<JobFetchOrchestrator>();
+builder.Services.AddHostedService(sp => sp.GetRequiredService<JobFetchOrchestrator>());
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {

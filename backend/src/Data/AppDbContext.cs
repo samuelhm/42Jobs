@@ -32,6 +32,7 @@ public class AppDbContext : DbContext
             entity.Property(c => c.Id).ValueGeneratedOnAdd();
             entity.Property(c => c.Name).IsRequired().HasMaxLength(100);
             entity.HasIndex(c => c.Name).IsUnique();
+            entity.Property(c => c.LastFetchedAt);
         });
 
         // ── Company ──────────────────────────────────────────
