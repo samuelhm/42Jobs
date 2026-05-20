@@ -1,5 +1,6 @@
 CREATE TABLE IF NOT EXISTS languages (
-    id    SERIAL PRIMARY KEY,
-    name  VARCHAR(100) NOT NULL,
-    level VARCHAR(50) NOT NULL
+    id      SERIAL PRIMARY KEY,
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    name    VARCHAR(100) NOT NULL,
+    level   VARCHAR(50) NOT NULL
 );

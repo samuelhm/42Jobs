@@ -15,8 +15,6 @@ CREATE TABLE IF NOT EXISTS jobs (
     applicants       VARCHAR(100),
     description      TEXT,
     job_url          TEXT,
-    applied          BOOLEAN DEFAULT FALSE,
-    notes            TEXT,
     created_at       TIMESTAMP DEFAULT NOW(),
     updated_at       TIMESTAMP DEFAULT NOW()
 );
@@ -24,4 +22,3 @@ CREATE TABLE IF NOT EXISTS jobs (
 CREATE INDEX IF NOT EXISTS idx_jobs_category    ON jobs(category_id);
 CREATE INDEX IF NOT EXISTS idx_jobs_company     ON jobs(company_id);
 CREATE INDEX IF NOT EXISTS idx_jobs_posted_date ON jobs(posted_date);
-CREATE INDEX IF NOT EXISTS idx_jobs_applied     ON jobs(applied);

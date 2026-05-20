@@ -1,5 +1,6 @@
 CREATE TABLE IF NOT EXISTS projects (
     id          SERIAL PRIMARY KEY,
+    user_id     UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     name        VARCHAR(300) NOT NULL,
     description TEXT,
     type        VARCHAR(20) NOT NULL CHECK (type IN ('personal', 'school'))

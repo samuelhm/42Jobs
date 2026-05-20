@@ -1,5 +1,6 @@
 CREATE TABLE IF NOT EXISTS work_experiences (
     id          SERIAL PRIMARY KEY,
+    user_id     UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     company     VARCHAR(200) NOT NULL,
     position    VARCHAR(200),
     start_date  DATE,
