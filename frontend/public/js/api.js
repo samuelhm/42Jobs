@@ -100,5 +100,14 @@ const API = {
   async generateCV(jobId) {
     const res = await fetch('/api/cv/generate/' + jobId, { method: 'POST' });
     return res.json();
+  },
+
+  async addManualJob(data) {
+    const res = await fetch('/api/jobs/manual', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    return res.json();
   }
 };

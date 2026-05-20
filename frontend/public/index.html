@@ -33,6 +33,7 @@
       <h2>Listado de ofertas</h2>
       <span class="count" id="offer-count"></span>
       <button class="update-btn" id="update-btn" title="Actualizar (ultimas 24h)">Update</button>
+      <button class="update-btn" id="manual-btn" title="Anadir oferta manual" style="background:rgba(200,120,100,0.1);border-color:rgba(200,120,100,0.3);color:#d49080">+ Oferta</button>
     </div>
     <div id="ofertas-list"></div>
     <div id="update-status" class="hidden" style="padding:0.5rem;text-align:center;font-family:'JetBrains Mono',monospace;font-size:0.7rem;color:var(--amber);"></div>
@@ -196,6 +197,23 @@
       </div>
     </div>
     <div class="cv-content" id="cv-content"></div>
+  </div>
+</div>
+
+<div id="manual-dialog" class="dialog-overlay hidden">
+  <div class="dialog-box">
+    <h3>Anadir oferta manual</h3>
+    <div class="form-grid">
+      <div class="form-field"><label>Titulo *</label><input id="manual-title" placeholder="Ej: Senior C++ Developer"></div>
+      <div class="form-field"><label>Empresa *</label><input id="manual-company" placeholder="Ej: Acme Corp"></div>
+      <div class="form-field"><label>Ubicacion</label><input id="manual-location" value="Barcelona"></div>
+    </div>
+    <div class="form-field full" style="margin-top:0.5rem"><label>Descripcion (opcional, mejora keywords)</label><textarea id="manual-desc" rows="5" placeholder="Descripcion del puesto, requisitos, tecnologias..."></textarea></div>
+    <div id="manual-status" class="hidden" style="margin-top:0.5rem;padding:0.5rem;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:0.72rem;text-align:center;"></div>
+    <div class="dialog-actions">
+      <button class="btn-cancel" id="manual-cancel">Cancelar</button>
+      <button class="btn-confirm" id="manual-confirm">Anadir</button>
+    </div>
   </div>
 </div>
 

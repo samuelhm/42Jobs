@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>42jobs — Fintech Barcelona</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .fintech-page {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+    .fintech-header {
+      text-align: center;
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .fintech-header h1 {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 800;
+      font-size: 1.8rem;
+      color: var(--text-bright);
+    }
+    .fintech-header h1 .accent { color: var(--amber); }
+    .fintech-header p {
+      color: var(--text-dim);
+      font-size: 0.85rem;
+      margin-top: 0.5rem;
+    }
+    .fintech-list {
+      display: grid;
+      gap: 0.6rem;
+    }
+    .fintech-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem 1.2rem;
+      transition: all 0.25s;
+      position: relative;
+      overflow: hidden;
+    }
+    .fintech-card:hover {
+      border-color: var(--border-active);
+      background: var(--surface-hover);
+      transform: translateX(3px);
+      box-shadow: 4px 0 0 var(--teal-dim), 0 2px 12px rgba(0,0,0,0.3);
+    }
+    .fintech-card::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: var(--radius);
+      background: linear-gradient(135deg, transparent 60%, rgba(77,184,160,0.03) 100%);
+      pointer-events: none;
+    }
+    .fintech-card h2 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-bright);
+      margin-bottom: 0.3rem;
+    }
+    .fintech-card .badge-row {
+      display: flex;
+      gap: 0.4rem;
+      margin-bottom: 0.5rem;
+    }
+    .fintech-card .tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.58rem;
+      padding: 0.12rem 0.45rem;
+      border-radius: 3px;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      background: rgba(77,184,160,0.12);
+      color: var(--teal);
+      border: 1px solid rgba(77,184,160,0.2);
+    }
+    .fintech-card p {
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      line-height: 1.5;
+      margin-bottom: 0.5rem;
+    }
+    .fintech-card .contact-row {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--amber-dim);
+    }
+    .fintech-card .contact-row span {
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+    .fintech-card .contact-row a {
+      color: var(--amber);
+      text-decoration: none;
+    }
+    .fintech-card .contact-row a:hover { color: #e0bc6a; }
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      color: var(--amber);
+      text-decoration: none;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      margin-bottom: 1.5rem;
+      transition: color 0.2s;
+    }
+    .back-link:hover { color: #e0bc6a; }
+  </style>
+</head>
+<body>
+
+<header class="top-bar">
+  <h1>42<span class="accent">jobs</span></h1>
+  <p>Fintech · Barcelona</p>
+  <div class="led-row">
+    <span class="led"></span><span class="led"></span><span class="led"></span><span class="led"></span><span class="led"></span>
+  </div>
+</header>
+
+<div class="fintech-page">
+  <a href="/" class="back-link">← Volver al dashboard</a>
+
+  <div class="fintech-list">
+
+    <div class="fintech-card">
+      <h2>Abacum</h2>
+      <div class="badge-row">
+        <span class="tag">FP&A</span>
+        <span class="tag">SaaS</span>
+        <span class="tag">B2B</span>
+      </div>
+      <p>Plataforma de planificacion y analisis financiero que ayuda a los equipos financieros a automatizar la creacion de informes, el control de presupuestos y la colaboracion en tiempo real.</p>
+      <div class="contact-row">
+        <span>C/ de Pallars, 193, 08005 Barcelona (22@)</span>
+        <a href="mailto:hello@abacum.io">hello@abacum.io</a>
+      </div>
+    </div>
+
+    <div class="fintech-card">
+      <h2>Verse</h2>
+      <div class="badge-row">
+        <span class="tag">Pagos P2P</span>
+        <span class="tag">Mobile</span>
+        <span class="tag">Block (Square)</span>
+      </div>
+      <p>Aplicacion de pagos moviles P2P que permite compartir gastos y enviar dinero al instante sin comisiones. Respaldada por Block (Square). Nota: ceso operaciones en la UE en 2025.</p>
+      <div class="contact-row">
+        <span>Placa de Catalunya, 1, 08002 Barcelona</span>
+        <a href="mailto:support@verse.me">support@verse.me</a>
+      </div>
+    </div>
+
+    <div class="fintech-card">
+      <h2>Holded</h2>
+      <div class="badge-row">
+        <span class="tag">ERP</span>
+        <span class="tag">SaaS</span>
+        <span class="tag">PYMES</span>
+      </div>
+      <p>Software de gestion (ERP) en la nube enfocado a pymes que integra contabilidad, facturacion, conciliacion bancaria y gestion de proyectos en una sola plataforma.</p>
+      <div class="contact-row">
+        <span>Placa de Pau Vila, 1 · Pier 01 Tech Barcelona, 08039</span>
+        <a href="mailto:hello@holded.com">hello@holded.com</a>
+      </div>
+    </div>
+
+    <div class="fintech-card">
+      <h2>ID Finance</h2>
+      <div class="badge-row">
+        <span class="tag">Credit Scoring</span>
+        <span class="tag">Data Science</span>
+        <span class="tag">Lending</span>
+      </div>
+      <p>Empresa lider en credit scoring alternativo y finanzas digitales que utiliza ciencia de datos avanzada para ofrecer prestamos al consumo y promover la inclusion financiera.</p>
+      <div class="contact-row">
+        <span>C/ de Pallars, 193, 08005 Barcelona</span>
+        <a href="mailto:info@idfinance.com">info@idfinance.com</a>
+      </div>
+    </div>
+
+    <div class="fintech-card">
+      <h2>Flanks</h2>
+      <div class="badge-row">
+        <span class="tag">WealthTech</span>
+        <span class="tag">Open Banking</span>
+        <span class="tag">B2B</span>
+      </div>
+      <p>Plataforma wealthtech que automatiza la agregacion de datos de inversion, conectando con entidades financieras de todo el mundo para dar a los gestores de patrimonio una vision integral de las carteras de sus clientes.</p>
+      <div class="contact-row">
+        <span>Passeig de Gracia, 17, 08007 Barcelona</span>
+        <a href="mailto:info@flanks.io">info@flanks.io</a>
+      </div>
+    </div>
+
+    <div class="fintech-card">
+      <h2>NoviCap</h2>
+      <div class="badge-row">
+        <span class="tag">Factoring</span>
+        <span class="tag">Working Capital</span>
+        <span class="tag">PYMES</span>
+      </div>
+      <p>Solucion tecnologica que ofrece financiacion de capital circulante, anticipo de facturas (factoring) y gestion de pagos a proveedores (confirming) para pequenas y medianas empresas.</p>
+      <div class="contact-row">
+        <span>Av. Diagonal, 536, 08006 Barcelona</span>
+        <a href="mailto:info@novicap.com">info@novicap.com</a>
+      </div>
+    </div>
+
+    <div class="fintech-card">
+      <h2>Murphy AI</h2>
+      <div class="badge-row">
+        <span class="tag">IA Conversacional</span>
+        <span class="tag">Debt Collection</span>
+        <span class="tag">AI</span>
+      </div>
+      <p>Startup especializada en el desarrollo de agentes conversacionales e inteligencia artificial para optimizar las operaciones financieras, especialmente en los procesos de cobros y recuperacion de deuda.</p>
+      <div class="contact-row">
+        <span>Placa de Pau Vila, 1 · Pier 01 Tech Barcelona, 08039</span>
+        <a href="mailto:hello@murphy.ai">hello@murphy.ai</a>
+      </div>
+    </div>
+
+    <div class="fintech-card">
+      <h2>HUBUC</h2>
+      <div class="badge-row">
+        <span class="tag">BaaS</span>
+        <span class="tag">Banking API</span>
+        <span class="tag">Embedded Finance</span>
+      </div>
+      <p>Plataforma de Banking-as-a-Service que proporciona una API unica para que cualquier empresa pueda integrar servicios financieros, como emitir tarjetas o abrir cuentas, en sus propios productos.</p>
+      <div class="contact-row">
+        <span>C/ de la Diputacio, 256, 08007 Barcelona</span>
+        <a href="mailto:hello@hubuc.com">hello@hubuc.com</a>
+      </div>
+    </div>
+
+    <div class="fintech-card">
+      <h2>Nemuru</h2>
+      <div class="badge-row">
+        <span class="tag">Lending</span>
+        <span class="tag">POS Finance</span>
+        <span class="tag">BNPL</span>
+      </div>
+      <p>Plataforma que actua como intermediaria tecnologica entre comercios, clientes y entidades financieras para ofrecer opciones de financiacion instantanea y pago a plazos en el punto de venta.</p>
+      <div class="contact-row">
+        <span>C/ de Balmes, 173, 08006 Barcelona</span>
+        <a href="mailto:hola@nemuru.com">hola@nemuru.com</a>
+      </div>
+    </div>
+
+    <div class="fintech-card">
+      <h2>Inari</h2>
+      <div class="badge-row">
+        <span class="tag">InsurTech</span>
+        <span class="tag">Cloud</span>
+        <span class="tag">B2B</span>
+      </div>
+      <p>Proveedor de infraestructura tecnologica y software basado en la nube para el sector insurtech y fintech, modernizando la gestion de polizas para aseguradoras y reaseguradoras.</p>
+      <div class="contact-row">
+        <span>C/ de la Marina, 16-18, 08005 Barcelona</span>
+        <a href="mailto:info@inari.io">info@inari.io</a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="trace-line">
+  <span class="trace-dot"></span><hr><span class="trace-dot"></span><hr><span class="trace-dot"></span>
+</div>
+
+</body>
+</html>

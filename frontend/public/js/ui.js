@@ -382,11 +382,9 @@ function openCvPanel(jobId, jobTitle) {
 
 function renderCV(data, jobTitle, profile) {
   var content = document.getElementById('cv-content');
-
   window._cvProfile = profile;
   window._cvData = data;
   window._cvJobTitle = jobTitle;
-
   var p = profile || {};
 
   var expHtml = (data.selected_experiences || []).map(function (e) {
@@ -394,9 +392,9 @@ function renderCV(data, jobTitle, profile) {
       '<p>' + escHtml(e.adapted_description) + '</p></div>';
   }).join('');
 
-  var projHtml = (data.selected_projects || []).map(function (p) {
-    return '<div class="cv-item"><div class="cv-item-header"><strong>' + escHtml(p.name) + '</strong> <span class="cv-type-tag">' + (p.type === 'school' ? '42 School' : 'Personal') + '</span></div>' +
-      '<p>' + escHtml(p.adapted_description) + '</p></div>';
+  var projHtml = (data.selected_projects || []).map(function (pr) {
+    return '<div class="cv-item"><div class="cv-item-header"><strong>' + escHtml(pr.name) + '</strong> <span class="cv-type-tag">' + (pr.type === 'school' ? '42 School' : 'Personal') + '</span></div>' +
+      '<p>' + escHtml(pr.adapted_description) + '</p></div>';
   }).join('');
 
   var skillsHtml = (data.skill_categories || []).map(function (cat) {
@@ -421,25 +419,69 @@ function renderCV(data, jobTitle, profile) {
           (p.github_url ? escHtml(p.github_url) : '') +
         '</div>' +
       '</div>' +
-      '<div class="cv-section">' +
-        '<h2>Perfil</h2>' +
-        '<p>' + escHtml(data.introduction) + '</p>' +
-      '</div>' +
+      '<div class="cv-section"><h2>Perfil</h2><p>' + escHtml(data.introduction) + '</p></div>' +
       (data.selected_experiences && data.selected_experiences.length ? '<div class="cv-section"><h2>Experiencia</h2>' + expHtml + '</div>' : '') +
       (data.selected_projects && data.selected_projects.length ? '<div class="cv-section"><h2>Proyectos</h2>' + projHtml + '</div>' : '') +
-      '<div class="cv-section">' +
-        '<h2>Skills</h2>' +
-        skillsHtml +
-      '</div>' +
-      '<div class="cv-section">' +
-        '<h2>Idiomas</h2>' +
-        '<div class="cv-skills">' + langHtml + '</div>' +
-      '</div>' +
+      '<div class="cv-section"><h2>Skills</h2>' + skillsHtml + '</div>' +
+      '<div class="cv-section"><h2>Idiomas</h2><div class="cv-skills">' + langHtml + '</div></div>' +
     '</div>';
 }
 
+function setupManualJob() {
+  var btn = document.getElementById('manual-btn');
+  var dialog = document.getElementById('manual-dialog');
+  var cancelBtn = document.getElementById('manual-cancel');
+  var confirmBtn = document.getElementById('manual-confirm');
+  var status = document.getElementById('manual-status');
+
+  btn.addEventListener('click', function () {
+    dialog.classList.remove('hidden');
+    document.getElementById('manual-title').value = '';
+    document.getElementById('manual-company').value = '';
+    document.getElementById('manual-desc').value = '';
+    status.classList.add('hidden');
+    document.getElementById('manual-title').focus();
+  });
+
+  cancelBtn.addEventListener('click', function () { dialog.classList.add('hidden'); });
+  dialog.addEventListener('click', function (e) { if (e.target === dialog) dialog.classList.add('hidden'); });
+
+  confirmBtn.addEventListener('click', async function () {
+    var title = document.getElementById('manual-title').value.trim();
+    var company = document.getElementById('manual-company').value.trim();
+    var location = document.getElementById('manual-location').value.trim();
+    var desc = document.getElementById('manual-desc').value.trim();
+    if (!title || !company) return;
+
+    confirmBtn.disabled = true;
+    status.classList.remove('hidden');
+    status.style.color = 'var(--amber)';
+    status.style.background = 'var(--bg)';
+    status.textContent = 'Anadiendo oferta...';
+
+    try {
+      var res = await API.addManualJob({ title, company, location, description: desc });
+      if (res.success) {
+        status.style.color = 'var(--teal)';
+        status.textContent = 'Oferta anadida con ' + res.data.keywords + ' keywords';
+        await loadUserKeywords();
+        await loadCategories();
+        if (currentCategoryId) loadCategoryData(currentCategoryId);
+        setTimeout(function () { dialog.classList.add('hidden'); }, 1500);
+      } else {
+        status.style.color = 'var(--red)';
+        status.textContent = 'Error: ' + (res.error || 'desconocido');
+      }
+    } catch (err) {
+      status.style.color = 'var(--red)';
+      status.textContent = 'Error: ' + err.message;
+    }
+    confirmBtn.disabled = false;
+  });
+}
+
 document.addEventListener('DOMContentLoaded', function () {
-  setupNotesModal(); setupKeywordModal(); setupAddButton(); setupUpdateButton();
+  setupNotesModal(); setupKeywordModal(); setupAddButton(); setupUpdateButton(); setupManualJob();
   document.getElementById('cv-close').addEventListener('click', function () {
     document.getElementById('cv-panel').classList.add('hidden');
   });

@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>42jobs — Crypto & Web3 Barcelona</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .crypto-page {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+    .crypto-header {
+      text-align: center;
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .crypto-header h1 {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 800;
+      font-size: 1.8rem;
+      color: var(--text-bright);
+    }
+    .crypto-header h1 .accent { color: var(--amber); }
+    .crypto-header h1 .accent2 { color: var(--teal); }
+    .crypto-header p {
+      color: var(--text-dim);
+      font-size: 0.85rem;
+      margin-top: 0.5rem;
+    }
+    .crypto-list {
+      display: grid;
+      gap: 0.6rem;
+    }
+    .crypto-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem 1.2rem;
+      transition: all 0.25s;
+      position: relative;
+      overflow: hidden;
+    }
+    .crypto-card:hover {
+      border-color: var(--border-active);
+      background: var(--surface-hover);
+      transform: translateX(3px);
+      box-shadow: 4px 0 0 var(--amber-dim), 0 2px 12px rgba(0,0,0,0.3);
+    }
+    .crypto-card::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: var(--radius);
+      background: linear-gradient(135deg, transparent 60%, rgba(212,168,83,0.03) 100%);
+      pointer-events: none;
+    }
+    .crypto-card h2 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-bright);
+      margin-bottom: 0.3rem;
+    }
+    .crypto-card .badge-row {
+      display: flex;
+      gap: 0.4rem;
+      margin-bottom: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .crypto-card .tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.58rem;
+      padding: 0.12rem 0.45rem;
+      border-radius: 3px;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      background: rgba(212,168,83,0.12);
+      color: var(--amber);
+      border: 1px solid rgba(212,168,83,0.2);
+    }
+    .crypto-card p {
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      line-height: 1.5;
+      margin-bottom: 0.5rem;
+    }
+    .crypto-card .contact-row {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--amber-dim);
+    }
+    .crypto-card .contact-row span {
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+    .crypto-card .contact-row a {
+      color: var(--amber);
+      text-decoration: none;
+    }
+    .crypto-card .contact-row a:hover { color: #e0bc6a; }
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      color: var(--amber);
+      text-decoration: none;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      margin-bottom: 1.5rem;
+      transition: color 0.2s;
+    }
+    .back-link:hover { color: #e0bc6a; }
+  </style>
+</head>
+<body>
+
+<header class="top-bar">
+  <h1>42<span class="accent">jobs</span></h1>
+  <p>Crypto & Web3 · Barcelona</p>
+  <div class="led-row">
+    <span class="led"></span><span class="led"></span><span class="led"></span><span class="led"></span><span class="led"></span>
+  </div>
+</header>
+
+<div class="crypto-page">
+  <a href="/" class="back-link">← Volver al dashboard</a>
+
+  <div class="crypto-list">
+
+    <div class="crypto-card">
+      <h2>Vottun</h2>
+      <div class="badge-row">
+        <span class="tag">Blockchain</span>
+        <span class="tag">NFTs</span>
+        <span class="tag">APIs</span>
+        <span class="tag">Credenciales</span>
+      </div>
+      <p>Plataforma para empresas que buscan adoptar blockchain sin complicaciones tecnicas. Proporcionan APIs para crear NFTs, sistemas de pago y credenciales verificables de forma interoperable entre distintas redes.</p>
+      <div class="contact-row">
+        <span>Placa de Pau Vila, 1 · Pier 01 Tech Barcelona, 08039</span>
+        <a href="mailto:info@vottun.com">info@vottun.com</a>
+      </div>
+    </div>
+
+    <div class="crypto-card">
+      <h2>Freeverse</h2>
+      <div class="badge-row">
+        <span class="tag">Living Assets</span>
+        <span class="tag">NFTs dinamicos</span>
+        <span class="tag">Gaming</span>
+      </div>
+      <p>Especializados en "Living Assets": NFTs que pueden evolucionar y cambiar sus propiedades segun el uso. Tecnologia enfocada a videojuegos y marketing digital con activos que mutan con el tiempo.</p>
+      <div class="contact-row">
+        <span>C/ de Roger de Lluria, 50, 08009 Barcelona</span>
+        <a href="mailto:hello@freeverse.io">hello@freeverse.io</a>
+      </div>
+    </div>
+
+    <div class="crypto-card">
+      <h2>EthicHub</h2>
+      <div class="badge-row">
+        <span class="tag">DeFi</span>
+        <span class="tag">Impacto Social</span>
+        <span class="tag">P2P Lending</span>
+      </div>
+      <p>Plataforma de finanzas colaborativas con impacto social. Usan blockchain para conectar pequenos agricultores desbancarizados con prestamos a bajo interes financiados por usuarios de todo el mundo.</p>
+      <div class="contact-row">
+        <span>C/ de Mallorca, 272, 08037 Barcelona</span>
+        <a href="mailto:hola@ethichub.com">hola@ethichub.com</a>
+      </div>
+    </div>
+
+    <div class="crypto-card">
+      <h2>Polygon (Hermez)</h2>
+      <div class="badge-row">
+        <span class="tag">ZK-Rollups</span>
+        <span class="tag">Scalability</span>
+        <span class="tag">L2</span>
+        <span class="tag">Ethereum</span>
+      </div>
+      <p>Tras la fusion con el proyecto catalan Hermez Network, Barcelona se convirtio en un punto clave para el desarrollo de soluciones de escalabilidad ZK-rollups de Polygon, una de las redes mas importantes del ecosistema cripto.</p>
+      <div class="contact-row">
+        <span>Remoto con base tecnica en 22@, Barcelona</span>
+        <a href="mailto:info@polygon.technology">info@polygon.technology</a>
+      </div>
+    </div>
+
+    <div class="crypto-card">
+      <h2>Brickken</h2>
+      <div class="badge-row">
+        <span class="tag">RWA</span>
+        <span class="tag">Tokenizacion</span>
+        <span class="tag">Real Estate</span>
+        <span class="tag">DeFi</span>
+      </div>
+      <p>Centrados en la tokenizacion de activos del mundo real (RWA). Su protocolo permite a las empresas emitir tokens digitales para representar propiedad en activos como inmuebles o capital social de forma regulada.</p>
+      <div class="contact-row">
+        <span>Placa de Pau Vila, 1 · Pier 01 Tech Barcelona, 08039</span>
+        <a href="mailto:hello@brickken.com">hello@brickken.com</a>
+      </div>
+    </div>
+
+    <div class="crypto-card">
+      <h2>Belobaba</h2>
+      <div class="badge-row">
+        <span class="tag">Crypto Fund</span>
+        <span class="tag">Web3</span>
+        <span class="tag">DeFi</span>
+        <span class="tag">Consultoria</span>
+      </div>
+      <p>Fondo de inversion en criptoactivos multi-estrategia que tambien ofrece formacion y consultoria especializada en el ecosistema Web3 y finanzas descentralizadas para inversores institucionales.</p>
+      <div class="contact-row">
+        <span>Av. Diagonal, 401, 08008 Barcelona</span>
+        <a href="mailto:info@belobaba.io">info@belobaba.io</a>
+      </div>
+    </div>
+
+    <div class="crypto-card">
+      <h2>Unblock</h2>
+      <div class="badge-row">
+        <span class="tag">Cross-border</span>
+        <span class="tag">Pagos</span>
+        <span class="tag">Crypto Rails</span>
+      </div>
+      <p>Startup que facilita los pagos transfronterizos utilizando infraestructura cripto para empresas, permitiendo mover capital de forma mas rapida y economica que los sistemas bancarios tradicionales.</p>
+      <div class="contact-row">
+        <span>C/ de Badajoz, 32, 08005 Barcelona</span>
+        <a href="mailto:hello@unblock.com">hello@unblock.com</a>
+      </div>
+    </div>
+
+    <div class="crypto-card">
+      <h2>Atani</h2>
+      <div class="badge-row">
+        <span class="tag">Trading</span>
+        <span class="tag">Multi-exchange</span>
+        <span class="tag">Tax Tools</span>
+      </div>
+      <p>Plataforma de trading "todo en uno" que permite gestionar cuentas en multiples exchanges desde una sola interfaz, incluyendo herramientas avanzadas de analisis tecnico y calculo de impuestos cripto.</p>
+      <div class="contact-row">
+        <span>C/ de Balmes, 173, 08006 Barcelona</span>
+        <a href="mailto:support@atani.com">support@atani.com</a>
+      </div>
+    </div>
+
+    <div class="crypto-card">
+      <h2>Arianee</h2>
+      <div class="badge-row">
+        <span class="tag">Digital Passport</span>
+        <span class="tag">Luxury</span>
+        <span class="tag">NFT</span>
+      </div>
+      <p>Desarrollan "pasaportes digitales" para productos de lujo, permitiendo verificar la autenticidad y propiedad mediante blockchain. Equipo tecnico fuerte en Barcelona, origen frances.</p>
+      <div class="contact-row">
+        <span>C/ de la Diputacio, 239, 08007 Barcelona</span>
+        <a href="mailto:contact@arianee.org">contact@arianee.org</a>
+      </div>
+    </div>
+
+    <div class="crypto-card">
+      <h2>Rungie</h2>
+      <div class="badge-row">
+        <span class="tag">Web3</span>
+        <span class="tag">NFT Loyalty</span>
+        <span class="tag">Marcas</span>
+      </div>
+      <p>Crean experiencias Web3 y estrategias de fidelizacion mediante NFTs para grandes marcas y artistas, conectando el mundo fisico con el digital a traves de coleccionables y recompensas tokenizadas.</p>
+      <div class="contact-row">
+        <span>C/ de Pujades, 51, 08005 Barcelona</span>
+        <a href="mailto:hello@rungie.io">hello@rungie.io</a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="trace-line">
+  <span class="trace-dot"></span><hr><span class="trace-dot"></span><hr><span class="trace-dot"></span>
+</div>
+
+</body>
+</html>
