@@ -7,12 +7,12 @@
 - [x] 0.1 Setup Docker (docker-compose, Dockerfiles, Makefile)
 - [x] 0.2 Migraciones SQL de base de datos (11 tablas)
 - [x] 0.3 Frontend temporal vanilla JS (index.html, api.js, ui.js, profile.js)
-- [x] 0.4 Proyecto .NET 9 vacío (Program.cs con "Hello World!")
-- [ ] 1.1 Instalar paquetes NuGet necesarios (EF Core, Npgsql, etc.)
-- [ ] 1.2 Crear modelos C# para cada tabla de la base de datos
-- [ ] 1.3 Crear DbContext con configuración de relaciones y mapeo
-- [ ] 1.4 Configurar connection string en appsettings.json
-- [ ] 1.5 Registrar DbContext en Program.cs (DI container)
+- [x] 0.4 Proyecto .NET 10 vacío (Program.cs con "Hello World!")
+- [x] 1.1 Instalar paquetes NuGet necesarios (EF Core, Npgsql, etc.)
+- [x] 1.2 Crear modelos C# para cada tabla de la base de datos (14 tablas)
+- [x] 1.3 Crear DbContext con configuración de relaciones y mapeo (Fluent API)
+- [x] 1.4 Configurar connection string + parser de DATABASE_URL
+- [x] 1.5 Registrar DbContext en Program.cs (DI container)
 - [ ] 1.6 Verificar conexión a PostgreSQL y scaffolding
 
 ---
@@ -34,10 +34,10 @@
 
 | Checkpoint | Estado |
 |------------|--------|
-| Paquetes NuGet (EF Core, Npgsql) | ⬚ Pendiente |
-| Modelos C# (tablas DB) | ⬚ Pendiente |
-| DbContext + mapeo | ⬚ Pendiente |
-| Connection string + DI | ⬚ Pendiente |
+| Paquetes NuGet (EF Core, Npgsql) | ✅ Listo |
+| Modelos C# (tablas DB) | ✅ Listo |
+| DbContext + mapeo (Fluent API) | ✅ Listo |
+| Connection string + DI | ✅ Listo |
 | Verificar conexión | ⬚ Pendiente |
 
 ### Fase 2 — Endpoints del backend
