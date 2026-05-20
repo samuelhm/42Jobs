@@ -1,30 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using src.Data;
 using src.Models;
 using src.Models.DTOs;
 
 namespace src.Controllers;
 
-[ApiController]
-[Route("api/users")]
-public class UsersController : ControllerBase
+public partial class UsersController
 {
-    private readonly ILogger<UsersController> _logger;
-    private readonly AppDbContext _db;
-
-    public UsersController(ILogger<UsersController> logger, AppDbContext db)
-    {
-        _logger = logger;
-        _db = db;
-    }
-
-    [HttpGet("{id:guid}")]
-    public async Task<IActionResult> Get([FromRoute] Guid id)
-    {
-        throw new NotImplementedException();
-    }
-
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateUserDto body)
     {
@@ -72,17 +54,5 @@ public class UsersController : ControllerBase
         };
 
         return Created($"/api/users/{user.Id}", response);
-    }
-
-    [HttpPatch("{id:guid}")]
-    public async Task<IActionResult> Patch([FromRoute] Guid id,[FromBody] UpdateUserDto body)
-    {
-        throw new NotImplementedException();
-    }
-
-    [HttpDelete("{id:guid}")]
-    public async Task<IActionResult> Delete([FromRoute] Guid id)
-    {
-        throw new NotImplementedException();
     }
 }
