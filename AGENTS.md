@@ -1,4 +1,4 @@
-# AGENTS.md — BimbaJobs (bimjobsnet)
+# AGENTS.md — BimJobsNet (bimjobsnet)
 
 ## Propósito del proyecto
 
