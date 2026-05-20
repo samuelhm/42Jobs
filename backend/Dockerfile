@@ -3,7 +3,7 @@
 # =============================================================================
 
 # ─── Development (dotnet watch hot-reload) ─────────────────
-FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine AS development
+FROM mcr.microsoft.com/dotnet/sdk:10.0-alpine AS development
 WORKDIR /app
 COPY src/src.csproj src/
 RUN dotnet restore src/src.csproj
@@ -13,7 +13,7 @@ EXPOSE 8080
 CMD ["dotnet", "watch", "run", "--project", "src/src.csproj", "--no-launch-profile"]
 
 # ─── Build ─────────────────────────────────────────────────
-FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0-alpine AS build
 WORKDIR /app
 COPY src/src.csproj src/
 RUN dotnet restore src/src.csproj
@@ -21,7 +21,7 @@ COPY src/ src/
 RUN dotnet publish src/src.csproj -c Release -o /out
 
 # ─── Production ────────────────────────────────────────────
-FROM mcr.microsoft.com/dotnet/aspnet:9.0-alpine AS production
+FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine AS production
 WORKDIR /app
 COPY --from=build /out .
 ENV ASPNETCORE_URLS=http://+:8080
