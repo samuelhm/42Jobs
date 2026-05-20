@@ -7,6 +7,17 @@ public partial class UsersController
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete([FromRoute] Guid id)
     {
-        throw new NotImplementedException();
+        var user = await _db.Users.FindAsync(id);
+        if (user is null)
+        {
+            return NotFound(new { error = "User not found" });
+        }
+
+        _db.Users.Remove(user);
+        await _db.SaveChangesAsync();
+
+        _logger.LogInformation("User {UserId} deleted ({Email})", user.Id, user.Email);
+
+        return NoContent();
     }
 }
