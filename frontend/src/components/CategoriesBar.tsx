@@ -15,7 +15,12 @@ export default function CategoriesBar() {
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
   const [updating, setUpdating] = useState(false);
-  const [fetchStatus, setFetchStatus] = useState<{ message: string; type: 'info' | 'success' | 'error' } | null>(null);
+  const [fetchStatus, setFetchStatus] = useState<{
+    message: string;
+    type: 'info' | 'success' | 'error';
+    processed?: number;
+    total?: number;
+  } | null>(null);
   const { toast } = useToast();
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const statusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -90,9 +95,13 @@ export default function CategoriesBar() {
             resolve();
           } else if (d.status === 'running') {
             const total = d.total || 0;
-            if (total > 0) {
-              setFetchStatus({ message: `Processing... ${d.processed}/${d.total}`, type: 'info' });
-            }
+            const processed = d.processed || 0;
+            setFetchStatus({
+              message: `Processing... ${processed}/${total}`,
+              type: 'info',
+              processed,
+              total,
+            });
           }
         } catch {
           clearInterval(pollingRef.current!);
@@ -176,7 +185,15 @@ export default function CategoriesBar() {
       </div>
       {fetchStatus && (
         <div className={`fetch-banner fetch-${fetchStatus.type}`}>
-          {fetchStatus.message}
+          <span>{fetchStatus.message}</span>
+          {fetchStatus.processed !== undefined && fetchStatus.total !== undefined && fetchStatus.total > 0 && (
+            <div className="fetch-progress">
+              <div
+                className="fetch-progress-fill"
+                style={{ width: `${Math.round((fetchStatus.processed / fetchStatus.total) * 100)}%` }}
+              />
+            </div>
+          )}
         </div>
       )}
     </>
