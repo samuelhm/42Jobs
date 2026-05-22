@@ -17,12 +17,14 @@ public class ExperiencesController : ControllerBase
     private readonly ILogger<ExperiencesController> _logger;
     private readonly AppDbContext _db;
     private readonly GeminiService _gemini;
+    private readonly OpenAIService _openAi;
 
-    public ExperiencesController(ILogger<ExperiencesController> logger, AppDbContext db, GeminiService gemini)
+    public ExperiencesController(ILogger<ExperiencesController> logger, AppDbContext db, GeminiService gemini, OpenAIService openAi)
     {
         _logger = logger;
         _db = db;
         _gemini = gemini;
+        _openAi = openAi;
     }
 
     [HttpGet]
@@ -125,7 +127,7 @@ public class ExperiencesController : ControllerBase
         if (string.IsNullOrWhiteSpace(body.RawText))
             return BadRequest(new { error = "Raw text is required" });
 
-        var (parsed, error) = await _gemini.ParseLinkedInExperienceAsync(body.RawText);
+        var (parsed, error) = await _openAi.ParseExperienceAsync(body.RawText);
         if (error is not null)
             return Ok(new { success = false, error, imported = 0 });
 

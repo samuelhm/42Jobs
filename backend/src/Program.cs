@@ -31,6 +31,14 @@ builder.Services.AddHttpClient<GeminiService>(client =>
     client.Timeout = TimeSpan.FromSeconds(120);
 });
 
+builder.Services.AddHttpClient<OpenAIService>(client =>
+{
+    var apiKey = Environment.GetEnvironmentVariable("LLM_OPENAI_API_KEY");
+    client.BaseAddress = new Uri("https://api.openai.com/");
+    client.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
+    client.Timeout = TimeSpan.FromSeconds(120);
+});
+
 builder.Services.AddSingleton<JobFetchOrchestrator>();
 builder.Services.AddHostedService(sp => sp.GetRequiredService<JobFetchOrchestrator>());
 
