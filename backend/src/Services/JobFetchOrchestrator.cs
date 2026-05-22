@@ -103,7 +103,7 @@ public class JobFetchOrchestrator : BackgroundService
         {
             using var scope = _scopeFactory.CreateScope();
             var linkedIn = scope.ServiceProvider.GetRequiredService<LinkedInApiService>();
-            var openAi = scope.ServiceProvider.GetRequiredService<OpenAIService>();
+            var gemini = scope.ServiceProvider.GetRequiredService<GeminiService>();
             var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
             var allJobs = await FetchAllJobsAsync(linkedIn, request, ct);
@@ -119,7 +119,7 @@ public class JobFetchOrchestrator : BackgroundService
                 {
                     await semaphore.WaitAsync(ct);
                     var result = await ProcessJobAsync(
-                        scope, linkedIn, openAi, job, request.CategoryId, request.CategoryName, ct);
+                        scope, linkedIn, gemini, job, request.CategoryId, request.CategoryName, ct);
 
                     lock (status)
                     {
@@ -222,7 +222,7 @@ public class JobFetchOrchestrator : BackgroundService
     private async Task<string> ProcessJobAsync(
         IServiceScope outerScope,
         LinkedInApiService linkedIn,
-        OpenAIService openAi,
+        GeminiService gemini,
         JsonElement job,
         int categoryId,
         string categoryName,
@@ -256,7 +256,7 @@ public class JobFetchOrchestrator : BackgroundService
         var description = details?.TryGetProperty("description", out var desc) == true
             ? desc.GetString() : null;
 
-        var (relevante, aptoJunior) = await openAi.FilterJobRelevanceAsync(
+        var (relevante, aptoJunior) = await gemini.FilterJobRelevanceAsync(
             categoryName, jobTitle, description, ct);
 
         if (relevante == "no")
@@ -309,7 +309,7 @@ public class JobFetchOrchestrator : BackgroundService
         {
             var parts = new List<string?> { jobTitle, TryGetString(job, "benefits"), description };
             var inputText = string.Join(". ", parts.Where(p => !string.IsNullOrWhiteSpace(p)));
-            var (skills, companyType) = await openAi.ExtractKeywordsAsync(inputText, ct);
+            var (skills, companyType) = await gemini.ExtractKeywordsAsync(inputText, ct);
 
             foreach (var rawName in skills)
             {

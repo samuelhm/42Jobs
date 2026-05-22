@@ -11,12 +11,12 @@ namespace src.Controllers;
 public class AdminController : ControllerBase
 {
     private readonly AppDbContext _db;
-    private readonly OpenAIService _openAi;
+    private readonly GeminiService _gemini;
 
-    public AdminController(AppDbContext db, OpenAIService openAi)
+    public AdminController(AppDbContext db, GeminiService gemini)
     {
         _db = db;
-        _openAi = openAi;
+        _gemini = gemini;
     }
 
     [HttpPost("dedup-keywords")]
@@ -27,15 +27,14 @@ public class AdminController : ControllerBase
             return Ok(new { message = "Not enough keywords to deduplicate", merged = 0 });
 
         var names = allKeywords.Select(k => k.Name).ToList();
-        var result = await _openAi.DedupKeywordsAsync(names);
+        var result = await _gemini.DedupKeywordsAsync(names);
 
         int merged = 0;
         foreach (var group in result)
         {
             if (group.Count < 2) continue;
 
-            var keep = allKeywords.FirstOrDefault(k => k.Name.Equals(group[0], StringComparison.OrdinalIgnoreCase));
-            if (keep is null) continue;
+            var keep = allKeywords.First(k => k.Name.Equals(group[0], StringComparison.OrdinalIgnoreCase));
             foreach (var dupName in group.Skip(1))
             {
                 var dup = allKeywords.FirstOrDefault(k => k.Name.Equals(dupName, StringComparison.OrdinalIgnoreCase));

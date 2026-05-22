@@ -16,13 +16,13 @@ public class EducationController : ControllerBase
 {
     private readonly ILogger<EducationController> _logger;
     private readonly AppDbContext _db;
-    private readonly OpenAIService _openAi;
+    private readonly GeminiService _gemini;
 
-    public EducationController(ILogger<EducationController> logger, AppDbContext db, OpenAIService openAi)
+    public EducationController(ILogger<EducationController> logger, AppDbContext db, GeminiService gemini)
     {
         _logger = logger;
         _db = db;
-        _openAi = openAi;
+        _gemini = gemini;
     }
 
     [HttpGet]
@@ -97,7 +97,7 @@ public class EducationController : ControllerBase
         if (string.IsNullOrWhiteSpace(body.RawText))
             return BadRequest(new { error = "Raw text is required" });
 
-        var (parsed, error) = await _openAi.ParseEducationAsync(body.RawText);
+        var (parsed, error) = await _gemini.ParseLinkedInEducationAsync(body.RawText);
         if (error is not null)
             return Ok(new { success = false, error, imported = 0 });
 

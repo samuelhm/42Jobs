@@ -15,13 +15,13 @@ public class JobsController : ControllerBase
 {
     private readonly AppDbContext _db;
     private readonly LinkedInApiService _linkedIn;
-    private readonly OpenAIService _openAi;
+    private readonly GeminiService _gemini;
 
-    public JobsController(AppDbContext db, LinkedInApiService linkedIn, OpenAIService openAi)
+    public JobsController(AppDbContext db, LinkedInApiService linkedIn, GeminiService gemini)
     {
         _db = db;
         _linkedIn = linkedIn;
-        _openAi = openAi;
+        _gemini = gemini;
     }
 
     [HttpPatch("{id:int}")]
@@ -115,7 +115,7 @@ public class JobsController : ControllerBase
 
             var parts = new List<string?> { job.Title, job.Benefits, job.Description };
             var inputText = string.Join(". ", parts.Where(p => !string.IsNullOrWhiteSpace(p)));
-            var (skills, _) = await _openAi.ExtractKeywordsAsync(inputText);
+            var (skills, _) = await _gemini.ExtractKeywordsAsync(inputText);
 
             var existingKws = await _db.Set<Dictionary<string, object>>("job_keywords")
                 .Where(jk => EF.Property<int>(jk, "job_id") == job.Id)

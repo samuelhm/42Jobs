@@ -20,15 +20,15 @@ public class ProjectsController : ControllerBase
     private readonly ILogger<ProjectsController> _logger;
     private readonly AppDbContext _db;
     private readonly IHttpClientFactory _httpFactory;
-    private readonly OpenAIService _openAi;
+    private readonly GeminiService _gemini;
     private readonly IServiceScopeFactory _scopeFactory;
 
-    public ProjectsController(ILogger<ProjectsController> logger, AppDbContext db, IHttpClientFactory httpFactory, OpenAIService openAi, IServiceScopeFactory scopeFactory)
+    public ProjectsController(ILogger<ProjectsController> logger, AppDbContext db, IHttpClientFactory httpFactory, GeminiService gemini, IServiceScopeFactory scopeFactory)
     {
         _logger = logger;
         _db = db;
         _httpFactory = httpFactory;
-        _openAi = openAi;
+        _gemini = gemini;
         _scopeFactory = scopeFactory;
     }
 
@@ -231,11 +231,11 @@ public class ProjectsController : ControllerBase
             // Resolve Gemini from a new scope
             List<GithubProjectResult> projects;
             string error;
-            using (var aiScope = scopeFactory.CreateScope())
+            using (var geminiScope = scopeFactory.CreateScope())
             {
-                var openAi = aiScope.ServiceProvider.GetRequiredService<OpenAIService>();
+                var gemini = geminiScope.ServiceProvider.GetRequiredService<GeminiService>();
                 var allText = string.Join("\n\n---\n\n", projectTexts.Select((t, i) => $"PROJECT {i}: {t.name}\n{t.text}"));
-                (projects, error) = await openAi.AnalyzeGithubProjectsAsync(allText);
+                (projects, error) = await gemini.AnalyzeGithubProjectsAsync(allText);
             }
 
             if (!string.IsNullOrEmpty(error))
