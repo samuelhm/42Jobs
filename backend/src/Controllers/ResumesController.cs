@@ -16,12 +16,14 @@ public class ResumesController : ControllerBase
 {
     private readonly AppDbContext _db;
     private readonly IHttpClientFactory _httpFactory;
+    private readonly ILogger<ResumesController> _logger;
     private const string DefaultModel = "gpt-5.4-mini";
 
-    public ResumesController(AppDbContext db, IHttpClientFactory httpFactory)
+    public ResumesController(AppDbContext db, IHttpClientFactory httpFactory, ILogger<ResumesController> logger)
     {
         _db = db;
         _httpFactory = httpFactory;
+        _logger = logger;
     }
 
     [HttpPost("{jobId:int}")]
