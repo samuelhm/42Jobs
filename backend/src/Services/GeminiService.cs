@@ -9,7 +9,7 @@ public class GeminiService
     private readonly HttpClient _http;
     private readonly ILogger<GeminiService> _logger;
     private const string Model = "gemini-3.1-flash-lite";
-    private const string ModelImport = "gemini-3-flash-preview";
+    private const string ModelImport = "gemini-3.5-flash";
     public GeminiService(HttpClient http, ILogger<GeminiService> logger)
     {
         _http = http;
