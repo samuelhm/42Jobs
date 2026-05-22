@@ -4,7 +4,7 @@ import KeywordTag from '../components/KeywordTag';
 interface KeywordItem {
   id: number;
   name: string;
-  learning_status: string;
+  learning_status: string | null;
 }
 
 export default function KeywordsPage() {
@@ -26,7 +26,8 @@ export default function KeywordsPage() {
     );
   }
 
-  const unassigned = keywords.filter((k) => k.learning_status === 'not_learned');
+  const unset = keywords.filter((k) => k.learning_status === null);
+  const notLearned = keywords.filter((k) => k.learning_status === 'not_learned');
   const school = keywords.filter((k) => k.learning_status === 'learned_in_school');
   const personal = keywords.filter((k) => k.learning_status === 'learned_personal_project');
 
@@ -37,11 +38,21 @@ export default function KeywordsPage() {
       <h2>Keywords ({keywords.length})</h2>
 
       <section>
-        <h3 className="kw-section-title not-learned">Not learned ({unassigned.length})</h3>
+        <h3 className="kw-section-title unset">Not specified ({unset.length})</h3>
         <div className="kw-section-list">
-          {unassigned.length === 0 && <p className="text-dim">All keywords assigned</p>}
-          {unassigned.map((k) => (
-            <KeywordTag key={k.id} name={k.name} id={k.id} status={k.learning_status} onStatusChange={handleStatusChange} />
+          {unset.length === 0 && <p className="text-dim">All keywords assigned</p>}
+          {unset.map((k) => (
+            <KeywordTag key={k.id} name={k.name} id={k.id} status={'not_learned'} onStatusChange={handleStatusChange} />
+          ))}
+        </div>
+      </section>
+
+      <section>
+        <h3 className="kw-section-title not-learned">Not learned ({notLearned.length})</h3>
+        <div className="kw-section-list">
+          {notLearned.length === 0 && <p className="text-dim">None</p>}
+          {notLearned.map((k) => (
+            <KeywordTag key={k.id} name={k.name} id={k.id} status={'not_learned'} onStatusChange={handleStatusChange} />
           ))}
         </div>
       </section>

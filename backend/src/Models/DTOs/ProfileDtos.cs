@@ -104,7 +104,7 @@ public class KeywordResponseDto
 {
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
-    public string LearningStatus { get; set; } = string.Empty;
+    public string? LearningStatus { get; set; }
 }
 
 public class UpdateKeywordDto

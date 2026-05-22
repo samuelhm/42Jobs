@@ -35,8 +35,8 @@ public class KeywordsController : ControllerBase
                 Name = k.Name,
                 LearningStatus = k.UserKeywords
                     .Where(uk => uk.UserId == userId)
-                    .Select(uk => uk.LearningStatus)
-                    .FirstOrDefault() ?? "not_learned"
+                    .Select(uk => (string?)uk.LearningStatus)
+                    .FirstOrDefault()
             })
             .ToListAsync();
 

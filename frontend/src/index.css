@@ -1002,6 +1002,7 @@ main {
 }
 
 .kw-section-title.not-learned { color: #e08880; }
+.kw-section-title.unset { color: var(--text-dim); }
 .kw-section-title.learned { color: #80a8d8; }
 .kw-section-title.project { color: #e0bc6a; }
 

@@ -1,7 +1,7 @@
 interface Props {
   keywordName: string;
   keywordId: number;
-  currentStatus: string;
+  currentStatus: string | null;
   onStatusChange: (keywordId: number, newStatus: string) => void;
   onClose: () => void;
 }
