@@ -69,7 +69,7 @@ export default function Offers() {
     let matchCount = 0;
     job.keywords.forEach((kw) => {
       const entry = userKeywords[kw];
-      if (entry && entry.learning_status !== 'not_learned') matchCount++;
+      if (entry && entry.learning_status && entry.learning_status !== 'not_learned') matchCount++;
     });
     return Math.round((matchCount / job.keywords.length) * 100);
   }
