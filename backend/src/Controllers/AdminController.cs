@@ -40,26 +40,35 @@ public class AdminController : ControllerBase
                 var dup = allKeywords.FirstOrDefault(k => k.Name.Equals(dupName, StringComparison.OrdinalIgnoreCase));
                 if (dup is null) continue;
 
-                // Migrate all M2M references from dup to keep
+                // Migrate all M2M references: add canonical keyword where dup exists,
+                // then remove the duplicate. ON CONFLICT handles jobs that had both.
                 await _db.Database.ExecuteSqlRawAsync(
-                    "UPDATE job_keywords SET keyword_id = {0} WHERE keyword_id = {1}", keep.Id, dup.Id);
+                    @"INSERT INTO job_keywords (job_id, keyword_id)
+                      SELECT job_id, {0} FROM job_keywords WHERE keyword_id = {1}
+                      ON CONFLICT DO NOTHING", keep.Id, dup.Id);
                 await _db.Database.ExecuteSqlRawAsync(
-                    "DELETE FROM job_keywords WHERE keyword_id = {1} AND job_id IN (SELECT job_id FROM job_keywords WHERE keyword_id = {0})", keep.Id, dup.Id);
+                    "DELETE FROM job_keywords WHERE keyword_id = {0}", dup.Id);
 
                 await _db.Database.ExecuteSqlRawAsync(
-                    "UPDATE project_keywords SET keyword_id = {0} WHERE keyword_id = {1}", keep.Id, dup.Id);
+                    @"INSERT INTO project_keywords (project_id, keyword_id)
+                      SELECT project_id, {0} FROM project_keywords WHERE keyword_id = {1}
+                      ON CONFLICT DO NOTHING", keep.Id, dup.Id);
                 await _db.Database.ExecuteSqlRawAsync(
-                    "DELETE FROM project_keywords WHERE keyword_id = {1} AND project_id IN (SELECT project_id FROM project_keywords WHERE keyword_id = {0})", keep.Id, dup.Id);
+                    "DELETE FROM project_keywords WHERE keyword_id = {0}", dup.Id);
 
                 await _db.Database.ExecuteSqlRawAsync(
-                    "UPDATE work_experience_keywords SET keyword_id = {0} WHERE keyword_id = {1}", keep.Id, dup.Id);
+                    @"INSERT INTO work_experience_keywords (experience_id, keyword_id)
+                      SELECT experience_id, {0} FROM work_experience_keywords WHERE keyword_id = {1}
+                      ON CONFLICT DO NOTHING", keep.Id, dup.Id);
                 await _db.Database.ExecuteSqlRawAsync(
-                    "DELETE FROM work_experience_keywords WHERE keyword_id = {1} AND experience_id IN (SELECT experience_id FROM work_experience_keywords WHERE keyword_id = {0})", keep.Id, dup.Id);
+                    "DELETE FROM work_experience_keywords WHERE keyword_id = {0}", dup.Id);
 
                 await _db.Database.ExecuteSqlRawAsync(
-                    "UPDATE user_keywords SET keyword_id = {0} WHERE keyword_id = {1}", keep.Id, dup.Id);
+                    @"INSERT INTO user_keywords (user_id, keyword_id, learning_status)
+                      SELECT user_id, {0}, learning_status FROM user_keywords WHERE keyword_id = {1}
+                      ON CONFLICT DO NOTHING", keep.Id, dup.Id);
                 await _db.Database.ExecuteSqlRawAsync(
-                    "DELETE FROM user_keywords WHERE keyword_id = {1} AND user_id IN (SELECT user_id FROM user_keywords WHERE keyword_id = {0})", keep.Id, dup.Id);
+                    "DELETE FROM user_keywords WHERE keyword_id = {0}", dup.Id);
 
                 _db.Keywords.Remove(dup);
                 merged++;
