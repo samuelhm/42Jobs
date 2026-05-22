@@ -44,6 +44,7 @@ export default function Profile() {
         {step === 1 && (
           <ProfileList
             title="Work Experience"
+            block
             fields={[
               { key: 'company', label: 'Company' },
               { key: 'position', label: 'Position' },
