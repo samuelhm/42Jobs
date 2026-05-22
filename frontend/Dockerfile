@@ -2,18 +2,26 @@
 # BimbaJobs - Frontend Dockerfile (Multi-stage)
 # =============================================================================
 
-# ─── Development (browser-sync live-reload) ────────────────
-FROM node:20-alpine AS development
+# ─── Base (pnpm + deps) ─────────────────────────────────────
+FROM node:20-alpine AS base
+RUN corepack enable && corepack prepare pnpm@10 --activate
 WORKDIR /app
-COPY package*.json ./
-RUN npm install
-COPY public/ ./public/
-COPY bs-config.cjs ./
-EXPOSE 3000
-CMD ["npx", "browser-sync", "start", "--config", "bs-config.cjs"]
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
 
-# ─── Production (Nginx) ───────────────────────────────────
+# ─── Development (Vite dev server con HMR) ───────────────────
+FROM base AS development
+COPY . .
+EXPOSE 5173
+CMD ["pnpm", "dev"]
+
+# ─── Builder (Vite build para producción) ────────────────────
+FROM base AS builder
+COPY . .
+RUN pnpm run build
+
+# ─── Production (Nginx sirviendo build estático) ─────────────
 FROM nginx:alpine AS production
-COPY public/ /usr/share/nginx/html/
 COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=builder /app/dist /usr/share/nginx/html
 EXPOSE 80

@@ -96,7 +96,7 @@ prod-ps:
 
 install:
 	cd backend && dotnet restore
-	cd frontend && npm install
+	cd frontend && pnpm install
 
 switch-prod:
 	$(COMPOSE_DEV) down && $(COMPOSE_PROD) up -d

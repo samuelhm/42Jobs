@@ -21,15 +21,16 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Development
 
-  # ─── Frontend (dev: browser-sync con live-reload) ────────
+  # ─── Frontend (dev: Vite con live-reload / HMR) ───────────
   frontend:
     build:
       target: development
     volumes:
+      - ./frontend/src:/app/src:ro
       - ./frontend/public:/app/public:ro
-      - ./frontend/bs-config.cjs:/app/bs-config.cjs:ro
+      - ./frontend/index.html:/app/index.html:ro
+      - ./frontend/vite.config.js:/app/vite.config.js:ro
     ports:
-      - "${FRONTEND_PORT:-3000}:${FRONTEND_PORT:-3000}"
+      - "${FRONTEND_PORT:-3000}:5173"
     environment:
-      NODE_ENV: development
-      BACKEND_URL: http://backend:8080
+      VITE_API_TARGET: http://backend:8080

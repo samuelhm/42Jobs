@@ -86,12 +86,16 @@
 | [Authorize] en todos los controladores | ✅ |
 | GetUserId() desde JWT claims | ✅ |
 
-### Fase 4 — Frontend definitivo (PENDIENTE ⬚)
+### Fase 4 — Frontend definitivo (EN CONSTRUCCIÓN ⬚)
 
 | Checkpoint | Estado |
 |------------|--------|
-| Decidir tecnología (React / Vue / JS vanilla) | ⬚ |
-| Re-implementar con la tecnología elegida | ⬚ |
+| Decidir tecnología (React + React Router + Vite) | ✅ |
+| Scaffold Vite + React + React Router | ✅ |
+| Configurar Dockerfile (dev: vite, prod: nginx) | ✅ |
+| docker-compose override (HMR con volumes) | ✅ |
+| Portar estilos CSS | ⬚ |
+| Portar componentes (Dashboard, Profile, dialogs) | ⬚ |
 
 ### Fase 5 — APIs externas (COMPLETADA ✅)
 

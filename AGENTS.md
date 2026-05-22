@@ -19,8 +19,8 @@ Este es un proyecto **personal de aprendizaje**. El objetivo principal no es ent
 |------|-----------|----------|
 | Backend | .NET 10 (ASP.NET Core) | Web API MVC, C#, EF Core, JWT |
 | Base de datos | PostgreSQL 16 | Migraciones SQL en `database/migrations/` |
-| Frontend actual | HTML/CSS/JS vanilla | Temporal, en `frontend/public/` |
-| Frontend futuro | React, Vue o JS vanilla escalable | A decidir por el usuario |
+| Frontend | React + React Router (Vite) + TypeScript | Sin framework CSS, estilos propios |
+| Package manager | pnpm | Más seguro que npm, estricto en dependencias |
 | Infraestructura | Docker + Docker Compose | Dev y prod con override files |
 | APIs externas | LinkedIn RapidAPI, Google Gemini / OpenAI | Para búsqueda de empleos y generación de CV |
 
@@ -48,12 +48,22 @@ bimjobsnet/
 ├── database/
 │   └── migrations/            ← 17 archivos SQL (categorías, keywords, jobs, perfil, user_categories...)
 ├── frontend/
-│   ├── Dockerfile
-│   ├── nginx.conf
-│   ├── package.json
-│   └── public/
-│       ├── index.html
-│       └── js/                ← api.js, ui.js, profile.js (frontend temporal)
+│   ├── Dockerfile              ← Multi-stage: dev (vite) + prod (nginx + build)
+│   ├── nginx.conf              ← Proxy /api -> backend, sirve estáticos de dist/
+│   ├── package.json            ← react, react-router-dom, vite, chart.js
+│   ├── pnpm-lock.yaml
+│   ├── tsconfig.json           ← Config TypeScript para src/
+│   ├── tsconfig.node.json      ← Config TypeScript para vite.config.ts
+│   ├── vite.config.ts          ← Dev server con proxy /api, build output a dist/
+│   ├── index.html              ← Entry point Vite
+│   ├── public/
+│   │   └── resources/          ← Imágenes y estáticos
+│   └── src/
+│       ├── main.tsx
+│       ├── App.tsx             ← React Router (/ y /profile)
+│       ├── pages/              ← Dashboard, Profile
+│       ├── components/         ← JobCard, KeywordsChart, dialogs, etc.
+│       └── index.css
 └── examples/                  ← Ejemplos de respuestas de API de LinkedIn
 ```
 
@@ -61,7 +71,7 @@ bimjobsnet/
 
 1. **Base de datos:** ✅ Migraciones SQL con 17 archivos. Tablas: categorías, empresas, keywords, jobs, perfil de usuario, idiomas, certificaciones, educación, proyectos, experiencias, user_providers, user_jobs, user_categories, resumes, y tablas M2M (job_keywords, project_keywords, work_experience_keywords).
 2. **Backend:** ✅ Funcional. 11 controladores REST con autenticación JWT vía cookie (`bimbajobs_auth`). EF Core con snake_case naming convention. Servicios: LinkedIn RapidAPI, Gemini (filtro + keywords), background job queue con Channel<T> para fetch de trabajos con rate-limiting de 3h.
-3. **Frontend:** ⚠️ Temporal. SPA en vanilla JS que espera endpoints REST. Formato de respuesta `{ success, data }` con snake_case. El usuario quiere reemplazarlo por React, Vue o JS vanilla escalable (a decidir).
+3. **Frontend:** ⚠️ En construcción. React + React Router con Vite. Formato de respuesta `{ success, data }` con snake_case. Dev: Vite con HMR. Prod: nginx sirviendo build estático.
 
 ## Próximos pasos (visión general)
 
@@ -69,7 +79,7 @@ bimjobsnet/
 2. ✅ Conexión a PostgreSQL vía Entity Framework Core.
 3. ✅ Autenticación de usuarios (JWT + cookies).
 4. ✅ Endpoints del frontend (17/19 implementados).
-5. ⬚ Decidir y construir el frontend definitivo (React / Vue / JS vanilla escalable).
+5. ✅ React + React Router + Vite elegido. En construcción.
 6. ✅ APIs externas (LinkedIn RapidAPI + Gemini filtro/keywords).
 
 ## Cómo trabajar
@@ -79,3 +89,4 @@ bimjobsnet/
 - Esperar confirmación antes de tocar código.
 - Al completar un paso, actualizar `roadmap.md` para reflejar el progreso.
 - Usar `Makefile` para levantar/bajar la infraestructura Docker (`make dev-up`, `make dev-down`).
+- Para instalar dependencias del frontend, usar siempre `pnpm install` (nunca `npm install`).
