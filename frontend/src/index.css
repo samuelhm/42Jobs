@@ -871,6 +871,21 @@ main {
   line-height: 1.4;
 }
 
+.pf-import-section .hint a {
+  color: var(--amber);
+  text-decoration: none;
+}
+
+.pf-import-section .hint a:hover { text-decoration: underline; }
+
+.pf-import-section .hint code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  background: rgba(212, 168, 83, 0.08);
+  padding: 0.1rem 0.3rem;
+  border-radius: 3px;
+}
+
 .pf-import-row {
   display: flex;
   gap: 0.5rem;

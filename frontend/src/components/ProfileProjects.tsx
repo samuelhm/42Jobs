@@ -160,7 +160,14 @@ export default function ProfileProjects() {
 
       <div className="pf-import-section">
         <h3>Import from GitHub</h3>
-        <p className="hint">Enter your GitHub username to import public repositories. Make sure each repo has a detailed README for best results.</p>
+        <p className="hint">
+          Enter your GitHub username to import public repositories.
+          Without a token: 60 req/h limit.{' '}
+          <a href="https://github.com/settings/tokens" target="_blank" rel="noopener noreferrer">
+            Get a token
+          </a>{' '}
+          (only <code>public_repo</code> scope needed) to raise the limit to 5000 req/h.
+        </p>
         <div className="pf-import-row">
           <input
             type="text"
