@@ -9,6 +9,7 @@ public class GeminiService
     private readonly HttpClient _http;
     private readonly ILogger<GeminiService> _logger;
     private const string Model = "gemini-3.1-flash-lite";
+    private const string ModelImport = "gemini-3-flash-preview";
     public GeminiService(HttpClient http, ILogger<GeminiService> logger)
     {
         _http = http;
@@ -252,7 +253,7 @@ Campos: company, position, start_date, end_date, description
 
         try
         {
-             var result = await CallGeminiAsync(prompt, schema, ct);
+             var result = await CallGeminiAsync(prompt, schema, ct, ModelImport);
             var items = new List<LinkedInExperienceParsed>();
 
             if (result.TryGetProperty("experiences", out var arr))
@@ -350,7 +351,7 @@ Ignora 'Aptitudes:', 'Actividades y grupos:'.
     }
 
     private async Task<JsonElement> CallGeminiAsync(
-        string prompt, JsonElement schema, CancellationToken ct)
+        string prompt, JsonElement schema, CancellationToken ct, string model = Model)
     {
         var requestBody = new
         {
@@ -369,7 +370,7 @@ Ignora 'Aptitudes:', 'Actividades y grupos:'.
         var json = JsonSerializer.Serialize(requestBody);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-        var url = $"/v1beta/models/{Model}:generateContent";
+        var url = $"/v1beta/models/{model}:generateContent";
 
         var response = await _http.PostAsync(url, content, ct);
         response.EnsureSuccessStatusCode();
