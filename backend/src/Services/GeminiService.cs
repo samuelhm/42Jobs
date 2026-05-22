@@ -216,14 +216,22 @@ Palabras clave a analizar:
         var prompt = $@"Eres un extractor de datos de LinkedIn. Te voy a dar el texto en bruto de la seccion 'Experiencia' copiada directamente de un perfil de LinkedIn.
 
 Extrae cada puesto de trabajo como un objeto JSON con estos campos:
+
+IMPORTANTE: Las fechas en LinkedIn aparecen en formato español abreviado en una linea como:
+  'sept. 2023 - ene. 2024 · 5 meses'
+  'jun. 2020 - feb. 2023 · 2 años 9 meses'
+  'abr. 2018 - ene. 2020 · 1 año 10 meses'
+Debes extraer las fechas de esa linea. Convierte las abreviaturas de mes: ene=01, feb=02, mar=03, abr=04, may=05, jun=06, jul=07, ago=08, sept=09, oct=10, nov=11, dic=12.
+
 - company: nombre de la empresa (el texto que aparece debajo del cargo, antes del '·')
 - position: el titulo del cargo (primera linea de cada bloque)
-- start_date: fecha de inicio en formato YYYY-MM (p.ej. '2023-09'). Convierte 'sept. 2023' → '2023-09', 'ene. 2024' → '2024-01', etc. Usa numeros de mes (01-12).
-- end_date: fecha de fin en formato YYYY-MM, o null si es el puesto actual
-- description: el texto descriptivo del puesto (lo que hay debajo de las fechas, excluyendo listas de aptitudes/skills)
+- company: nombre de la empresa
+- position: el titulo del cargo
+- start_date: fecha de inicio en formato YYYY-MM-DD (ej: '2023-09-01')
+- end_date: fecha de fin en formato YYYY-MM-DD, o null si es el puesto actual
+- description: TODAS las lineas de texto descriptivo del puesto. Incluye TODO el contenido, no resumas. Si hay viñetas o listas, inclúyelas también.
 
 Ignora las lineas de 'Aptitudes: ...' y las listas de skills.
-Si no puedes determinar algun campo, usa null.
 
 Texto a analizar:
 {rawText}";
@@ -287,8 +295,8 @@ Texto a analizar:
 Extrae cada entrada educativa como un objeto JSON con estos campos:
 - institution: nombre de la institucion (primera linea de cada bloque)
 - degree: titulo o campo de estudio (segunda linea)
-- start_year: año de inicio como numero (p.ej. 2024). Extrae del texto 'ene. 2024 – may. 2025' → 2024, 'sept. 2009 – jun. 2011' → 2009.
-- end_year: año de fin como numero, o null si no ha terminado. Del ejemplo anterior → 2025, 2011.
+- start_year: año de inicio como numero (p.ej. 2024). Ejemplos: 'ene. 2024 – may. 2025' → 2024, 'sept. 2009 – jun. 2011' → 2009, 'oct. 2024 – jul. 2025' → 2024, 'sept. 2007 – jun. 2009' → 2007.
+- end_year: año de fin como numero, o null si no ha terminado. De los ejemplos: → 2025, 2011, 2025, 2009.
 
 Ignora las lineas de 'Aptitudes: ...' y listas de skills. Ignora 'Actividades y grupos:'.
 
