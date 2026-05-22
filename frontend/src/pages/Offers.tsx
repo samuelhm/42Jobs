@@ -124,14 +124,20 @@ export default function Offers() {
   }
 
   async function handleRefresh(job: Job) {
-    const res = await fetch(`/api/jobs/${job.id}/refresh`, { method: 'PATCH' });
-    const data = await res.json();
-    if (data.status === 'rate-limited') {
-      toast(`refresh-${job.id}`, data.message, 'error');
-    } else if (data.success) {
-      setJobs((prev) => prev.map((j) => j.id === job.id
-        ? { ...j, description: data.data.description, keywords: data.data.keywords }
-        : j));
+    toast(`refresh-${job.id}`, 'Refreshing job details...', 'info');
+    try {
+      const res = await fetch(`/api/jobs/${job.id}/refresh`, { method: 'PATCH' });
+      const data = await res.json();
+      if (data.status === 'rate-limited') {
+        toast(`refresh-${job.id}`, data.message, 'error');
+      } else if (data.success) {
+        setJobs((prev) => prev.map((j) => j.id === job.id
+          ? { ...j, description: data.data.description, keywords: data.data.keywords }
+          : j));
+        toast(`refresh-${job.id}`, `Updated with ${data.data.keywords.length} keywords`, 'success');
+      }
+    } catch {
+      toast(`refresh-${job.id}`, 'Refresh failed', 'error');
     }
   }
 
