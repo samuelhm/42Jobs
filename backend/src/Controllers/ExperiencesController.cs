@@ -16,14 +16,12 @@ public class ExperiencesController : ControllerBase
 {
     private readonly ILogger<ExperiencesController> _logger;
     private readonly AppDbContext _db;
-    private readonly GeminiService _gemini;
     private readonly OpenAIService _openAi;
 
-    public ExperiencesController(ILogger<ExperiencesController> logger, AppDbContext db, GeminiService gemini, OpenAIService openAi)
+    public ExperiencesController(ILogger<ExperiencesController> logger, AppDbContext db, OpenAIService openAi)
     {
         _logger = logger;
         _db = db;
-        _gemini = gemini;
         _openAi = openAi;
     }
 
