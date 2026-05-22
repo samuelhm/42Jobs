@@ -205,7 +205,6 @@ public class ProjectsController : ControllerBase
                 if (string.IsNullOrWhiteSpace(readme))
                 {
                     status.Processed++;
-                    await Task.Delay(500);
                     continue;
                 }
 
@@ -215,7 +214,6 @@ public class ProjectsController : ControllerBase
                     var content = await TryFetchRaw(http, username, repoName, defaultBranch, file);
                     if (!string.IsNullOrWhiteSpace(content))
                         configs.Add($"{file}:\n{content}");
-                    await Task.Delay(300);
                 }
 
                 var combined = $"# {repoName}\n\nREADME:\n{readme}";
