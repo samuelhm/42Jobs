@@ -19,6 +19,7 @@ public class AppDbContext : DbContext
     public DbSet<UserCategory> UserCategories => Set<UserCategory>();
     public DbSet<UserJob> UserJobs => Set<UserJob>();
     public DbSet<Resume> Resumes => Set<Resume>();
+    public DbSet<UserKeyword> UserKeywords => Set<UserKeyword>();
 
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
@@ -58,16 +59,9 @@ public class AppDbContext : DbContext
             entity.Property(k => k.Id).ValueGeneratedOnAdd();
             entity.Property(k => k.Name).IsRequired().HasMaxLength(200);
             entity.HasIndex(k => k.Name).IsUnique();
-            entity.Property(k => k.LearningStatus)
-                  .IsRequired()
-                  .HasMaxLength(50)
-                  .HasDefaultValue("not_learned");
             entity.Property(k => k.CreatedAt)
                   .HasDefaultValueSql("NOW()")
                   .ValueGeneratedOnAdd();
-            entity.ToTable(t => t.HasCheckConstraint(
-                "CK_keywords_learning_status",
-                "learning_status IN ('not_learned', 'learned_personal_project', 'learned_in_school')"));
         });
 
         // ── Job ──────────────────────────────────────────────
@@ -377,6 +371,31 @@ public class AppDbContext : DbContext
                   .WithMany(j => j.Resumes)
                   .HasForeignKey(r => r.JobId)
                   .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // ── UserKeyword (M2M: users ↔ keywords) ──────────────
+        modelBuilder.Entity<UserKeyword>(entity =>
+        {
+            entity.ToTable("user_keywords");
+            entity.HasKey(uk => new { uk.UserId, uk.KeywordId });
+
+            entity.Property(uk => uk.LearningStatus)
+                  .HasMaxLength(50)
+                  .HasDefaultValue("not_learned");
+
+            entity.HasCheckConstraint(
+                "CK_user_keywords_learning_status",
+                "learning_status IN ('not_learned', 'learned_personal_project', 'learned_in_school')");
+
+            entity.HasOne(uk => uk.User)
+                  .WithMany(u => u.UserKeywords)
+                  .HasForeignKey(uk => uk.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(uk => uk.Keyword)
+                  .WithMany(k => k.UserKeywords)
+                  .HasForeignKey(uk => uk.KeywordId)
+                  .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }

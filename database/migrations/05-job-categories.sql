@@ -1,5 +1,4 @@
--- M2M: jobs <-> categories
--- Replaces the 1:N category_id column on jobs
+-- M2M: jobs <-> categories (replaces 1:N category_id on jobs)
 
 CREATE TABLE IF NOT EXISTS job_categories (
     job_id      INTEGER REFERENCES jobs(id) ON DELETE CASCADE,
@@ -7,11 +6,4 @@ CREATE TABLE IF NOT EXISTS job_categories (
     PRIMARY KEY (job_id, category_id)
 );
 
--- Migrate existing data from jobs.category_id
-INSERT INTO job_categories (job_id, category_id)
-SELECT id, category_id FROM jobs WHERE category_id IS NOT NULL
-ON CONFLICT DO NOTHING;
-
--- Drop the old column and its index
-DROP INDEX IF EXISTS idx_jobs_category;
-ALTER TABLE jobs DROP COLUMN IF EXISTS category_id;
+CREATE INDEX IF NOT EXISTS idx_job_categories_category ON job_categories(category_id);

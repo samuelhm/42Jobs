@@ -28,4 +28,5 @@ public class User
     public List<Resume> Resumes { get; set; } = [];
     public List<UserCategory> UserCategories { get; set; } = [];
     public List<UserJob> UserJobs { get; set; } = [];
+    public List<UserKeyword> UserKeywords { get; set; } = [];
 }

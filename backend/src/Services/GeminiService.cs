@@ -155,6 +155,61 @@ Proyectos a analizar:
         }
     }
 
+    public async Task<List<List<string>>> DedupKeywordsAsync(List<string> allKeywords, CancellationToken ct = default)
+    {
+        var prompt = $@"Eres un deduplicador de palabras clave técnicas. Tu tarea es agrupar palabras clave que significan EXACTAMENTE lo mismo.
+
+Reglas:
+- Agrupa solo si son sinónimos exactos en el contexto técnico (ej: 'js' = 'javascript', 'llm' = 'large language model', 'k8s' = 'kubernetes').
+- NO agrupes tecnologías relacionadas pero diferentes (ej: 'react' y 'react native' NO son lo mismo).
+- Cada grupo debe tener las palabras en minúsculas.
+- Si una palabra no tiene sinónimos, va en su propio grupo de 1 elemento.
+- Devuelve un array de grupos, donde cada grupo es un array de strings equivalentes.
+
+Palabras clave a analizar:
+{string.Join("\n", allKeywords.Select(k => $"- {k}"))}";
+
+        var schema = JsonDocument.Parse("""
+            {
+              "type": "OBJECT",
+              "properties": {
+                "groups": {
+                  "type": "ARRAY",
+                  "items": {
+                    "type": "ARRAY",
+                    "items": { "type": "STRING" }
+                  }
+                }
+              },
+              "required": ["groups"]
+            }
+            """).RootElement;
+
+        try
+        {
+            var result = await CallGeminiAsync(prompt, schema, ct);
+            var groups = new List<List<string>>();
+
+            if (result.TryGetProperty("groups", out var arr))
+            {
+                foreach (var group in arr.EnumerateArray())
+                {
+                    var items = new List<string>();
+                    foreach (var item in group.EnumerateArray())
+                        items.Add(item.GetString() ?? "");
+                    if (items.Count > 0) groups.Add(items);
+                }
+            }
+
+            return groups;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Gemini dedup failed");
+            return allKeywords.Select(k => new List<string> { k }).ToList();
+        }
+    }
+
     private async Task<JsonElement> CallGeminiAsync(
         string prompt, JsonElement schema, CancellationToken ct)
     {
