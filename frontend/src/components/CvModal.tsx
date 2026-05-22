@@ -7,11 +7,12 @@ interface Props {
   onGenerated?: () => void;
 }
 
-export default function CvModal({ jobId, jobTitle, onClose, onGenerated }: Props) {
+export default function CvModal({ jobId, jobTitle, onClose }: Props) {
   const [html, setHtml] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [model, setModel] = useState('');
+  const [exists, setExists] = useState(false);
 
   useEffect(() => {
     checkExisting();
@@ -20,35 +21,38 @@ export default function CvModal({ jobId, jobTitle, onClose, onGenerated }: Props
   async function checkExisting() {
     try {
       const res = await fetch(`/api/resumes/job/${jobId}`);
-      if (!res.ok) { generateCv(); return; }
-      const data = await res.json();
-      if (data.html) {
-        setHtml(data.html);
-        setModel(data.model || '');
-        setLoading(false);
-      } else {
-        generateCv();
+      if (res.ok) {
+        const data = await res.json();
+        if (data.html) {
+          setHtml(data.html);
+          setModel(data.model || '');
+          setExists(true);
+        }
       }
-    } catch {
-      generateCv();
-    }
+    } catch { /* no CV yet */ }
+    setLoading(false);
   }
 
-  async function generateCv() {
+  async function generateCv(cvModel: string) {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch(`/api/resumes/${jobId}`, { method: 'POST' });
+      const res = await fetch(`/api/resumes/${jobId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model: cvModel }),
+      });
       const data = await res.json();
       if (data.cached) {
         const r2 = await fetch(`/api/resumes/job/${jobId}`);
         const d2 = await r2.json();
         setHtml(d2.html);
         setModel(d2.model || '');
+        setExists(true);
       } else if (data.html) {
         setHtml(data.html);
-        setModel('gpt-5.4-mini');
-        onGenerated?.();
+        setModel(cvModel);
+        setExists(true);
       } else {
         setError(data.error || 'Generation failed');
       }
@@ -77,9 +81,38 @@ export default function CvModal({ jobId, jobTitle, onClose, onGenerated }: Props
             <button className="btn-cancel" onClick={onClose}>Close</button>
           </div>
         </div>
+
         {loading && <div className="loading">Generating CV with GPT...</div>}
         {error && <div className="loading" style={{ color: 'var(--red)' }}>{error}</div>}
-        {html && <div className="cv-content" dangerouslySetInnerHTML={{ __html: html }} />}
+
+        {!loading && !error && !html && !exists && (
+          <div style={{ padding: '2rem', textAlign: 'center' }}>
+            <p style={{ marginBottom: '1rem', color: 'var(--text-dim)' }}>No CV generated yet.</p>
+            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
+              <button className="btn-confirm" onClick={() => generateCv('gpt-5.4-mini')}>
+                Generate with GPT-5.4-mini
+              </button>
+              <button className="btn-confirm" style={{ background: 'var(--amber-dim)' }} onClick={() => generateCv('gpt-5.5')}>
+                Generate with GPT-5.5
+              </button>
+            </div>
+          </div>
+        )}
+
+        {!loading && !error && exists && (
+          <>
+            <div className="cv-content" dangerouslySetInnerHTML={{ __html: html }} />
+            <div style={{ padding: '0.75rem 1.5rem', borderTop: '1px solid var(--border)', textAlign: 'center' }}>
+              <button className="btn-cancel" style={{ fontSize: '0.75rem' }} onClick={() => { setExists(false); setHtml(''); generateCv('gpt-5.4-mini'); }}>
+                Regenerate with GPT-5.4-mini
+              </button>
+              {' '}
+              <button className="btn-cancel" style={{ fontSize: '0.75rem', color: 'var(--amber)' }} onClick={() => { setExists(false); setHtml(''); generateCv('gpt-5.5'); }}>
+                Regenerate with GPT-5.5
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
