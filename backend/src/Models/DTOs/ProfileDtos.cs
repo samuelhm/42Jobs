@@ -156,7 +156,7 @@ public class CategoryKeywordDto
 public class ImportGithubDto
 {
     public string Username { get; set; } = string.Empty;
-    public string? Token { get; set; }
+    public string Token { get; set; } = string.Empty;
 }
 
 public class GithubProjectResult

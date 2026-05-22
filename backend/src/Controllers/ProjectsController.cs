@@ -188,7 +188,9 @@ public class ProjectsController : ControllerBase
             if (!string.IsNullOrWhiteSpace(token))
                 http.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
 
-            var reposUrl = $"https://api.github.com/users/{Uri.EscapeDataString(username)}/repos?per_page=20&sort=updated";
+            var reposUrl = !string.IsNullOrWhiteSpace(token)
+                ? $"https://api.github.com/user/repos?per_page=20&sort=updated&type=all"
+                : $"https://api.github.com/users/{Uri.EscapeDataString(username)}/repos?per_page=20&sort=updated";
             var reposJson = await http.GetStringAsync(reposUrl);
             using var reposDoc = JsonDocument.Parse(reposJson);
             var repos = reposDoc.RootElement.EnumerateArray().ToList();

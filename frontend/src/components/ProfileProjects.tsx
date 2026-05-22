@@ -74,7 +74,7 @@ export default function ProfileProjects() {
 
   async function handleImport() {
     const username = ghUsername.trim();
-    if (!username) return;
+    if (!username || !ghToken.trim()) return;
     setImporting(true);
     setImportStatus({ message: 'Starting import...', type: 'info' });
 
@@ -161,12 +161,9 @@ export default function ProfileProjects() {
       <div className="pf-import-section">
         <h3>Import from GitHub</h3>
         <p className="hint">
-          Enter your GitHub username to import public repositories.
-          Without a token: 60 req/h limit.{' '}
-          <a href="https://github.com/settings/tokens" target="_blank" rel="noopener noreferrer">
-            Get a token
-          </a>{' '}
-          (only <code>public_repo</code> scope needed) to raise the limit to 5000 req/h.
+          Enter your GitHub username and a{' '}
+          <a href="https://github.com/settings/tokens" target="_blank" rel="noopener noreferrer">personal access token</a>
+          {' '}with <code>repo</code> scope to import your repositories.
         </p>
         <div className="pf-import-row">
           <input
@@ -177,7 +174,7 @@ export default function ProfileProjects() {
           />
           <input
             type="password"
-            placeholder="token (optional)"
+            placeholder="token (required)"
             value={ghToken}
             onChange={(e) => setGhToken(e.target.value)}
           />
