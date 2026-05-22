@@ -196,7 +196,8 @@ public class CategoriesController : ControllerBase
             return NotFound(new { error = "Category not found" });
 
         var jobs = await _db.Jobs
-            .Where(j => j.Categories.Any(c => c.Id == id))
+            .Where(j => j.Categories.Any(c => c.Id == id)
+                && !j.Resumes.Any(r => r.UserId == userId))
             .Include(j => j.Company)
             .Include(j => j.Keywords)
             .OrderByDescending(j => j.PostedDate)
