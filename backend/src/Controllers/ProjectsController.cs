@@ -148,7 +148,11 @@ public class ProjectsController : ControllerBase
         var jobId = Guid.NewGuid();
         ImportStatuses[jobId] = new ImportStatus { Status = "queued", JobId = jobId };
 
-        _ = Task.Run(async () => await ProcessImportAsync(jobId, userId, username));
+        var scopeFactory = _scopeFactory;
+        var httpFactory = _httpFactory;
+        var logger = _logger;
+
+        _ = Task.Run(async () => await ProcessImportAsync(jobId, userId, username, scopeFactory, httpFactory, logger));
 
         return Accepted(new { job_id = jobId, status = "queued", status_url = $"/api/projects/import-github/{jobId}" });
     }
@@ -162,22 +166,25 @@ public class ProjectsController : ControllerBase
         return NotFound(new { error = "Import job not found" });
     }
 
-    private async Task ProcessImportAsync(Guid jobId, Guid userId, string username)
+    private static async Task ProcessImportAsync(
+        Guid jobId, Guid userId, string username,
+        IServiceScopeFactory scopeFactory, IHttpClientFactory httpFactory,
+        ILogger logger)
     {
         var status = ImportStatuses[jobId];
         status.Status = "running";
-        _logger.LogInformation("GitHub import {JobId} started for user {Username}", jobId, username);
+        logger.LogInformation("GitHub import {JobId} started for user {Username}", jobId, username);
 
         try
         {
-            using var scope = _scopeFactory.CreateScope();
+            using var scope = scopeFactory.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             var gemini = scope.ServiceProvider.GetRequiredService<GeminiService>();
 
-            using var http = _httpFactory.CreateClient();
+            using var http = httpFactory.CreateClient();
             http.DefaultRequestHeaders.Add("User-Agent", "bimjobsnet");
 
-            var reposUrl = $"https://api.github.com/users/{Uri.EscapeDataString(username)}/repos?per_page=50&sort=updated";
+            var reposUrl = $"https://api.github.com/users/{Uri.EscapeDataString(username)}/repos?per_page=20&sort=updated";
             var reposJson = await http.GetStringAsync(reposUrl);
             using var reposDoc = JsonDocument.Parse(reposJson);
             var repos = reposDoc.RootElement.EnumerateArray().ToList();
@@ -196,6 +203,7 @@ public class ProjectsController : ControllerBase
                 if (string.IsNullOrWhiteSpace(readme))
                 {
                     status.Processed++;
+                    await Task.Delay(500);
                     continue;
                 }
 
@@ -205,6 +213,7 @@ public class ProjectsController : ControllerBase
                     var content = await TryFetchRaw(http, username, repoName, defaultBranch, file);
                     if (!string.IsNullOrWhiteSpace(content))
                         configs.Add($"{file}:\n{content}");
+                    await Task.Delay(300);
                 }
 
                 var combined = $"# {repoName}\n\nREADME:\n{readme}";
@@ -285,11 +294,11 @@ public class ProjectsController : ControllerBase
             status.Inserted = inserted;
             status.Message = $"{inserted} projects imported";
 
-            _logger.LogInformation("GitHub import {JobId}: {Inserted} projects from {Username}", jobId, inserted, username);
+            logger.LogInformation("GitHub import {JobId}: {Inserted} projects from {Username}", jobId, inserted, username);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "GitHub import {JobId} failed", jobId);
+            logger.LogError(ex, "GitHub import {JobId} failed", jobId);
             status.Status = "failed";
             status.Error = ex.Message;
         }
@@ -319,6 +328,12 @@ public class ProjectsController : ControllerBase
         {
             return null;
         }
+    }
+
+    private static async Task<string> FetchReposAsync(HttpClient http, string username)
+    {
+        var url = $"https://api.github.com/users/{Uri.EscapeDataString(username)}/repos?per_page=30&sort=updated";
+        return await http.GetStringAsync(url);
     }
 
     private Guid GetUserId() =>
