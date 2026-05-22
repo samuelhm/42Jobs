@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router';
 import ProfileInfo from '../components/ProfileInfo';
 import ProfileList from '../components/ProfileList';
 import ProfileProjects from '../components/ProfileProjects';
+import LinkedInImport from '../components/LinkedInImport';
 
 const STEPS = ['Personal', 'Experience', 'Education', 'Projects', 'Other'];
 
@@ -10,6 +11,7 @@ export default function Profile() {
   const [searchParams, setSearchParams] = useSearchParams();
   const step = Number(searchParams.get('step') || '0');
   const [profile, setProfile] = useState<Record<string, unknown> | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
 
   async function loadProfile() {
     const res = await fetch('/api/profile');
@@ -42,8 +44,10 @@ export default function Profile() {
       <div className="step-content">
         {step === 0 && <ProfileInfo profile={profile as ProfileData} onSave={loadProfile} />}
         {step === 1 && (
-          <ProfileList
-            title="Work Experience"
+          <>
+            <ProfileList
+              key={`exp-${reloadKey}`}
+              title="Work Experience"
             fields={[
               { key: 'company', label: 'Company' },
               { key: 'position', label: 'Position' },
@@ -70,9 +74,17 @@ export default function Profile() {
               </div>
             )}
           />
+          <LinkedInImport
+            endpoint="/api/experiences/import-linkedin"
+            placeholder="Paste raw LinkedIn Experience section here..."
+            onImported={() => setReloadKey((k) => k + 1)}
+          />
+        </>
         )}
         {step === 2 && (
+          <>
           <ProfileList
+            key={`edu-${reloadKey}`}
             title="Education"
             fields={[
               { key: 'degree', label: 'Degree' },
@@ -97,6 +109,12 @@ export default function Profile() {
               </div>
             )}
           />
+          <LinkedInImport
+            endpoint="/api/education/import-linkedin"
+            placeholder="Paste raw LinkedIn Education section here..."
+            onImported={() => setReloadKey((k) => k + 1)}
+          />
+        </>
         )}
         {step === 3 && <ProfileProjects />}
         {step === 4 && (

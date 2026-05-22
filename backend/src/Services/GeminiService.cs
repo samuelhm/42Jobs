@@ -211,6 +211,147 @@ Palabras clave a analizar:
         }
     }
 
+    public async Task<List<LinkedInExperienceParsed>> ParseLinkedInExperienceAsync(string rawText, CancellationToken ct = default)
+    {
+        var prompt = $@"Eres un extractor de datos de LinkedIn. Te voy a dar el texto en bruto de la seccion 'Experiencia' copiada directamente de un perfil de LinkedIn.
+
+Extrae cada puesto de trabajo como un objeto JSON con estos campos:
+- company: nombre de la empresa (el texto que aparece debajo del cargo, antes del '·')
+- position: el titulo del cargo (primera linea de cada bloque)
+- start_date: fecha de inicio en formato YYYY-MM (p.ej. '2023-09'). Convierte 'sept. 2023' → '2023-09', 'ene. 2024' → '2024-01', etc. Usa numeros de mes (01-12).
+- end_date: fecha de fin en formato YYYY-MM, o null si es el puesto actual
+- description: el texto descriptivo del puesto (lo que hay debajo de las fechas, excluyendo listas de aptitudes/skills)
+
+Ignora las lineas de 'Aptitudes: ...' y las listas de skills.
+Si no puedes determinar algun campo, usa null.
+
+Texto a analizar:
+{rawText}";
+
+        var schema = JsonDocument.Parse("""
+            {
+              "type": "OBJECT",
+              "properties": {
+                "experiences": {
+                  "type": "ARRAY",
+                  "items": {
+                    "type": "OBJECT",
+                    "properties": {
+                      "company": { "type": "STRING" },
+                      "position": { "type": "STRING" },
+                      "start_date": { "type": "STRING" },
+                      "end_date": { "type": "STRING" },
+                      "description": { "type": "STRING" }
+                    },
+                    "required": ["company"]
+                  }
+                }
+              },
+              "required": ["experiences"]
+            }
+            """).RootElement;
+
+        try
+        {
+            var result = await CallGeminiAsync(prompt, schema, ct);
+            var items = new List<LinkedInExperienceParsed>();
+
+            if (result.TryGetProperty("experiences", out var arr))
+            {
+                foreach (var item in arr.EnumerateArray())
+                {
+                    items.Add(new LinkedInExperienceParsed
+                    {
+                        Company = item.GetProperty("company").GetString() ?? "",
+                        Position = GetNullableString(item, "position"),
+                        StartDate = GetNullableString(item, "start_date"),
+                        EndDate = GetNullableString(item, "end_date"),
+                        Description = GetNullableString(item, "description")
+                    });
+                }
+            }
+
+            return items;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Gemini LinkedIn experience parsing failed");
+            return [];
+        }
+    }
+
+    public async Task<List<LinkedInEducationParsed>> ParseLinkedInEducationAsync(string rawText, CancellationToken ct = default)
+    {
+        var prompt = $@"Eres un extractor de datos de LinkedIn. Te voy a dar el texto en bruto de la seccion 'Educacion' copiada directamente de un perfil de LinkedIn.
+
+Extrae cada entrada educativa como un objeto JSON con estos campos:
+- institution: nombre de la institucion (primera linea de cada bloque)
+- degree: titulo o campo de estudio (segunda linea)
+- start_year: año de inicio como numero (p.ej. 2024). Extrae del texto 'ene. 2024 – may. 2025' → 2024, 'sept. 2009 – jun. 2011' → 2009.
+- end_year: año de fin como numero, o null si no ha terminado. Del ejemplo anterior → 2025, 2011.
+
+Ignora las lineas de 'Aptitudes: ...' y listas de skills. Ignora 'Actividades y grupos:'.
+
+Texto a analizar:
+{rawText}";
+
+        var schema = JsonDocument.Parse("""
+            {
+              "type": "OBJECT",
+              "properties": {
+                "education": {
+                  "type": "ARRAY",
+                  "items": {
+                    "type": "OBJECT",
+                    "properties": {
+                      "institution": { "type": "STRING" },
+                      "degree": { "type": "STRING" },
+                      "start_year": { "type": "NUMBER" },
+                      "end_year": { "type": "NUMBER" }
+                    },
+                    "required": ["degree"]
+                  }
+                }
+              },
+              "required": ["education"]
+            }
+            """).RootElement;
+
+        try
+        {
+            var result = await CallGeminiAsync(prompt, schema, ct);
+            var items = new List<LinkedInEducationParsed>();
+
+            if (result.TryGetProperty("education", out var arr))
+            {
+                foreach (var item in arr.EnumerateArray())
+                {
+                    items.Add(new LinkedInEducationParsed
+                    {
+                        Degree = item.GetProperty("degree").GetString() ?? "",
+                        Institution = GetNullableString(item, "institution"),
+                        StartYear = item.TryGetProperty("start_year", out var sy) && sy.ValueKind == JsonValueKind.Number ? (int?)sy.GetInt32() : null,
+                        EndYear = item.TryGetProperty("end_year", out var ey) && ey.ValueKind == JsonValueKind.Number ? (int?)ey.GetInt32() : null
+                    });
+                }
+            }
+
+            return items;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Gemini LinkedIn education parsing failed");
+            return [];
+        }
+    }
+
+    private static string? GetNullableString(JsonElement element, string property)
+    {
+        return element.TryGetProperty(property, out var val) && val.ValueKind != JsonValueKind.Null
+            ? val.GetString()
+            : null;
+    }
+
     private async Task<JsonElement> CallGeminiAsync(
         string prompt, JsonElement schema, CancellationToken ct)
     {

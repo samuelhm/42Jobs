@@ -982,6 +982,55 @@ main {
   margin-bottom: 0.75rem;
 }
 
+/* ── LinkedIn import ── */
+.linkedin-import {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.linkedin-import h3 {
+  font-size: 0.9rem;
+  color: var(--text-bright);
+  margin-bottom: 0.25rem;
+}
+
+.linkedin-import .hint {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  margin-bottom: 0.6rem;
+  line-height: 1.4;
+}
+
+.linkedin-import textarea {
+  width: 100%;
+  min-height: 120px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  padding: 0.5rem;
+  resize: vertical;
+  outline: none;
+}
+
+.linkedin-import textarea:focus { border-color: var(--amber); }
+
+.linkedin-import-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.linkedin-import-msg {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  color: var(--teal);
+}
+
 /* ── Keywords page ── */
 .keywords-page { max-width: 900px; }
 

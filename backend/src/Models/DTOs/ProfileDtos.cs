@@ -177,3 +177,27 @@ public class ImportStatus
     public int Inserted { get; set; }
     public string? Error { get; set; }
 }
+
+// ─── LinkedIn import ───────────────────────────────────────
+
+public class LinkedInImportDto
+{
+    public string RawText { get; set; } = string.Empty;
+}
+
+public class LinkedInExperienceParsed
+{
+    public string Company { get; set; } = string.Empty;
+    public string? Position { get; set; }
+    public string? StartDate { get; set; }
+    public string? EndDate { get; set; }
+    public string? Description { get; set; }
+}
+
+public class LinkedInEducationParsed
+{
+    public string Degree { get; set; } = string.Empty;
+    public string? Institution { get; set; }
+    public int? StartYear { get; set; }
+    public int? EndYear { get; set; }
+}

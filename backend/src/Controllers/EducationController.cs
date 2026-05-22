@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using src.Data;
 using src.Models;
 using src.Models.DTOs;
+using src.Services;
 
 namespace src.Controllers;
 
@@ -15,11 +16,13 @@ public class EducationController : ControllerBase
 {
     private readonly ILogger<EducationController> _logger;
     private readonly AppDbContext _db;
+    private readonly GeminiService _gemini;
 
-    public EducationController(ILogger<EducationController> logger, AppDbContext db)
+    public EducationController(ILogger<EducationController> logger, AppDbContext db, GeminiService gemini)
     {
         _logger = logger;
         _db = db;
+        _gemini = gemini;
     }
 
     [HttpGet]
@@ -86,6 +89,36 @@ public class EducationController : ControllerBase
                 StartYear = edu.StartYear, EndYear = edu.EndYear
             }
         });
+    }
+
+    [HttpPost("import-linkedin")]
+    public async Task<IActionResult> ImportFromLinkedIn([FromBody] LinkedInImportDto body)
+    {
+        if (string.IsNullOrWhiteSpace(body.RawText))
+            return BadRequest(new { error = "Raw text is required" });
+
+        var parsed = await _gemini.ParseLinkedInEducationAsync(body.RawText);
+        if (parsed.Count == 0)
+            return Ok(new { success = true, imported = 0 });
+
+        var userId = GetUserId();
+        int imported = 0;
+
+        foreach (var edu in parsed)
+        {
+            _db.Educations.Add(new Education
+            {
+                UserId = userId,
+                Degree = edu.Degree,
+                Institution = edu.Institution,
+                StartYear = edu.StartYear,
+                EndYear = edu.EndYear
+            });
+            imported++;
+        }
+
+        await _db.SaveChangesAsync();
+        return Ok(new { success = true, imported });
     }
 
     [HttpDelete("{id:int}")]
