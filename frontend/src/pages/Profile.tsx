@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router';
 import ProfileInfo from '../components/ProfileInfo';
 import ProfileList from '../components/ProfileList';
+import ProfileProjects from '../components/ProfileProjects';
 
 const STEPS = ['Personal', 'Experience', 'Education', 'Projects', 'Other'];
 
@@ -97,37 +98,7 @@ export default function Profile() {
             )}
           />
         )}
-        {step === 3 && (
-          <ProfileList
-            title="Projects"
-            fields={[
-              { key: 'name', label: 'Name' },
-              { key: 'description', label: 'Description', type: 'textarea' },
-              { key: 'type', label: 'Type', type: 'select', options: [{ value: 'personal', label: 'Personal' }, { value: 'school', label: 'School' }] },
-            ]}
-            fetchUrl="/api/projects"
-            createUrl="/api/projects"
-            updateUrl={(id) => `/api/projects/${id}`}
-            deleteUrl={(id) => `/api/projects/${id}`}
-            bodyBuilder={(f) => ({
-              name: f.name,
-              description: f.description || null,
-              type: f.type || 'personal',
-            })}
-            renderItem={(item) => (
-              <div>
-                <strong>{item.name}</strong>
-                <span className="pf-type"> ({item.type})</span>
-                {item.description ? <p className="pf-desc">{String(item.description)}</p> : null}
-                {item.keywords ? (
-                  <div className="pf-kw-list">
-                    {(item.keywords as string[]).map((k) => <span key={k} className="pf-kw">{k}</span>)}
-                  </div>
-                ) : null}
-              </div>
-            )}
-          />
-        )}
+        {step === 3 && <ProfileProjects />}
         {step === 4 && (
           <div className="profile-section">
             <ProfileList

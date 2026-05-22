@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json;
+using src.Models.DTOs;
 
 namespace src.Services;
 
@@ -82,6 +83,76 @@ Oferta: ""{text}""";
         _logger.LogDebug("Extracted {Count} keywords, company type: {Type}", skills.Count, companyType);
 
         return (skills, companyType);
+    }
+
+    public async Task<(List<GithubProjectResult> projects, string error)> AnalyzeGithubProjectsAsync(
+        string inputText, CancellationToken ct = default)
+    {
+        var prompt = $@"Eres un analizador de proyectos de GitHub. Tu tarea es analizar los repositorios de un usuario y extraer informacion estructurada de cada uno.
+
+Por cada proyecto, debes:
+1. Extraer un nombre descriptivo (limpio, sin guiones, max 60 caracteres).
+2. Generar una descripcion en castellano (2-4 frases) explicando el proposito, tecnologias usadas y alcance del proyecto.
+3. Determinar si es un proyecto PERSONAL o de ESCUELA/BOOTCAMP (type: ""personal"" o ""school""). Si hay README que mencione ""42"", ""42 School"", ""42 Barcelona"", ""cursus"", ""bootcamp"" → es school. Si no se puede determinar → personal.
+4. Extraer una lista EXHAUSTIVA de tecnologias, lenguajes, frameworks, librerias, herramientas y conceptos tecnicos (skills). Incluye TODO lo que veas en el README, package.json, requirements.txt, Makefile, CMakeLists, docker-compose, etc. Se muy minucioso.
+
+Proyectos a analizar:
+{inputText}";
+
+        var schema = JsonDocument.Parse("""
+            {
+              "type": "OBJECT",
+              "properties": {
+                "projects": {
+                  "type": "ARRAY",
+                  "items": {
+                    "type": "OBJECT",
+                    "properties": {
+                      "name": { "type": "STRING" },
+                      "description": { "type": "STRING" },
+                      "type": { "type": "STRING", "enum": ["personal", "school"] },
+                      "keywords": {
+                        "type": "ARRAY",
+                        "items": { "type": "STRING" }
+                      }
+                    },
+                    "required": ["name", "description", "type", "keywords"]
+                  }
+                }
+              },
+              "required": ["projects"]
+            }
+            """).RootElement;
+
+        try
+        {
+            var result = await CallGeminiAsync(prompt, schema, ct);
+            var projects = new List<GithubProjectResult>();
+
+            if (result.TryGetProperty("projects", out var arr))
+            {
+                foreach (var item in arr.EnumerateArray())
+                {
+                    var proj = new GithubProjectResult();
+                    if (item.TryGetProperty("name", out var n)) proj.Name = n.GetString() ?? "";
+                    if (item.TryGetProperty("description", out var d)) proj.Description = d.GetString() ?? "";
+                    if (item.TryGetProperty("type", out var t)) proj.Type = t.GetString() ?? "personal";
+                    if (item.TryGetProperty("keywords", out var kwArr))
+                    {
+                        foreach (var kw in kwArr.EnumerateArray())
+                            proj.Keywords.Add(kw.GetString() ?? "");
+                    }
+                    projects.Add(proj);
+                }
+            }
+
+            return (projects, "");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Gemini GitHub analysis failed");
+            return ([], ex.Message);
+        }
     }
 
     private async Task<JsonElement> CallGeminiAsync(

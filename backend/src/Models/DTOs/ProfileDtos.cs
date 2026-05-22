@@ -150,3 +150,18 @@ public class CategoryKeywordDto
     public string Name { get; set; } = string.Empty;
     public int Count { get; set; }
 }
+
+// ─── GitHub import ─────────────────────────────────────────
+
+public class ImportGithubDto
+{
+    public string Username { get; set; } = string.Empty;
+}
+
+public class GithubProjectResult
+{
+    public string Name { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public string Type { get; set; } = "personal";
+    public List<string> Keywords { get; set; } = [];
+}

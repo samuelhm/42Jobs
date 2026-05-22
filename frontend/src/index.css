@@ -832,6 +832,60 @@ main {
 .pf-add-row input:focus, .pf-add-row textarea:focus, .pf-add-row select:focus { border-color: var(--amber); }
 .pf-add-block { flex-direction: column; }
 .pf-add-block textarea { min-height: 50px; }
+
+.pf-form-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+/* ── GitHub import ── */
+.pf-import-section {
+  background: rgba(212, 168, 83, 0.04);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.pf-import-section h3 {
+  font-size: 0.9rem;
+  color: var(--text-bright);
+  margin-bottom: 0.25rem;
+}
+
+.pf-import-section .hint {
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  margin-bottom: 0.75rem;
+  line-height: 1.4;
+}
+
+.pf-import-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.pf-import-row input {
+  flex: 1;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.82rem;
+  padding: 0.45rem 0.6rem;
+  outline: none;
+}
+
+.pf-import-row input:focus { border-color: var(--amber); }
+
+.pf-import-msg {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  color: var(--teal);
+  margin-top: 0.5rem;
+}
 .kw-selector { display: flex; flex-wrap: wrap; gap: 0.3rem; }
 .pf-kw-sel { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; padding: 0.15rem 0.4rem; border-radius: 3px; border: 1px solid var(--border); color: var(--text-dim); cursor: pointer; transition: all 0.2s; }
 .pf-kw-sel:hover { border-color: var(--amber-dim); color: var(--text); }

@@ -1,10 +1,13 @@
 using System.Security.Claims;
+using System.Text;
+using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using src.Data;
 using src.Models;
 using src.Models.DTOs;
+using src.Services;
 
 namespace src.Controllers;
 
@@ -15,11 +18,15 @@ public class ProjectsController : ControllerBase
 {
     private readonly ILogger<ProjectsController> _logger;
     private readonly AppDbContext _db;
+    private readonly IHttpClientFactory _httpFactory;
+    private readonly GeminiService _gemini;
 
-    public ProjectsController(ILogger<ProjectsController> logger, AppDbContext db)
+    public ProjectsController(ILogger<ProjectsController> logger, AppDbContext db, IHttpClientFactory httpFactory, GeminiService gemini)
     {
         _logger = logger;
         _db = db;
+        _httpFactory = httpFactory;
+        _gemini = gemini;
     }
 
     [HttpGet]
@@ -118,6 +125,97 @@ public class ProjectsController : ControllerBase
         return Ok(new { success = true });
     }
 
+    [HttpPost("import-github")]
+    public async Task<IActionResult> ImportFromGithub([FromBody] ImportGithubDto body)
+    {
+        var userId = GetUserId();
+        var username = body.Username.Trim();
+
+        using var http = _httpFactory.CreateClient();
+        http.DefaultRequestHeaders.Add("User-Agent", "bimjobsnet");
+
+        var reposUrl = $"https://api.github.com/users/{Uri.EscapeDataString(username)}/repos?per_page=50&sort=updated";
+        var reposJson = await http.GetStringAsync(reposUrl);
+        using var reposDoc = JsonDocument.Parse(reposJson);
+        var repos = reposDoc.RootElement.EnumerateArray().ToList();
+
+        if (repos.Count == 0)
+            return Ok(new { success = true, data = new { inserted = 0, message = "No public repositories found" } });
+
+        var projectTexts = new List<string>();
+        var projectNames = new List<string>();
+
+        foreach (var repo in repos)
+        {
+            var repoName = repo.GetProperty("name").GetString()!;
+            var defaultBranch = repo.GetProperty("default_branch").GetString() ?? "main";
+
+            var readme = await TryFetchRaw(http, username, repoName, defaultBranch, "README.md");
+            if (string.IsNullOrWhiteSpace(readme)) continue;
+
+            var configs = new List<string>();
+            foreach (var file in new[] { "package.json", "requirements.txt", "Makefile", "docker-compose.yml", "go.mod", "Cargo.toml", "pyproject.toml", "CMakeLists.txt" })
+            {
+                var content = await TryFetchRaw(http, username, repoName, defaultBranch, file);
+                if (!string.IsNullOrWhiteSpace(content))
+                    configs.Add($"{file}:\n{content}");
+            }
+
+            var combined = $"# {repoName}\n\nREADME:\n{readme}";
+            if (configs.Count > 0)
+                combined += "\n\nConfig files:\n" + string.Join("\n\n", configs);
+
+            projectTexts.Add(combined);
+            projectNames.Add(repoName);
+        }
+
+        if (projectTexts.Count == 0)
+            return Ok(new { success = true, data = new { inserted = 0, message = "No repos with README found" } });
+
+        var allText = string.Join("\n\n---\n\n", projectTexts.Select((t, i) => $"PROJECT {i}: {projectNames[i]}\n{t}"));
+        var (projects, _) = await _gemini.AnalyzeGithubProjectsAsync(allText);
+
+        int inserted = 0;
+        foreach (var proj in projects)
+        {
+            if (string.IsNullOrWhiteSpace(proj.Name)) continue;
+
+            var project = new Project
+            {
+                UserId = userId,
+                Name = proj.Name,
+                Description = proj.Description,
+                Type = proj.Type == "school" ? "school" : "personal"
+            };
+            _db.Projects.Add(project);
+            await _db.SaveChangesAsync();
+
+            foreach (var kwName in proj.Keywords)
+            {
+                var name = kwName.Trim().ToLowerInvariant();
+                if (string.IsNullOrEmpty(name)) continue;
+
+                var kw = await _db.Keywords.FirstOrDefaultAsync(k => k.Name == name);
+                if (kw is null)
+                {
+                    kw = new Keyword { Name = name };
+                    _db.Keywords.Add(kw);
+                    await _db.SaveChangesAsync();
+                }
+
+                await _db.Database.ExecuteSqlRawAsync(
+                    "INSERT INTO project_keywords (project_id, keyword_id) VALUES ({0}, {1}) ON CONFLICT DO NOTHING",
+                    project.Id, kw.Id);
+            }
+
+            inserted++;
+        }
+
+        _logger.LogInformation("User {UserId} imported {Count} projects from GitHub user {Username}", userId, inserted, username);
+
+        return Ok(new { success = true, data = new { inserted } });
+    }
+
     private async Task SyncProjectKeywords(int projectId, List<int> keywordIds)
     {
         await _db.Database.ExecuteSqlRawAsync(
@@ -128,6 +226,19 @@ public class ProjectsController : ControllerBase
             await _db.Database.ExecuteSqlRawAsync(
                 "INSERT INTO project_keywords (project_id, keyword_id) VALUES ({0}, {1}) ON CONFLICT DO NOTHING",
                 projectId, kwId);
+        }
+    }
+
+    private static async Task<string?> TryFetchRaw(HttpClient http, string owner, string repo, string branch, string path)
+    {
+        try
+        {
+            var url = $"https://raw.githubusercontent.com/{Uri.EscapeDataString(owner)}/{Uri.EscapeDataString(repo)}/{Uri.EscapeDataString(branch)}/{path}";
+            return await http.GetStringAsync(url);
+        }
+        catch
+        {
+            return null;
         }
     }
 
