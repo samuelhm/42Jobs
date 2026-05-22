@@ -213,6 +213,8 @@ Palabras clave a analizar:
 
     public async Task<List<LinkedInExperienceParsed>> ParseLinkedInExperienceAsync(string rawText, CancellationToken ct = default)
     {
+        var truncated = rawText.Length > 8000 ? rawText[..8000] : rawText;
+
         var prompt = $@"Eres un extractor de datos de LinkedIn. Te voy a dar el texto en bruto de la seccion 'Experiencia' copiada directamente de un perfil de LinkedIn.
 
 Extrae cada puesto de trabajo como un objeto JSON con estos campos:
@@ -234,7 +236,7 @@ Debes extraer las fechas de esa linea. Convierte las abreviaturas de mes: ene=01
 Ignora las lineas de 'Aptitudes: ...' y las listas de skills.
 
 Texto a analizar:
-{rawText}";
+{truncated}";
 
         var schema = JsonDocument.Parse("""
             {
@@ -290,6 +292,8 @@ Texto a analizar:
 
     public async Task<List<LinkedInEducationParsed>> ParseLinkedInEducationAsync(string rawText, CancellationToken ct = default)
     {
+        var truncated = rawText.Length > 8000 ? rawText[..8000] : rawText;
+
         var prompt = $@"Eres un extractor de datos de LinkedIn. Te voy a dar el texto en bruto de la seccion 'Educacion' copiada directamente de un perfil de LinkedIn.
 
 Extrae cada entrada educativa como un objeto JSON con estos campos:
@@ -301,7 +305,7 @@ Extrae cada entrada educativa como un objeto JSON con estos campos:
 Ignora las lineas de 'Aptitudes: ...' y listas de skills. Ignora 'Actividades y grupos:'.
 
 Texto a analizar:
-{rawText}";
+{truncated}";
 
         var schema = JsonDocument.Parse("""
             {

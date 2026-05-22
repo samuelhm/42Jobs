@@ -28,6 +28,7 @@ builder.Services.AddHttpClient<GeminiService>(client =>
     var apiKey = Environment.GetEnvironmentVariable("LLM_GOOGLE_API_KEY");
     client.BaseAddress = new Uri($"https://generativelanguage.googleapis.com/");
     client.DefaultRequestHeaders.Add("x-goog-api-key", apiKey);
+    client.Timeout = TimeSpan.FromSeconds(30);
 });
 
 builder.Services.AddSingleton<JobFetchOrchestrator>();
