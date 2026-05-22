@@ -40,6 +40,7 @@ export default function Offers() {
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [notesJob, setNotesJob] = useState<Job | null>(null);
   const [kwModal, setKwModal] = useState<{ id: number; name: string; status: string } | null>(null);
+  const [editingTitle, setEditingTitle] = useState<{ jobId: number; title: string } | null>(null);
 
   useEffect(() => {
     fetch('/api/keywords')
@@ -120,6 +121,20 @@ export default function Offers() {
     if (data.success) setJobs((prev) => prev.filter((j) => j.id !== job.id));
   }
 
+  async function saveTitle() {
+    if (!editingTitle) return;
+    const { jobId, title } = editingTitle;
+    await fetch(`/api/jobs/${jobId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title }),
+    });
+    setJobs((prev) =>
+      prev.map((j) => (j.id === jobId ? { ...j, title } : j))
+    );
+    setEditingTitle(null);
+  }
+
   return (
     <>
       <CategoriesBar />
@@ -150,7 +165,33 @@ export default function Offers() {
                   onClick={() => setExpandedId(expandedId === job.id ? null : job.id)}
                 >
                   <div className="oferta-info">
-                    <h3>{job.title}{isRecent(job.posted_date) && <span className="recent-badge">New</span>}</h3>
+                    {editingTitle?.jobId === job.id ? (
+                      <input
+                        className="title-edit-input"
+                        value={editingTitle.title}
+                        onChange={(e) => setEditingTitle({ jobId: job.id, title: e.target.value })}
+                        onBlur={saveTitle}
+                        onKeyDown={(e) => { if (e.key === 'Enter') saveTitle(); if (e.key === 'Escape') setEditingTitle(null); }}
+                        onClick={(e) => e.stopPropagation()}
+                        autoFocus
+                      />
+                    ) : (
+                      <h3>
+                        {job.title}
+                        {isRecent(job.posted_date) && <span className="recent-badge">New</span>}
+                        {expandedId === job.id && (
+                          <button
+                            className="title-edit-btn"
+                            onClick={(e) => { e.stopPropagation(); setEditingTitle({ jobId: job.id, title: job.title }); }}
+                            title="Edit title"
+                          >
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="13" height="13">
+                              <path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+                            </svg>
+                          </button>
+                        )}
+                      </h3>
+                    )}
                     <div className="oferta-meta">
                       <span className="empresa">{job.company_name || 'Unknown'}</span>
                       {job.company_type && (

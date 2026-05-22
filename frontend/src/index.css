@@ -333,6 +333,38 @@ main {
   margin-bottom: 0.2rem; line-height: 1.3;
 }
 
+.title-edit-btn {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-dim);
+  cursor: pointer;
+  padding: 0.15rem 0.3rem;
+  margin-left: 0.4rem;
+  vertical-align: middle;
+  transition: all 0.2s;
+}
+
+.title-edit-btn:hover {
+  border-color: var(--amber-dim);
+  color: var(--amber);
+}
+
+.title-edit-btn svg { vertical-align: middle; }
+
+.title-edit-input {
+  background: var(--bg);
+  border: 1px solid var(--amber);
+  border-radius: 4px;
+  color: var(--text-bright);
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.15rem 0.4rem;
+  outline: none;
+  width: 100%;
+}
+
 .oferta-meta {
   display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;
   font-size: 0.7rem; color: var(--text-dim);
