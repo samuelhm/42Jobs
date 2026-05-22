@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router';
 import CategoriesBar from '../components/CategoriesBar';
 import NotesModal from '../components/NotesModal';
 import KeywordTag from '../components/KeywordTag';
+import CvModal from '../components/CvModal';
 import { formatDescription } from '../utils';
 import { useToast } from '../context/ToastContext';
 
@@ -41,6 +42,7 @@ export default function Offers() {
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [notesJob, setNotesJob] = useState<Job | null>(null);
   const [editingTitle, setEditingTitle] = useState<{ jobId: number; title: string } | null>(null);
+  const [cvJob, setCvJob] = useState<Job | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -207,6 +209,16 @@ export default function Offers() {
                   <div className="card-controls">
                     <span className={`match-badge ${matchClass}`}>{pct}%</span>
 
+                    <button
+                      className="notes-btn cv-btn"
+                      title="Generate CV"
+                      onClick={(e) => { e.stopPropagation(); setCvJob(job); }}
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="12" height="12">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" />
+                      </svg>
+                    </button>
+
                     {job.job_url && (
                       <a className="oferta-link" href={job.job_url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
                         ver
@@ -286,6 +298,13 @@ export default function Offers() {
           jobTitle={notesJob.title}
           initialNotes={notesJob.notes}
           onClose={() => setNotesJob(null)}
+        />
+      )}
+      {cvJob && (
+        <CvModal
+          jobId={cvJob.id}
+          jobTitle={cvJob.title}
+          onClose={() => setCvJob(null)}
         />
       )}
     </>

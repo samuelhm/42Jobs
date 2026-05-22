@@ -2,7 +2,8 @@ CREATE TABLE IF NOT EXISTS resumes (
     id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id    UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     job_id     INTEGER REFERENCES jobs(id) ON DELETE SET NULL,
-    cv_data    JSONB NOT NULL DEFAULT '{}',
+    cv_data    TEXT NOT NULL DEFAULT '',
+    model      VARCHAR(30) DEFAULT 'gpt-5.4-mini',
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW(),
     UNIQUE (user_id, job_id)

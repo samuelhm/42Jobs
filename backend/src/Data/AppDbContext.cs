@@ -350,8 +350,11 @@ public class AppDbContext : DbContext
                   .ValueGeneratedOnAdd();
             entity.Property(r => r.CvData)
                   .IsRequired()
-                  .HasColumnType("jsonb")
-                  .HasDefaultValueSql("'{}'::jsonb");
+                  .HasColumnType("text")
+                  .HasDefaultValue("");
+            entity.Property(r => r.Model)
+                  .HasMaxLength(30)
+                  .HasDefaultValue("gpt-5.4-mini");
             entity.Property(r => r.CreatedAt)
                   .HasDefaultValueSql("NOW()")
                   .ValueGeneratedOnAdd();
