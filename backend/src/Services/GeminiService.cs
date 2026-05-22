@@ -212,17 +212,45 @@ Palabras clave a analizar:
 
     public async Task<(List<LinkedInExperienceParsed> items, string? error)> ParseLinkedInExperienceAsync(string rawText, CancellationToken ct = default)
     {
-        var prompt = $@"Extrae experiencias laborales a JSON.
+        var prompt = $@"Eres un parser JSON. Convierte este copy-paste de LinkedIn en una lista de experiencias.
 
-IMPORTANTE - Fechas: extrae start_date y end_date en formato YYYY-MM-DD de la linea con formato 'mes. año - mes. año'. Ejemplos:
-  'sept. 2023 - ene. 2024' → start_date:'2023-09-01', end_date:'2024-01-01'
-  'jun. 2020 - feb. 2023' → start_date:'2020-06-01', end_date:'2023-02-01'
-  'abr. 2018 - ene. 2020' → start_date:'2018-04-01', end_date:'2020-01-01'
-Meses: ene=01 feb=02 mar=03 abr=04 may=05 jun=06 jul=07 ago=08 sept=09 oct=10 nov=11 dic=12.
+FORMATO DE CADA BLOQUE (asi aparece en LinkedIn):
+  [TITULO DEL PUESTO - linea 1]
+  [NOMBRE EMPRESA - linea 2]
+  [LINEA CON '·' - ignorar]
+  [LINEA DE FECHAS] - ej: 'sept. 2023 - ene. 2024 · 5 meses'
+  [LINEA CON UBICACION - ignorar]
+  [DESCRIPCION - todo el texto hasta '... mas' o 'Aptitudes:']
 
-Campos: company, position, start_date, end_date, description(texto completo).
-Ignora 'Aptitudes:'.
+DONDE ESTAN LAS FECHAS:
+- Busca la linea que contiene un guion '-' entre dos fechas, seguido de '·' y una duracion.
+- Ej: 'sept. 2023 - ene. 2024 · 5 meses' → start_date:'2023-09-01', end_date:'2024-01-01'
+- Ej: 'jun. 2020 - feb. 2023 · 2 años 9 meses' → start_date:'2020-06-01', end_date:'2023-02-01'
+- Ej: 'ene. 2014 - ago. 2015 · 1 año 8 meses' → start_date:'2014-01-01', end_date:'2015-08-01'
+- IGNORA la duracion ('· 5 meses', '· 2 años 9 meses'), SOLO extrae las dos fechas.
+- Si no hay linea de fechas: start_date=null, end_date=null.
 
+MESES A NUMEROS:
+ene=01, feb=02, mar=03, abr=04, may=05, jun=06, jul=07, ago=08, sept=09, oct=10, nov=11, dic=12
+
+JSON de salida:
+{{
+  "experiences": [
+    {{
+      "company": "Nombre Empresa",
+      "position": "Titulo Puesto",
+      "start_date": "YYYY-MM-DD o null",
+      "end_date": "YYYY-MM-DD o null",
+      "description": "texto completo"
+    }}
+  ]
+}}
+
+REGLAS:
+- company: NUNCA incluyas '· Jornada completa' ni '· Profesional independiente'. Solo el nombre.
+- description: todo el texto desde despues de la linea de ubicacion hasta '... mas' o 'Aptitudes:' o el siguiente bloque. NO resumes.
+
+TEXTO:
 {rawText}";
 
         var schema = JsonDocument.Parse("""
@@ -279,16 +307,34 @@ Ignora 'Aptitudes:'.
 
     public async Task<(List<LinkedInEducationParsed> items, string? error)> ParseLinkedInEducationAsync(string rawText, CancellationToken ct = default)
     {
-        var prompt = $@"Extrae cada entrada educativa del perfil de LinkedIn como JSON.
+        var prompt = $@"Eres un parser JSON. Convierte este copy-paste de LinkedIn en una lista de educacion.
 
-Para cada entrada extrae:
-- institution: institucion
-- degree: titulo o campo de estudio
-- start_year: año inicio como numero (de 'ene. 2024 – may. 2025' → 2024)
-- end_year: año fin como numero o null
+FORMATO DE CADA BLOQUE:
+  [NOMBRE INSTITUCION - linea 1]
+  [TITULO/CAMPO DE ESTUDIO - linea 2]
+  [LINEA DE FECHAS] - ej: 'ene. 2024 – may. 2025' o 'sept. 2007 – jun. 2009'
+  [RESTO - ignorar]
+
+EXTRAE LOS AÑOS de la linea de fechas:
+- 'ene. 2024 – may. 2025' → start_year:2024, end_year:2025
+- 'sept. 2009 – jun. 2011' → start_year:2009, end_year:2011
+- Solo el año (4 digitos). Ignora meses y cualquier otro texto.
+
+JSON de salida:
+{{
+  "education": [
+    {{
+      "institution": "Nombre",
+      "degree": "Titulo",
+      "start_year": 2024,
+      "end_year": 2025
+    }}
+  ]
+}}
 
 Ignora 'Aptitudes:', 'Actividades y grupos:'.
 
+TEXTO:
 {rawText}";
 
         var schema = JsonDocument.Parse("""
