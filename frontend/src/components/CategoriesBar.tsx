@@ -96,12 +96,14 @@ export default function CategoriesBar() {
           } else if (d.status === 'running') {
             const total = d.total || 0;
             const processed = d.processed || 0;
-            setFetchStatus({
-              message: `Processing... ${processed}/${total}`,
-              type: 'info',
-              processed,
-              total,
-            });
+            if (total > 0) {
+              setFetchStatus({
+                message: `Processing... ${processed}/${total}`,
+                type: 'info',
+                processed,
+                total,
+              });
+            }
           }
         } catch {
           clearInterval(pollingRef.current!);
