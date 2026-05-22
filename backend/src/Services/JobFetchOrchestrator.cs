@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Text.Json;
 using System.Threading.Channels;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using src.Data;
 using src.Models;
 using src.Models.DTOs;
@@ -344,7 +345,18 @@ public class JobFetchOrchestrator : BackgroundService
         {
             company = new Company { Name = name, LinkedinUrl = linkedinUrl };
             db.Companies.Add(company);
-            await db.SaveChangesAsync(ct);
+            try
+            {
+                await db.SaveChangesAsync(ct);
+            }
+            catch (DbUpdateException ex)
+                when (ex.InnerException is Npgsql.PostgresException pgEx
+                      && pgEx.SqlState == "23505")
+            {
+                db.ChangeTracker.Clear();
+                company = await db.Companies.FirstOrDefaultAsync(c => c.Name == name, ct);
+                if (company is null) throw;
+            }
         }
         else if (linkedinUrl is not null && company.LinkedinUrl is null)
         {
@@ -361,7 +373,18 @@ public class JobFetchOrchestrator : BackgroundService
 
         keyword = new Keyword { Name = name };
         db.Keywords.Add(keyword);
-        await db.SaveChangesAsync(ct);
+        try
+        {
+            await db.SaveChangesAsync(ct);
+        }
+        catch (DbUpdateException ex)
+            when (ex.InnerException is Npgsql.PostgresException pgEx
+                  && pgEx.SqlState == "23505")
+        {
+            db.ChangeTracker.Clear();
+            keyword = await db.Keywords.FirstOrDefaultAsync(k => k.Name == name, ct);
+            if (keyword is null) throw;
+        }
         return keyword.Id;
     }
 
