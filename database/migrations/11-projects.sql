@@ -3,7 +3,8 @@ CREATE TABLE IF NOT EXISTS projects (
     user_id     UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     name        VARCHAR(300) NOT NULL,
     description TEXT,
-    type        VARCHAR(20) NOT NULL CHECK (type IN ('personal', 'school'))
+    type        VARCHAR(20) NOT NULL CHECK (type IN ('personal', 'school')),
+    UNIQUE(user_id, name)
 );
 
 CREATE TABLE IF NOT EXISTS project_keywords (

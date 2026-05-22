@@ -266,10 +266,6 @@ public class ProjectsController : ControllerBase
                 {
                     if (string.IsNullOrWhiteSpace(proj.Name)) continue;
 
-                    var existing = await db.Projects
-                        .FirstOrDefaultAsync(p => p.UserId == userId && p.Name == proj.Name);
-                    if (existing is not null) continue;
-
                     var project = new Project
                     {
                         UserId = userId,
@@ -278,7 +274,16 @@ public class ProjectsController : ControllerBase
                         Type = proj.Type == "school" ? "school" : "personal"
                     };
                     db.Projects.Add(project);
-                    await db.SaveChangesAsync();
+
+                    try
+                    {
+                        await db.SaveChangesAsync();
+                    }
+                    catch (DbUpdateException)
+                    {
+                        db.ChangeTracker.Clear();
+                        continue;
+                    }
 
                     foreach (var kwName in proj.Keywords)
                     {

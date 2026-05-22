@@ -13,5 +13,6 @@ CREATE TABLE IF NOT EXISTS users (
     presentation    TEXT,
     avatar_url      TEXT,
     created_at      TIMESTAMP DEFAULT NOW(),
-    updated_at      TIMESTAMP DEFAULT NOW()
+    updated_at      TIMESTAMP DEFAULT NOW(),
+    last_github_import_at TIMESTAMPTZ
 );
