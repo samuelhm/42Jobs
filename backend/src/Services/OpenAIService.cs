@@ -32,7 +32,7 @@ Campos: company, position, start_date, end_date, description
 
         var requestBody = new
         {
-            model = "gpt-5.4-nano",
+            model = "gpt-4o-mini",
             messages = new[]
             {
                 new { role = "system", content = "Eres un parser JSON. Responde solo con JSON válido, sin markdown ni explicaciones." },
@@ -48,21 +48,24 @@ Campos: company, position, start_date, end_date, description
                     schema = new
                     {
                         type = "object",
+                        description = "List of work experiences",
                         properties = new
                         {
                             experiences = new
                             {
                                 type = "array",
+                                description = "Array of work experience entries",
                                 items = new
                                 {
                                     type = "object",
+                                    description = "A single work experience",
                                     properties = new
                                     {
-                                        company = new { type = "string" },
-                                        position = new { type = "string" },
-                                        start_date = new { type = "string" },
-                                        end_date = new { type = "string" },
-                                        description = new { type = "string" }
+                                        company = new { type = "string", description = "Company name" },
+                                        position = new { type = "string", description = "Job title or position" },
+                                        start_date = new { type = "string", description = "Start date as YYYY-MM-DD" },
+                                        end_date = new { type = "string", description = "End date as YYYY-MM-DD" },
+                                        description = new { type = "string", description = "Full job description text" }
                                     },
                                     required = new[] { "company" },
                                     additionalProperties = false
