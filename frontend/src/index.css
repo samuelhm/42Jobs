@@ -156,6 +156,47 @@ body {
 
 .tab-add { font-size: 1.05rem; padding: 0.25rem 0.6rem; line-height: 1; flex-shrink: 0; }
 
+.offers-main {
+  padding: 0 0 2rem;
+}
+
+/* ── Categories bar (inside auth layout) ── */
+.categories-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 1rem;
+}
+
+.fetch-banner {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius);
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.fetch-info {
+  background: rgba(212, 168, 83, 0.06);
+  border: 1px solid var(--amber-dim);
+  color: var(--amber);
+}
+
+.fetch-success {
+  background: rgba(77, 184, 160, 0.06);
+  border: 1px solid var(--teal-dim);
+  color: var(--teal);
+}
+
+.fetch-error {
+  background: rgba(212, 114, 106, 0.06);
+  border: 1px solid var(--red);
+  color: var(--red);
+}
+
 /* ── Main layout ── */
 main {
   max-width: 1400px;
@@ -1012,54 +1053,12 @@ main {
 }
 
 .layout-body {
-  display: flex;
   flex: 1;
-}
-
-.layout-sidebar {
-  width: 200px;
-  flex-shrink: 0;
-  border-right: 1px solid var(--border);
-  background: var(--surface);
-  padding: 1rem;
-}
-
-.sidebar-link {
-  display: block;
-  font-family: 'Outfit', sans-serif;
-  font-size: 0.82rem;
-  font-weight: 500;
-  padding: 0.5rem 0.75rem;
-  border-radius: var(--radius);
-  color: var(--text-dim);
-  text-decoration: none;
-  transition: all 0.2s;
-  margin-bottom: 0.15rem;
-}
-
-.sidebar-link:hover {
-  color: var(--text);
-  background: var(--surface-hover);
-}
-
-.sidebar-link.active {
-  color: var(--amber);
-  background: rgba(212, 168, 83, 0.08);
-  border-left: 2px solid var(--amber);
-}
-
-.layout-main {
-  flex: 1;
-  padding: 1.5rem 2rem;
-  max-width: 100%;
-  overflow-x: hidden;
 }
 
 @media (max-width: 768px) {
   .layout-nav-desktop { display: none; }
   .layout-nav-mobile { display: block; }
-  .layout-sidebar { display: none; }
-  .layout-main { padding: 1rem; }
   .layout-header { padding: 0.6rem 1rem; }
 }
 
@@ -1076,4 +1075,49 @@ main {
   font-size: 1.2rem;
   color: var(--text-bright);
   margin-bottom: 0.5rem;
+}
+
+/* ── Toast ── */
+.toast-container {
+  position: fixed;
+  top: 4.5rem;
+  right: 1.5rem;
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-width: 380px;
+}
+
+.toast {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  padding: 0.6rem 1rem;
+  border-radius: var(--radius);
+  cursor: pointer;
+  animation: toastIn 0.3s ease;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+.toast-info {
+  background: rgba(212, 168, 83, 0.1);
+  border: 1px solid var(--amber-dim);
+  color: var(--amber);
+}
+
+.toast-success {
+  background: rgba(77, 184, 160, 0.1);
+  border: 1px solid var(--teal-dim);
+  color: var(--teal);
+}
+
+.toast-error {
+  background: rgba(212, 114, 106, 0.1);
+  border: 1px solid var(--red);
+  color: var(--red);
+}
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
 }

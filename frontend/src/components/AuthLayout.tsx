@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router';
+import { ToastProvider } from '../context/ToastContext';
+import ToastContainer from './ToastContainer';
 
 const navItems = [
   { to: '/', label: 'Dashboard' },
@@ -23,68 +25,54 @@ export default function AuthLayout() {
   }
 
   return (
-    <div className="auth-layout">
-      <header className="layout-header">
-        <NavLink to="/" className="layout-logo">
-          42<span className="accent">jobs</span>
-        </NavLink>
+    <ToastProvider>
+      <div className="auth-layout">
+        <header className="layout-header">
+          <NavLink to="/" className="layout-logo">
+            42<span className="accent">jobs</span>
+          </NavLink>
 
-        <nav className="layout-nav-desktop">
-          {navItems.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.to === '/'}
-              className={({ isActive }) => `layout-nav-link${isActive ? ' active' : ''}`}
-            >
-              {item.label}
-            </NavLink>
-          ))}
-        </nav>
-
-        <div className="layout-header-right">
-          <select
-            className="layout-nav-mobile"
-            value={location.pathname}
-            onChange={(e) => navigate(e.target.value)}
-          >
-            {navItems.map((item) => (
-              <option key={item.to} value={item.to}>
-                {item.label}
-              </option>
-            ))}
-          </select>
-
-          <button
-            className="logout-btn"
-            onClick={handleLogout}
-            disabled={loggingOut}
-          >
-            {loggingOut ? '...' : 'Logout'}
-          </button>
-        </div>
-      </header>
-
-      <div className="layout-body">
-        <aside className="layout-sidebar">
-          <nav>
+          <nav className="layout-nav-desktop">
             {navItems.map((item) => (
               <NavLink
                 key={item.to}
                 to={item.to}
                 end={item.to === '/'}
-                className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`}
+                className={({ isActive }) => `layout-nav-link${isActive ? ' active' : ''}`}
               >
                 {item.label}
               </NavLink>
             ))}
           </nav>
-        </aside>
 
-        <main className="layout-main">
+          <div className="layout-header-right">
+            <select
+              className="layout-nav-mobile"
+              value={location.pathname}
+              onChange={(e) => navigate(e.target.value)}
+            >
+              {navItems.map((item) => (
+                <option key={item.to} value={item.to}>
+                  {item.label}
+                </option>
+              ))}
+            </select>
+
+            <button
+              className="logout-btn"
+              onClick={handleLogout}
+              disabled={loggingOut}
+            >
+              {loggingOut ? '...' : 'Logout'}
+            </button>
+          </div>
+        </header>
+
+        <div className="layout-body">
           <Outlet />
-        </main>
+        </div>
       </div>
-    </div>
+      <ToastContainer />
+    </ToastProvider>
   );
 }
