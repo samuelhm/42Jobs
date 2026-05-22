@@ -169,7 +169,7 @@ public class ProjectsController : ControllerBase
     }
 
     private static async Task ProcessImportAsync(
-        Guid jobId, Guid userId, string username, string? token,
+        Guid jobId, Guid userId, string username, string token,
         IServiceScopeFactory scopeFactory, IHttpClientFactory httpFactory,
         ILogger logger)
     {
@@ -179,10 +179,6 @@ public class ProjectsController : ControllerBase
 
         try
         {
-            using var scope = scopeFactory.CreateScope();
-            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-            var gemini = scope.ServiceProvider.GetRequiredService<GeminiService>();
-
             using var http = httpFactory.CreateClient();
             http.DefaultRequestHeaders.Add("User-Agent", "bimjobsnet");
             if (!string.IsNullOrWhiteSpace(token))
@@ -241,8 +237,15 @@ public class ProjectsController : ControllerBase
 
             status.Message = $"Analyzing {projectTexts.Count} projects with Gemini...";
 
-            var allText = string.Join("\n\n---\n\n", projectTexts.Select((t, i) => $"PROJECT {i}: {t.name}\n{t.text}"));
-            var (projects, error) = await gemini.AnalyzeGithubProjectsAsync(allText);
+            // Resolve Gemini from a new scope
+            List<GithubProjectResult> projects;
+            string error;
+            using (var geminiScope = scopeFactory.CreateScope())
+            {
+                var gemini = geminiScope.ServiceProvider.GetRequiredService<GeminiService>();
+                var allText = string.Join("\n\n---\n\n", projectTexts.Select((t, i) => $"PROJECT {i}: {t.name}\n{t.text}"));
+                (projects, error) = await gemini.AnalyzeGithubProjectsAsync(allText);
+            }
 
             if (!string.IsNullOrEmpty(error))
             {
@@ -254,46 +257,52 @@ public class ProjectsController : ControllerBase
             status.Message = "Saving projects...";
             int inserted = 0;
 
-            foreach (var proj in projects)
+            // Resolve DbContext from a fresh scope for saving
+            using (var saveScope = scopeFactory.CreateScope())
             {
-                if (string.IsNullOrWhiteSpace(proj.Name)) continue;
+                var db = saveScope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-                var project = new Project
+                foreach (var proj in projects)
                 {
-                    UserId = userId,
-                    Name = proj.Name,
-                    Description = proj.Description,
-                    Type = proj.Type == "school" ? "school" : "personal"
-                };
-                db.Projects.Add(project);
-                await db.SaveChangesAsync();
+                    if (string.IsNullOrWhiteSpace(proj.Name)) continue;
 
-                foreach (var kwName in proj.Keywords)
-                {
-                    var name = kwName.Trim().ToLowerInvariant();
-                    if (string.IsNullOrEmpty(name)) continue;
-
-                    var kw = await db.Keywords.FirstOrDefaultAsync(k => k.Name == name);
-                    if (kw is null)
+                    var project = new Project
                     {
-                        kw = new Keyword { Name = name };
-                        db.Keywords.Add(kw);
-                        await db.SaveChangesAsync();
+                        UserId = userId,
+                        Name = proj.Name,
+                        Description = proj.Description,
+                        Type = proj.Type == "school" ? "school" : "personal"
+                    };
+                    db.Projects.Add(project);
+                    await db.SaveChangesAsync();
+
+                    foreach (var kwName in proj.Keywords)
+                    {
+                        var name = kwName.Trim().ToLowerInvariant();
+                        if (string.IsNullOrEmpty(name)) continue;
+
+                        var kw = await db.Keywords.FirstOrDefaultAsync(k => k.Name == name);
+                        if (kw is null)
+                        {
+                            kw = new Keyword { Name = name };
+                            db.Keywords.Add(kw);
+                            await db.SaveChangesAsync();
+                        }
+
+                        await db.Database.ExecuteSqlRawAsync(
+                            "INSERT INTO project_keywords (project_id, keyword_id) VALUES ({0}, {1}) ON CONFLICT DO NOTHING",
+                            project.Id, kw.Id);
                     }
 
-                    await db.Database.ExecuteSqlRawAsync(
-                        "INSERT INTO project_keywords (project_id, keyword_id) VALUES ({0}, {1}) ON CONFLICT DO NOTHING",
-                        project.Id, kw.Id);
+                    inserted++;
                 }
 
-                inserted++;
-            }
-
-            var user = await db.Users.FindAsync(userId);
-            if (user is not null)
-            {
-                user.LastGithubImportAt = DateTime.UtcNow;
-                await db.SaveChangesAsync();
+                var user = await db.Users.FindAsync(userId);
+                if (user is not null)
+                {
+                    user.LastGithubImportAt = DateTime.UtcNow;
+                    await db.SaveChangesAsync();
+                }
             }
 
             status.Status = "completed";
