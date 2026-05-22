@@ -123,12 +123,18 @@ export default function CategoriesBar() {
 
   async function handleCreated(id: number) {
     setShowAdd(false);
+    await loadCategories();
+    setSearchParams({ category: String(id) });
     setUpdating(true);
     try {
       const ok = await triggerFetch(id);
       if (ok) {
         await loadCategories();
-        setSearchParams({ category: String(id) });
+        setSearchParams((prev) => {
+          prev.set('category', String(id));
+          prev.set('_t', String(Date.now()));
+          return prev;
+        }, { replace: true });
       }
     } finally {
       setUpdating(false);
