@@ -344,7 +344,7 @@ main {
   border-radius: 3px; font-weight: 500; letter-spacing: 0.04em;
 }
 
-.badge.Multinacion, .badge.Multinacional { background: rgba(77,184,160,0.12); color: var(--teal); border: 1px solid rgba(77,184,160,0.2); }
+.badge.Multinacion, .badge.Multinacional { background: rgba(100, 140, 200, 0.12); color: #80a8d8; border: 1px solid rgba(100, 140, 200, 0.25); }
 .badge.Consultora { background: rgba(180,150,100,0.12); color: #c9a84c; border: 1px solid rgba(180,150,100,0.2); }
 .badge.Pyme { background: rgba(140,130,120,0.12); color: #a89a8a; border: 1px solid rgba(140,130,120,0.2); }
 .badge.Startup { background: rgba(200,120,100,0.12); color: #d49080; border: 1px solid rgba(200,120,100,0.2); }
