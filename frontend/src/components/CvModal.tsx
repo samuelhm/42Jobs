@@ -20,6 +20,7 @@ export default function CvModal({ jobId, jobTitle, onClose, onGenerated }: Props
   async function checkExisting() {
     try {
       const res = await fetch(`/api/resumes/job/${jobId}`);
+      if (!res.ok) { generateCv(); return; }
       const data = await res.json();
       if (data.html) {
         setHtml(data.html);
@@ -29,7 +30,7 @@ export default function CvModal({ jobId, jobTitle, onClose, onGenerated }: Props
         generateCv();
       }
     } catch {
-      setLoading(false);
+      generateCv();
     }
   }
 
