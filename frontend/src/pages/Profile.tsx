@@ -103,7 +103,7 @@ export default function Profile() {
             fields={[
               { key: 'name', label: 'Name' },
               { key: 'description', label: 'Description', type: 'textarea' },
-              { key: 'type', label: 'Type (personal/school)' },
+              { key: 'type', label: 'Type', type: 'select', options: [{ value: 'personal', label: 'Personal' }, { value: 'school', label: 'School' }] },
             ]}
             fetchUrl="/api/projects"
             createUrl="/api/projects"

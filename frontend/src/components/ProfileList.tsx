@@ -3,8 +3,9 @@ import { useState, useEffect } from 'react';
 interface Field {
   key: string;
   label: string;
-  type?: 'text' | 'textarea' | 'number' | 'date';
+  type?: 'text' | 'textarea' | 'number' | 'date' | 'select';
   placeholder?: string;
+  options?: { value: string; label: string }[];
 }
 
 interface Props {
@@ -83,6 +84,15 @@ export default function ProfileList({ title, fields, fetchUrl, createUrl, update
 
       <form onSubmit={handleSubmit} className="pf-add-row">
         {fields.map((f) => {
+          if (f.type === 'select' && f.options) {
+            return (
+              <select key={f.key} value={form[f.key] || ''} onChange={(e) => setForm({ ...form, [f.key]: e.target.value })}>
+                {f.options.map((o) => (
+                  <option key={o.value} value={o.value}>{o.label}</option>
+                ))}
+              </select>
+            );
+          }
           if (f.type === 'textarea') {
             return <textarea key={f.key} placeholder={f.label} value={form[f.key] || ''} onChange={(e) => setForm({ ...form, [f.key]: e.target.value })} rows={3} />;
           }
