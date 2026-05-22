@@ -86,7 +86,9 @@ public class JobsController : ControllerBase
         if (string.IsNullOrEmpty(job.LinkedinId))
             return BadRequest(new { error = "Job has no LinkedIn ID" });
 
-        if (DateTime.UtcNow - job.UpdatedAt < TimeSpan.FromHours(4))
+        var neverRefreshed = Math.Abs((job.UpdatedAt - job.CreatedAt).TotalSeconds) < 2;
+        if (!neverRefreshed
+            && DateTime.UtcNow - job.UpdatedAt < TimeSpan.FromHours(4))
         {
             var remaining = TimeSpan.FromHours(4) - (DateTime.UtcNow - job.UpdatedAt);
             return Ok(new
