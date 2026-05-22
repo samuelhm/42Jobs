@@ -75,10 +75,7 @@ Campos: company, position, start_date, end_date, description
 
         try
         {
-            var json = JsonSerializer.Serialize(requestBody, new JsonSerializerOptions
-            {
-                PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
-            });
+            var json = JsonSerializer.Serialize(requestBody);
 
             var content = new StringContent(json, Encoding.UTF8, "application/json");
             var response = await _http.PostAsync("/v1/responses", content, ct);
