@@ -132,11 +132,12 @@ export default function ProfileProjects() {
         } else if (d.status === 'running') {
           const total = d.total || 0;
           const processed = d.processed || 0;
+          const isAnalyzing = d.message && d.message.includes('Analyzing');
           setImportStatus({
             message: d.message || `Processing... ${processed}/${total}`,
             type: 'info',
-            processed: total > 0 ? processed : undefined,
-            total: total > 0 ? total : undefined,
+            processed: isAnalyzing ? undefined : (total > 0 ? processed : undefined),
+            total: isAnalyzing ? undefined : (total > 0 ? total : undefined),
           });
         }
       } catch {
@@ -177,6 +178,11 @@ export default function ProfileProjects() {
             {importStatus.processed !== undefined && importStatus.total !== undefined && importStatus.total > 0 && (
               <div className="fetch-progress">
                 <div className="fetch-progress-fill" style={{ width: `${Math.round((importStatus.processed / importStatus.total) * 100)}%` }} />
+              </div>
+            )}
+            {importStatus.processed === undefined && importStatus.total === undefined && importStatus.type === 'info' && (
+              <div className="fetch-progress">
+                <div className="fetch-progress-fill indeterminate" />
               </div>
             )}
           </div>

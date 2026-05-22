@@ -21,13 +21,15 @@ public class ProjectsController : ControllerBase
     private readonly AppDbContext _db;
     private readonly IHttpClientFactory _httpFactory;
     private readonly GeminiService _gemini;
+    private readonly IServiceScopeFactory _scopeFactory;
 
-    public ProjectsController(ILogger<ProjectsController> logger, AppDbContext db, IHttpClientFactory httpFactory, GeminiService gemini)
+    public ProjectsController(ILogger<ProjectsController> logger, AppDbContext db, IHttpClientFactory httpFactory, GeminiService gemini, IServiceScopeFactory scopeFactory)
     {
         _logger = logger;
         _db = db;
         _httpFactory = httpFactory;
         _gemini = gemini;
+        _scopeFactory = scopeFactory;
     }
 
     [HttpGet]
@@ -168,6 +170,10 @@ public class ProjectsController : ControllerBase
 
         try
         {
+            using var scope = _scopeFactory.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var gemini = scope.ServiceProvider.GetRequiredService<GeminiService>();
+
             using var http = _httpFactory.CreateClient();
             http.DefaultRequestHeaders.Add("User-Agent", "bimjobsnet");
 
@@ -221,7 +227,7 @@ public class ProjectsController : ControllerBase
             status.Message = $"Analyzing {projectTexts.Count} projects with Gemini...";
 
             var allText = string.Join("\n\n---\n\n", projectTexts.Select((t, i) => $"PROJECT {i}: {t.name}\n{t.text}"));
-            var (projects, error) = await _gemini.AnalyzeGithubProjectsAsync(allText);
+            var (projects, error) = await gemini.AnalyzeGithubProjectsAsync(allText);
 
             if (!string.IsNullOrEmpty(error))
             {
@@ -244,23 +250,23 @@ public class ProjectsController : ControllerBase
                     Description = proj.Description,
                     Type = proj.Type == "school" ? "school" : "personal"
                 };
-                _db.Projects.Add(project);
-                await _db.SaveChangesAsync();
+                db.Projects.Add(project);
+                await db.SaveChangesAsync();
 
                 foreach (var kwName in proj.Keywords)
                 {
                     var name = kwName.Trim().ToLowerInvariant();
                     if (string.IsNullOrEmpty(name)) continue;
 
-                    var kw = await _db.Keywords.FirstOrDefaultAsync(k => k.Name == name);
+                    var kw = await db.Keywords.FirstOrDefaultAsync(k => k.Name == name);
                     if (kw is null)
                     {
                         kw = new Keyword { Name = name };
-                        _db.Keywords.Add(kw);
-                        await _db.SaveChangesAsync();
+                        db.Keywords.Add(kw);
+                        await db.SaveChangesAsync();
                     }
 
-                    await _db.Database.ExecuteSqlRawAsync(
+                    await db.Database.ExecuteSqlRawAsync(
                         "INSERT INTO project_keywords (project_id, keyword_id) VALUES ({0}, {1}) ON CONFLICT DO NOTHING",
                         project.Id, kw.Id);
                 }
@@ -268,11 +274,11 @@ public class ProjectsController : ControllerBase
                 inserted++;
             }
 
-            var user = await _db.Users.FindAsync(userId);
+            var user = await db.Users.FindAsync(userId);
             if (user is not null)
             {
                 user.LastGithubImportAt = DateTime.UtcNow;
-                await _db.SaveChangesAsync();
+                await db.SaveChangesAsync();
             }
 
             status.Status = "completed";

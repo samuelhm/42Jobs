@@ -204,6 +204,16 @@ body {
   transition: width 0.4s ease;
 }
 
+.fetch-progress-fill.indeterminate {
+  width: 30% !important;
+  animation: progressIndeterminate 1.2s ease-in-out infinite;
+}
+
+@keyframes progressIndeterminate {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(400%); }
+}
+
 @keyframes progressShimmer {
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
