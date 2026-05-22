@@ -165,3 +165,14 @@ public class GithubProjectResult
     public string Type { get; set; } = "personal";
     public List<string> Keywords { get; set; } = [];
 }
+
+public class ImportStatus
+{
+    public Guid JobId { get; set; }
+    public string Status { get; set; } = "queued";
+    public string Message { get; set; } = string.Empty;
+    public int Total { get; set; }
+    public int Processed { get; set; }
+    public int Inserted { get; set; }
+    public string? Error { get; set; }
+}

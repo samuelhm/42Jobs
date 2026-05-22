@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
@@ -125,95 +126,167 @@ public class ProjectsController : ControllerBase
         return Ok(new { success = true });
     }
 
+    private static readonly ConcurrentDictionary<Guid, ImportStatus> ImportStatuses = new();
+
     [HttpPost("import-github")]
-    public async Task<IActionResult> ImportFromGithub([FromBody] ImportGithubDto body)
+    public IActionResult ImportFromGithub([FromBody] ImportGithubDto body)
     {
         var userId = GetUserId();
         var username = body.Username.Trim();
+        if (string.IsNullOrEmpty(username))
+            return BadRequest(new { error = "Username is required" });
 
-        using var http = _httpFactory.CreateClient();
-        http.DefaultRequestHeaders.Add("User-Agent", "bimjobsnet");
-
-        var reposUrl = $"https://api.github.com/users/{Uri.EscapeDataString(username)}/repos?per_page=50&sort=updated";
-        var reposJson = await http.GetStringAsync(reposUrl);
-        using var reposDoc = JsonDocument.Parse(reposJson);
-        var repos = reposDoc.RootElement.EnumerateArray().ToList();
-
-        if (repos.Count == 0)
-            return Ok(new { success = true, data = new { inserted = 0, message = "No public repositories found" } });
-
-        var projectTexts = new List<string>();
-        var projectNames = new List<string>();
-
-        foreach (var repo in repos)
+        var user = _db.Users.Find(userId);
+        if (user?.LastGithubImportAt is not null
+            && DateTime.UtcNow - user.LastGithubImportAt.Value < TimeSpan.FromHours(24))
         {
-            var repoName = repo.GetProperty("name").GetString()!;
-            var defaultBranch = repo.GetProperty("default_branch").GetString() ?? "main";
-
-            var readme = await TryFetchRaw(http, username, repoName, defaultBranch, "README.md");
-            if (string.IsNullOrWhiteSpace(readme)) continue;
-
-            var configs = new List<string>();
-            foreach (var file in new[] { "package.json", "requirements.txt", "Makefile", "docker-compose.yml", "go.mod", "Cargo.toml", "pyproject.toml", "CMakeLists.txt" })
-            {
-                var content = await TryFetchRaw(http, username, repoName, defaultBranch, file);
-                if (!string.IsNullOrWhiteSpace(content))
-                    configs.Add($"{file}:\n{content}");
-            }
-
-            var combined = $"# {repoName}\n\nREADME:\n{readme}";
-            if (configs.Count > 0)
-                combined += "\n\nConfig files:\n" + string.Join("\n\n", configs);
-
-            projectTexts.Add(combined);
-            projectNames.Add(repoName);
+            return Ok(new { status = "rate-limited", message = "You can only import once per day" });
         }
 
-        if (projectTexts.Count == 0)
-            return Ok(new { success = true, data = new { inserted = 0, message = "No repos with README found" } });
+        var jobId = Guid.NewGuid();
+        ImportStatuses[jobId] = new ImportStatus { Status = "queued", JobId = jobId };
 
-        var allText = string.Join("\n\n---\n\n", projectTexts.Select((t, i) => $"PROJECT {i}: {projectNames[i]}\n{t}"));
-        var (projects, _) = await _gemini.AnalyzeGithubProjectsAsync(allText);
+        _ = Task.Run(async () => await ProcessImportAsync(jobId, userId, username));
 
-        int inserted = 0;
-        foreach (var proj in projects)
+        return Accepted(new { job_id = jobId, status = "queued", status_url = $"/api/projects/import-github/{jobId}" });
+    }
+
+    [HttpGet("import-github/{jobId:guid}")]
+    public IActionResult GetImportStatus(Guid jobId)
+    {
+        if (ImportStatuses.TryGetValue(jobId, out var status))
+            return Ok(status);
+
+        return NotFound(new { error = "Import job not found" });
+    }
+
+    private async Task ProcessImportAsync(Guid jobId, Guid userId, string username)
+    {
+        var status = ImportStatuses[jobId];
+        status.Status = "running";
+        _logger.LogInformation("GitHub import {JobId} started for user {Username}", jobId, username);
+
+        try
         {
-            if (string.IsNullOrWhiteSpace(proj.Name)) continue;
+            using var http = _httpFactory.CreateClient();
+            http.DefaultRequestHeaders.Add("User-Agent", "bimjobsnet");
 
-            var project = new Project
+            var reposUrl = $"https://api.github.com/users/{Uri.EscapeDataString(username)}/repos?per_page=50&sort=updated";
+            var reposJson = await http.GetStringAsync(reposUrl);
+            using var reposDoc = JsonDocument.Parse(reposJson);
+            var repos = reposDoc.RootElement.EnumerateArray().ToList();
+
+            status.Total = repos.Count;
+            status.Message = "Fetching repositories...";
+
+            var projectTexts = new List<(string name, string text)>();
+
+            foreach (var repo in repos)
             {
-                UserId = userId,
-                Name = proj.Name,
-                Description = proj.Description,
-                Type = proj.Type == "school" ? "school" : "personal"
-            };
-            _db.Projects.Add(project);
-            await _db.SaveChangesAsync();
+                var repoName = repo.GetProperty("name").GetString()!;
+                var defaultBranch = repo.GetProperty("default_branch").GetString() ?? "main";
 
-            foreach (var kwName in proj.Keywords)
-            {
-                var name = kwName.Trim().ToLowerInvariant();
-                if (string.IsNullOrEmpty(name)) continue;
-
-                var kw = await _db.Keywords.FirstOrDefaultAsync(k => k.Name == name);
-                if (kw is null)
+                var readme = await TryFetchRaw(http, username, repoName, defaultBranch, "README.md");
+                if (string.IsNullOrWhiteSpace(readme))
                 {
-                    kw = new Keyword { Name = name };
-                    _db.Keywords.Add(kw);
-                    await _db.SaveChangesAsync();
+                    status.Processed++;
+                    continue;
                 }
 
-                await _db.Database.ExecuteSqlRawAsync(
-                    "INSERT INTO project_keywords (project_id, keyword_id) VALUES ({0}, {1}) ON CONFLICT DO NOTHING",
-                    project.Id, kw.Id);
+                var configs = new List<string>();
+                foreach (var file in new[] { "package.json", "requirements.txt", "Makefile", "docker-compose.yml", "go.mod", "Cargo.toml", "pyproject.toml", "CMakeLists.txt" })
+                {
+                    var content = await TryFetchRaw(http, username, repoName, defaultBranch, file);
+                    if (!string.IsNullOrWhiteSpace(content))
+                        configs.Add($"{file}:\n{content}");
+                }
+
+                var combined = $"# {repoName}\n\nREADME:\n{readme}";
+                if (configs.Count > 0)
+                    combined += "\n\nConfig files:\n" + string.Join("\n\n", configs);
+
+                projectTexts.Add((repoName, combined));
+                status.Processed++;
+                status.Message = $"Fetched {status.Processed}/{status.Total} repos...";
             }
 
-            inserted++;
+            if (projectTexts.Count == 0)
+            {
+                status.Status = "completed";
+                status.Inserted = 0;
+                status.Message = "No repos with README found";
+                return;
+            }
+
+            status.Message = $"Analyzing {projectTexts.Count} projects with Gemini...";
+
+            var allText = string.Join("\n\n---\n\n", projectTexts.Select((t, i) => $"PROJECT {i}: {t.name}\n{t.text}"));
+            var (projects, error) = await _gemini.AnalyzeGithubProjectsAsync(allText);
+
+            if (!string.IsNullOrEmpty(error))
+            {
+                status.Status = "failed";
+                status.Error = error;
+                return;
+            }
+
+            status.Message = "Saving projects...";
+            int inserted = 0;
+
+            foreach (var proj in projects)
+            {
+                if (string.IsNullOrWhiteSpace(proj.Name)) continue;
+
+                var project = new Project
+                {
+                    UserId = userId,
+                    Name = proj.Name,
+                    Description = proj.Description,
+                    Type = proj.Type == "school" ? "school" : "personal"
+                };
+                _db.Projects.Add(project);
+                await _db.SaveChangesAsync();
+
+                foreach (var kwName in proj.Keywords)
+                {
+                    var name = kwName.Trim().ToLowerInvariant();
+                    if (string.IsNullOrEmpty(name)) continue;
+
+                    var kw = await _db.Keywords.FirstOrDefaultAsync(k => k.Name == name);
+                    if (kw is null)
+                    {
+                        kw = new Keyword { Name = name };
+                        _db.Keywords.Add(kw);
+                        await _db.SaveChangesAsync();
+                    }
+
+                    await _db.Database.ExecuteSqlRawAsync(
+                        "INSERT INTO project_keywords (project_id, keyword_id) VALUES ({0}, {1}) ON CONFLICT DO NOTHING",
+                        project.Id, kw.Id);
+                }
+
+                inserted++;
+            }
+
+            var user = await _db.Users.FindAsync(userId);
+            if (user is not null)
+            {
+                user.LastGithubImportAt = DateTime.UtcNow;
+                await _db.SaveChangesAsync();
+            }
+
+            status.Status = "completed";
+            status.Inserted = inserted;
+            status.Message = $"{inserted} projects imported";
+
+            _logger.LogInformation("GitHub import {JobId}: {Inserted} projects from {Username}", jobId, inserted, username);
         }
-
-        _logger.LogInformation("User {UserId} imported {Count} projects from GitHub user {Username}", userId, inserted, username);
-
-        return Ok(new { success = true, data = new { inserted } });
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "GitHub import {JobId} failed", jobId);
+            status.Status = "failed";
+            status.Error = ex.Message;
+        }
     }
 
     private async Task SyncProjectKeywords(int projectId, List<int> keywordIds)

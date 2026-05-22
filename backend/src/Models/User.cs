@@ -17,6 +17,7 @@ public class User
     public string? AvatarUrl { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
+    public DateTime? LastGithubImportAt { get; set; }
 
     public List<Language> Languages { get; set; } = [];
     public List<Certification> Certifications { get; set; } = [];

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 interface Project {
   id: number;
@@ -15,7 +15,8 @@ export default function ProfileProjects() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [ghUsername, setGhUsername] = useState('');
   const [importing, setImporting] = useState(false);
-  const [importMsg, setImportMsg] = useState('');
+  const [importStatus, setImportStatus] = useState<{ message: string; type: 'info' | 'success' | 'error'; processed?: number; total?: number } | null>(null);
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   async function load() {
     const res = await fetch('/api/projects');
@@ -60,7 +61,8 @@ export default function ProfileProjects() {
     const username = ghUsername.trim();
     if (!username) return;
     setImporting(true);
-    setImportMsg('Importing from GitHub...');
+    setImportStatus({ message: 'Starting import...', type: 'info' });
+
     try {
       const res = await fetch('/api/projects/import-github', {
         method: 'POST',
@@ -68,17 +70,59 @@ export default function ProfileProjects() {
         body: JSON.stringify({ username }),
       });
       const data = await res.json();
-      if (data.success) {
-        setImportMsg(`${data.data.inserted} projects imported`);
-        load();
-      } else {
-        setImportMsg(data.error || 'Import failed');
+
+      if (data.status === 'rate-limited') {
+        setImportStatus({ message: data.message || 'You can only import once per day', type: 'error' });
+        setTimeout(() => setImportStatus(null), 5000);
+        setImporting(false);
+        return;
       }
+
+      const jobId = data.job_id;
+      if (!jobId) {
+        setImportStatus({ message: 'Failed to start import', type: 'error' });
+        setTimeout(() => setImportStatus(null), 4000);
+        setImporting(false);
+        return;
+      }
+
+      await new Promise<void>((resolve) => {
+        pollRef.current = setInterval(async () => {
+          try {
+            const r = await fetch(`/api/projects/import-github/${jobId}`);
+            const d = await r.json();
+            if (d.status === 'completed') {
+              clearInterval(pollRef.current!);
+              setImportStatus({ message: `${d.inserted} projects imported`, type: 'success' });
+              setTimeout(() => setImportStatus(null), 12000);
+              load();
+              resolve();
+            } else if (d.status === 'failed') {
+              clearInterval(pollRef.current!);
+              setImportStatus({ message: d.error || 'Import failed', type: 'error' });
+              setTimeout(() => setImportStatus(null), 5000);
+              resolve();
+            } else if (d.status === 'running') {
+              const total = d.total || 0;
+              const processed = d.processed || 0;
+              setImportStatus({
+                message: d.message || `Processing... ${processed}/${total}`,
+                type: 'info',
+                processed: total > 0 ? processed : undefined,
+                total: total > 0 ? total : undefined,
+              });
+            }
+          } catch {
+            clearInterval(pollRef.current!);
+            resolve();
+          }
+        }, 2000);
+      });
     } catch {
-      setImportMsg('Connection error');
+      setImportStatus({ message: 'Connection error', type: 'error' });
+      setTimeout(() => setImportStatus(null), 4000);
     } finally {
       setImporting(false);
-      setTimeout(() => setImportMsg(''), 5000);
     }
   }
 
@@ -103,7 +147,16 @@ export default function ProfileProjects() {
             {importing ? 'Importing...' : 'Import'}
           </button>
         </div>
-        {importMsg && <p className="pf-import-msg">{importMsg}</p>}
+        {importStatus && (
+          <div className={`fetch-banner fetch-${importStatus.type}`}>
+            <span>{importStatus.message}</span>
+            {importStatus.processed !== undefined && importStatus.total !== undefined && importStatus.total > 0 && (
+              <div className="fetch-progress">
+                <div className="fetch-progress-fill" style={{ width: `${Math.round((importStatus.processed / importStatus.total) * 100)}%` }} />
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="pf-list">
