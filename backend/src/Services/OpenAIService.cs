@@ -61,7 +61,7 @@ Campos: company, position, start_date, end_date, description
                                         end_date = new { type = "string" },
                                         description = new { type = "string" }
                                     },
-                                    required = new[] { "company" },
+                                    required = new[] { "company", "position", "start_date", "end_date", "description" },
                                     additionalProperties = false
                                 }
                             }
