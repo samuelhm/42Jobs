@@ -60,6 +60,14 @@ public class LinkedInApiService
 
         var json = await response.Content.ReadAsStringAsync(ct);
         using var doc = JsonDocument.Parse(json);
-        return doc.RootElement.Clone();
+        var root = doc.RootElement;
+
+        if (root.TryGetProperty("success", out var success) && success.GetBoolean()
+            && root.TryGetProperty("job", out var jobData))
+        {
+            return jobData.Clone();
+        }
+
+        return root.Clone();
     }
 }

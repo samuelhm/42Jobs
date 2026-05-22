@@ -242,9 +242,6 @@ public class JobFetchOrchestrator : BackgroundService
             return "skipped";
         }
 
-        var companyId = await UpsertCompanyAsync(db, companyName,
-            job.TryGetProperty("companyUrl", out var cu) ? cu.GetString() : null, ct);
-
         JsonElement? details = null;
         try
         {
@@ -271,6 +268,9 @@ public class JobFetchOrchestrator : BackgroundService
             _logger.LogDebug("Job \"{Title}\" skipped: senior only", jobTitle);
             return "skipped";
         }
+
+        var companyId = await UpsertCompanyAsync(db, companyName,
+            job.TryGetProperty("companyUrl", out var cu) ? cu.GetString() : null, ct);
 
         var newJob = new Job
         {
