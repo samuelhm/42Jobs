@@ -8,7 +8,7 @@ public class GeminiService
 {
     private readonly HttpClient _http;
     private readonly ILogger<GeminiService> _logger;
-    private const string Model = "gemini-2.5-flash";
+    private const string Model = "gemini-3.1-flash-lite";
 
     public GeminiService(HttpClient http, ILogger<GeminiService> logger)
     {
