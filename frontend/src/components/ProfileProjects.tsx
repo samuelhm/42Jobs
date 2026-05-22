@@ -86,13 +86,6 @@ export default function ProfileProjects() {
       });
       const data = await res.json();
 
-      if (data.status === 'rate-limited') {
-        setImportStatus({ message: data.message || 'You can only import once per day', type: 'error' });
-        setTimeout(() => setImportStatus(null), 5000);
-        setImporting(false);
-        return;
-      }
-
       const jobId = data.job_id;
       if (!jobId) {
         setImportStatus({ message: 'Failed to start import', type: 'error' });

@@ -138,13 +138,6 @@ public class ProjectsController : ControllerBase
         if (string.IsNullOrEmpty(username))
             return BadRequest(new { error = "Username is required" });
 
-        var user = _db.Users.Find(userId);
-        if (user?.LastGithubImportAt is not null
-            && DateTime.UtcNow - user.LastGithubImportAt.Value < TimeSpan.FromHours(24))
-        {
-            return Ok(new { status = "rate-limited", message = "You can only import once per day" });
-        }
-
         var jobId = Guid.NewGuid();
         ImportStatuses[jobId] = new ImportStatus { Status = "queued", JobId = jobId };
 
@@ -301,15 +294,8 @@ public class ProjectsController : ControllerBase
                             project.Id, kw.Id);
                     }
 
-                    inserted++;
-                }
-
-                var user = await db.Users.FindAsync(userId);
-                if (user is not null)
-                {
-                    user.LastGithubImportAt = DateTime.UtcNow;
-                    await db.SaveChangesAsync();
-                }
+                inserted++;
+            }
             }
 
             status.Status = "completed";
