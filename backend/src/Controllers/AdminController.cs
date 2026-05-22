@@ -34,7 +34,8 @@ public class AdminController : ControllerBase
         {
             if (group.Count < 2) continue;
 
-            var keep = allKeywords.First(k => k.Name.Equals(group[0], StringComparison.OrdinalIgnoreCase));
+            var keep = allKeywords.FirstOrDefault(k => k.Name.Equals(group[0], StringComparison.OrdinalIgnoreCase));
+            if (keep is null) continue;
             foreach (var dupName in group.Skip(1))
             {
                 var dup = allKeywords.FirstOrDefault(k => k.Name.Equals(dupName, StringComparison.OrdinalIgnoreCase));

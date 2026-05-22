@@ -197,10 +197,29 @@ Responde solo con este JSON: {{""relevante"": ""si/no"", ""apto_junior"": ""si/n
     public async Task<(List<string> skills, string companyType)> ExtractKeywordsAsync(
         string text, CancellationToken ct = default)
     {
-        var input = $@"Analiza esta oferta de trabajo y extrae:
+        var input = $@"Extrae SOLO tecnologias, lenguajes, frameworks y herramientas tecnicas.
 
-1. skills: lista de tecnologias, lenguajes, frameworks, herramientas y conceptos tecnicos.
-2. tipo_empresa: Multinacional, Startup, Pyme, Consultora, o No identificado.
+QUE EXTRAER (ejemplos validos):
+  Lenguajes: 'python', 'c#', 'javascript', 'typescript', 'go', 'rust', 'java', 'c++'
+  Frameworks: 'react', 'angular', 'django', 'spring boot', '.net', 'fastapi', 'flask'
+  Infra/DevOps: 'docker', 'kubernetes', 'aws', 'azure', 'gcp', 'terraform', 'jenkins', 'github actions'
+  Bases de datos: 'postgresql', 'mysql', 'mongodb', 'redis', 'elasticsearch'
+  Tools: 'git', 'linux', 'nginx', 'kafka', 'rabbitmq'
+
+QUE NO EXTRAER (ignorar completamente):
+  Habilidades blandas: 'comunicacion', 'trabajo en equipo', 'liderazgo'
+  Requisitos academicos: 'computer science', 'grado en ingenieria'
+  Frases genericas: 'deseable', 'conocimientos en', 'experiencia con'
+  Conceptos abstractos: 'arquitectura' (sin especificar), 'diseno de sistemas', 'calidad'
+  Texto entre parentesis: si ves 'react (deseable)', extrae solo 'react'
+  Palabras sueltas ambiguas: 'data', 'cloud' (sin proveedor), 'api' (sin contexto)
+
+NORMALIZACION:
+  'node' -> 'node.js', 'js' -> 'javascript', '.net core' -> '.net'
+  'ml' -> 'machine learning', 'k8s' -> 'kubernetes'
+  Todo en minusculas, max 3 palabras.
+
+Tipo empresa: Multinacional, Startup, Pyme, Consultora, No identificado.
 
 Oferta: ""{text}""";
 
