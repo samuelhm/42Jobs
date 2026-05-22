@@ -160,10 +160,11 @@ Proyectos a analizar:
         var prompt = $@"Eres un deduplicador de palabras clave técnicas. Tu tarea es agrupar palabras clave que significan EXACTAMENTE lo mismo.
 
 Reglas:
-- Agrupa solo si son sinónimos exactos en el contexto técnico (ej: 'js' = 'javascript', 'llm' = 'large language model', 'k8s' = 'kubernetes').
-- NO agrupes tecnologías relacionadas pero diferentes (ej: 'react' y 'react native' NO son lo mismo).
+- Agrupa términos que se refieran al mismo concepto o área, aunque no sean sinónimos exactos.
+- Ejemplos de grupos válidos: 'ui' + 'ui/ux' + 'ui/ux design' + 'user interface', 'ai' + 'artificial intelligence' + 'machine learning/ai', 'aws' + 'amazon web services', 'docker' + 'docker compose' + 'containerization', 'react' + 'react.js', 'node' + 'node.js', 'python' + 'python3', 'c#' + 'csharp' + '.net'.
+- No agrupes tecnologías claramente diferentes (ej: 'react' y 'vue' NO).
 - Cada grupo debe tener las palabras en minúsculas.
-- Si una palabra no tiene sinónimos, va en su propio grupo de 1 elemento.
+- Si una palabra no tiene equivalentes, va en su propio grupo de 1 elemento.
 - Devuelve un array de grupos, donde cada grupo es un array de strings equivalentes.
 
 Palabras clave a analizar:
