@@ -85,7 +85,7 @@ export default function CategoriesBar() {
             clearInterval(pollingRef.current!);
             pollingRef.current = null;
             setFetchStatus({ message: `${d.inserted} new offers (${d.total} found)`, type: 'success' });
-            clearStatusAfter(4000);
+            clearStatusAfter(12000);
             resolve();
           } else if (d.status === 'failed' || d.error) {
             clearInterval(pollingRef.current!);

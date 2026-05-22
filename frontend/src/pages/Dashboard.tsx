@@ -75,6 +75,13 @@ export default function Dashboard() {
     return 'low';
   }
 
+  function isRecent(dateStr: string | null): boolean {
+    if (!dateStr) return false;
+    const d = new Date(dateStr + 'T00:00:00');
+    const now = new Date();
+    return (now.getTime() - d.getTime()) < 48 * 60 * 60 * 1000;
+  }
+
   return (
     <>
       <CategoriesBar />
@@ -102,11 +109,11 @@ export default function Dashboard() {
                 return (
                   <div
                     key={job.id}
-                    className={`oferta-card${expandedId === job.id ? ' expanded' : ''}${highlightKw && job.keywords.some((k) => k.toLowerCase() === highlightKw.toLowerCase()) ? ' highlighted' : highlightKw ? ' dimmed' : ''}`}
+                    className={`oferta-card${expandedId === job.id ? ' expanded' : ''}${isRecent(job.posted_date) ? ' recent' : ''}${highlightKw && job.keywords.some((k) => k.toLowerCase() === highlightKw.toLowerCase()) ? ' highlighted' : highlightKw ? ' dimmed' : ''}`}
                     onClick={() => setExpandedId(expandedId === job.id ? null : job.id)}
                   >
                     <div className="oferta-info">
-                      <h3>{job.title}</h3>
+                      <h3>{job.title}{isRecent(job.posted_date) && <span className="recent-badge">New</span>}</h3>
                       <div className="oferta-meta">
                         <span className="empresa">{job.company_name || 'Unknown'}</span>
                         {job.company_type && <span className={`badge ${job.company_type}`}>{job.company_type}</span>}

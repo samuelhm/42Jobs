@@ -675,12 +675,13 @@ main {
 /* ── Recent badge ── */
 .recent-badge {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.55rem; font-weight: 600;
-  padding: 0.1rem 0.35rem;
+  font-size: 0.58rem;
+  font-weight: 600;
+  padding: 0.1rem 0.4rem;
   border-radius: 3px;
-  background: rgba(77,184,160,0.15);
+  background: rgba(77, 184, 160, 0.12);
   color: var(--teal);
-  border: 1px solid rgba(77,184,160,0.3);
+  border: 1px solid rgba(77, 184, 160, 0.25);
   margin-left: 0.4rem;
   vertical-align: middle;
 }

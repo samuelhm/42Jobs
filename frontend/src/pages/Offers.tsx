@@ -79,6 +79,13 @@ export default function Offers() {
     return status ? status : 'not_learned';
   }
 
+  function isRecent(dateStr: string | null): boolean {
+    if (!dateStr) return false;
+    const d = new Date(dateStr + 'T00:00:00');
+    const now = new Date();
+    return (now.getTime() - d.getTime()) < 48 * 60 * 60 * 1000;
+  }
+
   async function handleDelete(job: Job) {
     if (!confirm(`Delete "${job.title}"?`)) return;
     const res = await fetch(`/api/jobs/${job.id}`, { method: 'DELETE' });
@@ -112,11 +119,11 @@ export default function Offers() {
               return (
                 <div
                   key={job.id}
-                  className={`oferta-card${expandedId === job.id ? ' expanded' : ''}`}
+                  className={`oferta-card${expandedId === job.id ? ' expanded' : ''}${isRecent(job.posted_date) ? ' recent' : ''}`}
                   onClick={() => setExpandedId(expandedId === job.id ? null : job.id)}
                 >
                   <div className="oferta-info">
-                    <h3>{job.title}</h3>
+                    <h3>{job.title}{isRecent(job.posted_date) && <span className="recent-badge">New</span>}</h3>
                     <div className="oferta-meta">
                       <span className="empresa">{job.company_name || 'Unknown'}</span>
                       {job.company_type && (
