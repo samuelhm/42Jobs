@@ -25,6 +25,7 @@ public class JobFetchOrchestrator : BackgroundService
     private readonly ConcurrentDictionary<int, Guid> _categoryInProgress = new();
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<JobFetchOrchestrator> _logger;
+    private static int _lastDedupCount;
 
     private static readonly Dictionary<string, string> CompanyTypeMap = new()
     {
@@ -138,7 +139,12 @@ public class JobFetchOrchestrator : BackgroundService
 
             if (status.Inserted > 0)
             {
-                await DedupKeywordsAsync(db, gemini, _logger);
+                var kwCount = await db.Keywords.CountAsync();
+                if (kwCount - _lastDedupCount >= 20)
+                {
+                    _lastDedupCount = kwCount;
+                    await DedupKeywordsAsync(db, gemini, _logger);
+                }
             }
 
             status.Status = "completed";
