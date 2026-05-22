@@ -275,7 +275,6 @@ public class JobFetchOrchestrator : BackgroundService
         var newJob = new Job
         {
             LinkedinId = linkedinId,
-            CategoryId = categoryId,
             CompanyId = companyId,
             Title = jobTitle,
             Location = job.TryGetProperty("location", out var loc) ? loc.GetString() : null,
@@ -298,6 +297,10 @@ public class JobFetchOrchestrator : BackgroundService
 
         db.Jobs.Add(newJob);
         await db.SaveChangesAsync(ct);
+
+        await db.Database.ExecuteSqlRawAsync(
+            "INSERT INTO job_categories (job_id, category_id) VALUES ({0}, {1}) ON CONFLICT DO NOTHING",
+            newJob.Id, categoryId);
 
         _logger.LogDebug("Job saved: \"{Title}\" (db_id={Id})", jobTitle, newJob.Id);
 

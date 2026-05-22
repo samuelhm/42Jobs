@@ -196,7 +196,7 @@ public class CategoriesController : ControllerBase
             return NotFound(new { error = "Category not found" });
 
         var jobs = await _db.Jobs
-            .Where(j => j.CategoryId == id)
+            .Where(j => j.Categories.Any(c => c.Id == id))
             .Include(j => j.Company)
             .Include(j => j.Keywords)
             .OrderByDescending(j => j.PostedDate)
@@ -244,11 +244,11 @@ public class CategoriesController : ControllerBase
             return NotFound(new { error = "Category not found" });
 
         var keywords = await _db.Keywords
-            .Where(k => k.Jobs.Any(j => j.CategoryId == id))
+            .Where(k => k.Jobs.Any(j => j.Categories.Any(c => c.Id == id)))
             .Select(k => new CategoryKeywordDto
             {
                 Name = k.Name,
-                Count = k.Jobs.Count(j => j.CategoryId == id),
+                Count = k.Jobs.Count(j => j.Categories.Any(c => c.Id == id)),
             })
             .OrderByDescending(k => k.Count)
             .Take(25)

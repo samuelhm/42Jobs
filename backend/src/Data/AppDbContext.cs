@@ -96,20 +96,31 @@ public class AppDbContext : DbContext
                   .HasDefaultValueSql("NOW()")
                   .ValueGeneratedOnAddOrUpdate();
 
-            entity.HasOne(j => j.Category)
-                  .WithMany(c => c.Jobs)
-                  .HasForeignKey(j => j.CategoryId)
-                  .OnDelete(DeleteBehavior.SetNull);
-
             entity.HasOne(j => j.Company)
                   .WithMany(c => c.Jobs)
                   .HasForeignKey(j => j.CompanyId)
                   .OnDelete(DeleteBehavior.SetNull);
 
-            entity.HasIndex(j => j.CategoryId);
             entity.HasIndex(j => j.CompanyId);
             entity.HasIndex(j => j.PostedDate);
         });
+
+        // ── JobCategory (M2M: jobs ↔ categories) ──────────────
+        modelBuilder.Entity<Job>()
+            .HasMany(j => j.Categories)
+            .WithMany(c => c.Jobs)
+            .UsingEntity<Dictionary<string, object>>(
+                "job_categories",
+                j => j.HasOne<Category>().WithMany().HasForeignKey("category_id")
+                      .OnDelete(DeleteBehavior.Cascade),
+                c => c.HasOne<Job>().WithMany().HasForeignKey("job_id")
+                      .OnDelete(DeleteBehavior.Cascade),
+                join =>
+                {
+                    join.HasKey("job_id", "category_id");
+                    join.HasIndex("category_id");
+                    join.ToTable("job_categories");
+                });
 
         // ── JobKeyword (M2M: jobs ↔ keywords) ───────────────
         modelBuilder.Entity<Job>()

@@ -4,7 +4,6 @@ public class Job
 {
     public int Id { get; set; }
     public string LinkedinId { get; set; } = string.Empty;
-    public int? CategoryId { get; set; }
     public int? CompanyId { get; set; }
     public string? Title { get; set; }
     public string? Location { get; set; }
@@ -21,7 +20,7 @@ public class Job
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 
-    public Category? Category { get; set; }
+    public List<Category> Categories { get; set; } = [];
     public Company? Company { get; set; }
     public List<Keyword> Keywords { get; set; } = [];
     public List<UserJob> UserJobs { get; set; } = [];
