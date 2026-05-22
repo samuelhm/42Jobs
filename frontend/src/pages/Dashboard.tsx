@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import CategoriesBar from '../components/CategoriesBar';
 import KeywordsChart from '../components/KeywordsChart';
+import { formatDescription } from '../utils';
 
 interface Job {
   id: number;
@@ -136,7 +137,7 @@ export default function Dashboard() {
                       {job.description && (
                         <div className="accordion-field desc-field">
                           <div className="label">Description</div>
-                          <div className="value desc-text">{job.description}</div>
+                          <div className="value desc-text">{formatDescription(job.description)}</div>
                         </div>
                       )}
                     </div>

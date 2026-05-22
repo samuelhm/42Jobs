@@ -1,5 +1,7 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
+html { font-size: 17px; }
+
 :root {
   --bg: #171614;
   --surface: #21201d;
@@ -631,8 +633,8 @@ main {
 .desc-text {
   max-height: 200px;
   overflow-y: auto;
-  font-size: 0.7rem;
-  line-height: 1.65;
+  font-size: 0.78rem;
+  line-height: 1.7;
   color: var(--text-dim);
   padding: 0.5rem;
   background: var(--bg);
