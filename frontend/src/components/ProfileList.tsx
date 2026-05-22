@@ -17,10 +17,9 @@ interface Props {
   deleteUrl: (id: number) => string;
   bodyBuilder: (form: Record<string, string>) => object;
   renderItem: (item: Record<string, any>) => React.ReactNode;
-  block?: boolean;
 }
 
-export default function ProfileList({ title, fields, fetchUrl, createUrl, updateUrl, deleteUrl, bodyBuilder, renderItem, block }: Props) {
+export default function ProfileList({ title, fields, fetchUrl, createUrl, updateUrl, deleteUrl, bodyBuilder, renderItem }: Props) {
   const [items, setItems] = useState<Record<string, any>[]>([]);
   const [form, setForm] = useState<Record<string, string>>({});
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -83,7 +82,7 @@ export default function ProfileList({ title, fields, fetchUrl, createUrl, update
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className={block ? 'pf-add-block' : 'pf-add-row'}>
+      <form onSubmit={handleSubmit} className="pf-add-row">
         {fields.map((f) => {
           if (f.type === 'select' && f.options) {
             return (
@@ -95,7 +94,7 @@ export default function ProfileList({ title, fields, fetchUrl, createUrl, update
             );
           }
           if (f.type === 'textarea') {
-            return <textarea key={f.key} placeholder={f.label} value={form[f.key] || ''} onChange={(e) => setForm({ ...form, [f.key]: e.target.value })} rows={3} />;
+            return <textarea key={f.key} placeholder={f.label} value={form[f.key] || ''} onChange={(e) => setForm({ ...form, [f.key]: e.target.value })} rows={2} />;
           }
           return <input key={f.key} type={f.type || 'text'} placeholder={f.label} value={form[f.key] || ''} onChange={(e) => setForm({ ...form, [f.key]: e.target.value })} />;
         })}
