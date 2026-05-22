@@ -982,6 +982,38 @@ main {
   margin-bottom: 0.75rem;
 }
 
+/* ── Keywords page ── */
+.keywords-page { max-width: 900px; }
+
+.keywords-page h2 {
+  font-size: 1.1rem;
+  color: var(--text-bright);
+  margin-bottom: 1.25rem;
+}
+
+.kw-section-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.6rem;
+  padding-bottom: 0.3rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.kw-section-title.not-learned { color: #e08880; }
+.kw-section-title.learned { color: #80a8d8; }
+.kw-section-title.project { color: #e0bc6a; }
+
+.kw-section-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: 1.5rem;
+}
+
+.kw-section-list .text-dim { width: 100%; }
+
 /* ── CV button ── */
 .cv-btn { border-color: rgba(180,150,100,0.15); }
 .cv-btn:hover { border-color: #c9a84c; color: #c9a84c; background: rgba(180,150,100,0.1); }

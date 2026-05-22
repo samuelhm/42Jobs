@@ -8,6 +8,7 @@ const navItems = [
   { to: '/offers', label: 'Offers' },
   { to: '/profile', label: 'Profile' },
   { to: '/tracking', label: 'Tracking' },
+  { to: '/keywords', label: 'Keywords' },
 ];
 
 export default function AuthLayout() {

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import CategoriesBar from '../components/CategoriesBar';
 import NotesModal from '../components/NotesModal';
-import KeywordModal from '../components/KeywordModal';
+import KeywordTag from '../components/KeywordTag';
 import { formatDescription } from '../utils';
 import { useToast } from '../context/ToastContext';
 
@@ -40,7 +40,6 @@ export default function Offers() {
   const [loading, setLoading] = useState(false);
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [notesJob, setNotesJob] = useState<Job | null>(null);
-  const [kwModal, setKwModal] = useState<{ id: number; name: string; status: string } | null>(null);
   const [editingTitle, setEditingTitle] = useState<{ jobId: number; title: string } | null>(null);
   const { toast } = useToast();
 
@@ -79,21 +78,6 @@ export default function Offers() {
     if (pct >= 50) return 'high';
     if (pct >= 20) return 'medium';
     return 'low';
-  }
-
-  function getKwClass(kw: string): string {
-    const entry = userKeywords[kw];
-    return entry ? entry.learning_status : 'not_learned';
-  }
-
-  function handleKwClick(kw: string, e: React.MouseEvent) {
-    e.stopPropagation();
-    const entry = userKeywords[kw];
-    setKwModal({
-      id: entry?.id || 0,
-      name: kw,
-      status: entry?.learning_status || 'not_learned',
-    });
   }
 
   function handleKwStatusChange(keywordId: number, newStatus: string) {
@@ -276,15 +260,18 @@ export default function Offers() {
                     )}
 
                     <div className="accordion-kw-list">
-                      {job.keywords.map((kw) => (
-                        <span
-                          key={kw}
-                          className={`kw-tag ${getKwClass(kw)}`}
-                          onClick={(e) => handleKwClick(kw, e)}
-                        >
-                          {kw}
-                        </span>
-                      ))}
+                      {job.keywords.map((kw) => {
+                        const entry = userKeywords[kw];
+                        return (
+                          <KeywordTag
+                            key={kw}
+                            name={kw}
+                            id={entry?.id || 0}
+                            status={entry?.learning_status || 'not_learned'}
+                            onStatusChange={handleKwStatusChange}
+                          />
+                        );
+                      })}
                     </div>
                   </div>
                 </div>
@@ -299,15 +286,6 @@ export default function Offers() {
           jobTitle={notesJob.title}
           initialNotes={notesJob.notes}
           onClose={() => setNotesJob(null)}
-        />
-      )}
-      {kwModal && (
-        <KeywordModal
-          keywordName={kwModal.name}
-          keywordId={kwModal.id}
-          currentStatus={kwModal.status}
-          onStatusChange={handleKwStatusChange}
-          onClose={() => setKwModal(null)}
         />
       )}
     </>
