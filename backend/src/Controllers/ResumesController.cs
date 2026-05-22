@@ -91,7 +91,13 @@ public class ResumesController : ControllerBase
             var json = JsonSerializer.Serialize(requestBody);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
             var response = await http.PostAsync("https://api.openai.com/v1/responses", content);
-            response.EnsureSuccessStatusCode();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorBody = await response.Content.ReadAsStringAsync();
+                _logger.LogError("OpenAI error {Status}: {Body}", (int)response.StatusCode, errorBody);
+                return StatusCode(500, new { error = $"OpenAI API error: {errorBody}" });
+            }
 
             var responseBody = await response.Content.ReadAsStringAsync();
             using var doc = JsonDocument.Parse(responseBody);
@@ -131,6 +137,7 @@ public class ResumesController : ControllerBase
         }
         catch (Exception ex)
         {
+            _logger.LogError(ex, "Failed to generate CV for job {JobId}", jobId);
             return StatusCode(500, new { error = ex.Message });
         }
     }
