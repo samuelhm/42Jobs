@@ -210,11 +210,18 @@ Palabras clave a analizar:
         }
     }
 
-    public async Task<List<LinkedInExperienceParsed>> ParseLinkedInExperienceAsync(string rawText, CancellationToken ct = default)
+    public async Task<(List<LinkedInExperienceParsed> items, string? error)> ParseLinkedInExperienceAsync(string rawText, CancellationToken ct = default)
     {
-        var prompt = $@"Extrae experiencias laborales a JSON. Meses español: ene=1 feb=2 mar=3 abr=4 may=5 jun=6 jul=7 ago=8 sept=9 oct=10 nov=11 dic=12.
-Campos: company, position, start_date(YYYY-MM-DD), end_date(YYYY-MM-DD), description.
-Ignora lineas 'Aptitudes:'.
+        var prompt = $@"Extrae experiencias laborales a JSON.
+
+IMPORTANTE - Fechas: extrae start_date y end_date en formato YYYY-MM-DD de la linea con formato 'mes. año - mes. año'. Ejemplos:
+  'sept. 2023 - ene. 2024' → start_date:'2023-09-01', end_date:'2024-01-01'
+  'jun. 2020 - feb. 2023' → start_date:'2020-06-01', end_date:'2023-02-01'
+  'abr. 2018 - ene. 2020' → start_date:'2018-04-01', end_date:'2020-01-01'
+Meses: ene=01 feb=02 mar=03 abr=04 may=05 jun=06 jul=07 ago=08 sept=09 oct=10 nov=11 dic=12.
+
+Campos: company, position, start_date, end_date, description(texto completo).
+Ignora 'Aptitudes:'.
 
 {rawText}";
 
@@ -261,16 +268,16 @@ Ignora lineas 'Aptitudes:'.
                 }
             }
 
-            return items;
+            return (items, null);
         }
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "Gemini LinkedIn experience parsing failed");
-            return [];
+            return ([], ex.Message);
         }
     }
 
-    public async Task<List<LinkedInEducationParsed>> ParseLinkedInEducationAsync(string rawText, CancellationToken ct = default)
+    public async Task<(List<LinkedInEducationParsed> items, string? error)> ParseLinkedInEducationAsync(string rawText, CancellationToken ct = default)
     {
         var prompt = $@"Extrae cada entrada educativa del perfil de LinkedIn como JSON.
 
@@ -325,12 +332,12 @@ Ignora 'Aptitudes:', 'Actividades y grupos:'.
                 }
             }
 
-            return items;
+            return (items, null);
         }
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "Gemini LinkedIn education parsing failed");
-            return [];
+            return ([], ex.Message);
         }
     }
 
