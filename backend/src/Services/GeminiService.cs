@@ -235,13 +235,13 @@ ene=01, feb=02, mar=03, abr=04, may=05, jun=06, jul=07, ago=08, sept=09, oct=10,
 
 JSON de salida:
 {{
-  "experiences": [
+  ""experiences"": [
     {{
-      "company": "Nombre Empresa",
-      "position": "Titulo Puesto",
-      "start_date": "YYYY-MM-DD o null",
-      "end_date": "YYYY-MM-DD o null",
-      "description": "texto completo"
+      ""company"": ""Nombre Empresa"",
+      ""position"": ""Titulo Puesto"",
+      ""start_date"": ""YYYY-MM-DD o null"",
+      ""end_date"": ""YYYY-MM-DD o null"",
+      ""description"": ""texto completo""
     }}
   ]
 }}
@@ -322,12 +322,12 @@ EXTRAE LOS AÑOS de la linea de fechas:
 
 JSON de salida:
 {{
-  "education": [
+  ""education"": [
     {{
-      "institution": "Nombre",
-      "degree": "Titulo",
-      "start_year": 2024,
-      "end_year": 2025
+      ""institution"": ""Nombre"",
+      ""degree"": ""Titulo"",
+      ""start_year"": 2024,
+      ""end_year"": 2025
     }}
   ]
 }}
