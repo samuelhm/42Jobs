@@ -44,6 +44,7 @@ export default function LinkedInImport({ endpoint, placeholder, onImported }: Pr
       <p className="hint">
         Copy your raw LinkedIn data by selecting the text directly on your profile page
         (Ctrl+A, Ctrl+C). Do not export or download — just copy the visible text.
+        If the import fails, try pasting one entry at a time.
       </p>
       <textarea
         value={text}

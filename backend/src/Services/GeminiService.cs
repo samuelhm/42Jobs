@@ -9,7 +9,6 @@ public class GeminiService
     private readonly HttpClient _http;
     private readonly ILogger<GeminiService> _logger;
     private const string Model = "gemini-3.1-flash-lite";
-
     public GeminiService(HttpClient http, ILogger<GeminiService> logger)
     {
         _http = http;
@@ -213,22 +212,11 @@ Palabras clave a analizar:
 
     public async Task<List<LinkedInExperienceParsed>> ParseLinkedInExperienceAsync(string rawText, CancellationToken ct = default)
     {
-        var truncated = rawText.Length > 8000 ? rawText[..8000] : rawText;
+        var prompt = $@"Extrae experiencias laborales a JSON. Meses español: ene=1 feb=2 mar=3 abr=4 may=5 jun=6 jul=7 ago=8 sept=9 oct=10 nov=11 dic=12.
+Campos: company, position, start_date(YYYY-MM-DD), end_date(YYYY-MM-DD), description.
+Ignora lineas 'Aptitudes:'.
 
-        var prompt = $@"Extrae cada experiencia laboral del siguiente perfil de LinkedIn como JSON:
-
-Meses en español: ene=01, feb=02, mar=03, abr=04, may=05, jun=06, jul=07, ago=08, sept=09, oct=10, nov=11, dic=12.
-
-Para cada puesto extrae:
-- company: empresa
-- position: cargo
-- start_date: YYYY-MM-DD desde la linea 'mes. año - mes. año'
-- end_date: YYYY-MM-DD o null
-- description: texto completo, sin resumir
-
-Ignora 'Aptitudes: ...'.
-
-{truncated}";
+{rawText}";
 
         var schema = JsonDocument.Parse("""
             {
@@ -255,7 +243,7 @@ Ignora 'Aptitudes: ...'.
 
         try
         {
-            var result = await CallGeminiAsync(prompt, schema, ct);
+             var result = await CallGeminiAsync(prompt, schema, ct);
             var items = new List<LinkedInExperienceParsed>();
 
             if (result.TryGetProperty("experiences", out var arr))
@@ -284,8 +272,6 @@ Ignora 'Aptitudes: ...'.
 
     public async Task<List<LinkedInEducationParsed>> ParseLinkedInEducationAsync(string rawText, CancellationToken ct = default)
     {
-        var truncated = rawText.Length > 8000 ? rawText[..8000] : rawText;
-
         var prompt = $@"Extrae cada entrada educativa del perfil de LinkedIn como JSON.
 
 Para cada entrada extrae:
@@ -296,7 +282,7 @@ Para cada entrada extrae:
 
 Ignora 'Aptitudes:', 'Actividades y grupos:'.
 
-{truncated}";
+{rawText}";
 
         var schema = JsonDocument.Parse("""
             {
