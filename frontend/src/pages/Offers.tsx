@@ -4,6 +4,7 @@ import CategoriesBar from '../components/CategoriesBar';
 import NotesModal from '../components/NotesModal';
 import KeywordModal from '../components/KeywordModal';
 import { formatDescription } from '../utils';
+import { useToast } from '../context/ToastContext';
 
 interface Job {
   id: number;
@@ -41,6 +42,7 @@ export default function Offers() {
   const [notesJob, setNotesJob] = useState<Job | null>(null);
   const [kwModal, setKwModal] = useState<{ id: number; name: string; status: string } | null>(null);
   const [editingTitle, setEditingTitle] = useState<{ jobId: number; title: string } | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     fetch('/api/keywords')
@@ -119,6 +121,18 @@ export default function Offers() {
     const res = await fetch(`/api/jobs/${job.id}`, { method: 'DELETE' });
     const data = await res.json();
     if (data.success) setJobs((prev) => prev.filter((j) => j.id !== job.id));
+  }
+
+  async function handleRefresh(job: Job) {
+    const res = await fetch(`/api/jobs/${job.id}/refresh`, { method: 'PATCH' });
+    const data = await res.json();
+    if (data.status === 'rate-limited') {
+      toast(`refresh-${job.id}`, data.message, 'error');
+    } else if (data.success) {
+      setJobs((prev) => prev.map((j) => j.id === job.id
+        ? { ...j, description: data.data.description, keywords: data.data.keywords }
+        : j));
+    }
   }
 
   async function saveTitle() {
@@ -208,6 +222,16 @@ export default function Offers() {
                         ver
                       </a>
                     )}
+
+                    <button
+                      className="notes-btn refresh-btn"
+                      title="Refresh"
+                      onClick={(e) => { e.stopPropagation(); handleRefresh(job); }}
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="12" height="12">
+                        <polyline points="23 4 23 10 17 10" /><polyline points="1 20 1 14 7 14" /><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+                      </svg>
+                    </button>
 
                     <button
                       className="notes-btn"
