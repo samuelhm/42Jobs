@@ -206,7 +206,7 @@ PROYECTOS:
 KEYWORDS DEL USUARIO (aprendidas): {kwText}
 
 ESTRUCTURA DEL CV (HTML):
-1. HEADER: nombre como h1, puesto ofertado como h2 subtítulo, contacto (email, teléfono, LinkedIn, GitHub). Si el CV es en español: foto de perfil a la izquierda usando la URL /resources/YoFinal.webp como <img> redonda. Si es en inglés: SIN foto.
+1. HEADER: nombre como h1, puesto ofertado como h2 subtítulo. Datos de contacto (email, teléfono, LinkedIn, GitHub) en UNA SOLA LÍNEA separados por |, con letra pequeña. Si el CV es en español: foto de perfil a la izquierda usando la URL /resources/YoFinal.webp como <img> redonda. Si es en inglés: SIN foto.
 2. PERFIL: 3-4 líneas en el idioma de la oferta, destacando experiencia más relevante para este puesto. Adapta la presentación del usuario.
 3. EXPERIENCIA (sección separada): MÍNIMO 1, MÁXIMO 3. Las más relevantes primero. NO agregues más de 3 bajo ningún concepto.
 4. PROYECTOS (sección separada): MÍNIMO 1, MÁXIMO 3. Los más relevantes primero. NO agregues más de 3 bajo ningún concepto. NO menciones si es school o personal.

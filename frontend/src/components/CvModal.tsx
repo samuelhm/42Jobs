@@ -44,10 +44,8 @@ export default function CvModal({ jobId, jobTitle, onClose }: Props) {
       });
       const data = await res.json();
       if (data.cached) {
-        const r2 = await fetch(`/api/resumes/job/${jobId}`);
-        const d2 = await r2.json();
-        setHtml(d2.html);
-        setModel(d2.model || '');
+        setHtml(data.html);
+        setModel(data.model || '');
         setExists(true);
       } else if (data.html) {
         setHtml(data.html);
