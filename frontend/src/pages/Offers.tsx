@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import CategoriesBar from '../components/CategoriesBar';
 import NotesModal from '../components/NotesModal';
+import KeywordModal from '../components/KeywordModal';
 import { formatDescription } from '../utils';
 
 interface Job {
@@ -34,18 +35,19 @@ export default function Offers() {
   const refreshKey = searchParams.get('_t');
 
   const [jobs, setJobs] = useState<Job[]>([]);
-  const [userKeywords, setUserKeywords] = useState<Record<string, string>>({});
+  const [userKeywords, setUserKeywords] = useState<Record<string, UserKeyword>>({});
   const [loading, setLoading] = useState(false);
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [notesJob, setNotesJob] = useState<Job | null>(null);
+  const [kwModal, setKwModal] = useState<{ id: number; name: string; status: string } | null>(null);
 
   useEffect(() => {
     fetch('/api/keywords')
       .then((r) => r.json())
       .then((json) => {
         if (json.success) {
-          const map: Record<string, string> = {};
-          json.data.forEach((k: UserKeyword) => { map[k.name] = k.learning_status; });
+          const map: Record<string, UserKeyword> = {};
+          json.data.forEach((k: UserKeyword) => { map[k.name] = k; });
           setUserKeywords(map);
         }
       });
@@ -64,8 +66,8 @@ export default function Offers() {
     if (!job.keywords || job.keywords.length === 0) return 0;
     let matchCount = 0;
     job.keywords.forEach((kw) => {
-      const status = userKeywords[kw];
-      if (status && status !== 'not_learned') matchCount++;
+      const entry = userKeywords[kw];
+      if (entry && entry.learning_status !== 'not_learned') matchCount++;
     });
     return Math.round((matchCount / job.keywords.length) * 100);
   }
@@ -77,8 +79,31 @@ export default function Offers() {
   }
 
   function getKwClass(kw: string): string {
-    const status = userKeywords[kw];
-    return status ? status : 'not_learned';
+    const entry = userKeywords[kw];
+    return entry ? entry.learning_status : 'not_learned';
+  }
+
+  function handleKwClick(kw: string, e: React.MouseEvent) {
+    e.stopPropagation();
+    const entry = userKeywords[kw];
+    setKwModal({
+      id: entry?.id || 0,
+      name: kw,
+      status: entry?.learning_status || 'not_learned',
+    });
+  }
+
+  function handleKwStatusChange(keywordId: number, newStatus: string) {
+    setUserKeywords((prev) => {
+      const next = { ...prev };
+      for (const key of Object.keys(next)) {
+        if (next[key].id === keywordId) {
+          next[key] = { ...next[key], learning_status: newStatus };
+          break;
+        }
+      }
+      return next;
+    });
   }
 
   function isRecent(dateStr: string | null): boolean {
@@ -181,7 +206,13 @@ export default function Offers() {
 
                     <div className="accordion-kw-list">
                       {job.keywords.map((kw) => (
-                        <span key={kw} className={`kw-tag ${getKwClass(kw)}`}>{kw}</span>
+                        <span
+                          key={kw}
+                          className={`kw-tag ${getKwClass(kw)}`}
+                          onClick={(e) => handleKwClick(kw, e)}
+                        >
+                          {kw}
+                        </span>
                       ))}
                     </div>
                   </div>
@@ -197,6 +228,15 @@ export default function Offers() {
           jobTitle={notesJob.title}
           initialNotes={notesJob.notes}
           onClose={() => setNotesJob(null)}
+        />
+      )}
+      {kwModal && (
+        <KeywordModal
+          keywordName={kwModal.name}
+          keywordId={kwModal.id}
+          currentStatus={kwModal.status}
+          onStatusChange={handleKwStatusChange}
+          onClose={() => setKwModal(null)}
         />
       )}
     </>
