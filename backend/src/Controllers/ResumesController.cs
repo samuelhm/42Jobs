@@ -115,7 +115,19 @@ public class ResumesController : ControllerBase
             _db.Resumes.Add(resume);
             await _db.SaveChangesAsync();
 
-            return Ok(new { success = true, id = resume.Id, html = resume.CvData });
+            var userJob = await _db.UserJobs.FirstOrDefaultAsync(uj => uj.UserId == userId && uj.JobId == jobId);
+            if (userJob is null)
+            {
+                _db.UserJobs.Add(new UserJob { UserId = userId, JobId = jobId, Applied = true, AppliedAt = DateTime.UtcNow });
+            }
+            else
+            {
+                userJob.Applied = true;
+                userJob.AppliedAt = DateTime.UtcNow;
+            }
+            await _db.SaveChangesAsync();
+
+            return Ok(new { success = true, id = resume.Id, html = resume.CvData, tracked = true });
         }
         catch (Exception ex)
         {

@@ -4,9 +4,10 @@ interface Props {
   jobId: number;
   jobTitle: string;
   onClose: () => void;
+  onGenerated?: () => void;
 }
 
-export default function CvModal({ jobId, jobTitle, onClose }: Props) {
+export default function CvModal({ jobId, jobTitle, onClose, onGenerated }: Props) {
   const [html, setHtml] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -46,6 +47,7 @@ export default function CvModal({ jobId, jobTitle, onClose }: Props) {
       } else if (data.html) {
         setHtml(data.html);
         setModel('gpt-5.4-mini');
+        onGenerated?.();
       } else {
         setError(data.error || 'Generation failed');
       }
