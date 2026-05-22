@@ -215,27 +215,19 @@ Palabras clave a analizar:
     {
         var truncated = rawText.Length > 8000 ? rawText[..8000] : rawText;
 
-        var prompt = $@"Eres un extractor de datos de LinkedIn. Te voy a dar el texto en bruto de la seccion 'Experiencia' copiada directamente de un perfil de LinkedIn.
+        var prompt = $@"Extrae cada experiencia laboral del siguiente perfil de LinkedIn como JSON:
 
-Extrae cada puesto de trabajo como un objeto JSON con estos campos:
+Meses en español: ene=01, feb=02, mar=03, abr=04, may=05, jun=06, jul=07, ago=08, sept=09, oct=10, nov=11, dic=12.
 
-IMPORTANTE: Las fechas en LinkedIn aparecen en formato español abreviado en una linea como:
-  'sept. 2023 - ene. 2024 · 5 meses'
-  'jun. 2020 - feb. 2023 · 2 años 9 meses'
-  'abr. 2018 - ene. 2020 · 1 año 10 meses'
-Debes extraer las fechas de esa linea. Convierte las abreviaturas de mes: ene=01, feb=02, mar=03, abr=04, may=05, jun=06, jul=07, ago=08, sept=09, oct=10, nov=11, dic=12.
+Para cada puesto extrae:
+- company: empresa
+- position: cargo
+- start_date: YYYY-MM-DD desde la linea 'mes. año - mes. año'
+- end_date: YYYY-MM-DD o null
+- description: texto completo, sin resumir
 
-- company: nombre de la empresa (el texto que aparece debajo del cargo, antes del '·')
-- position: el titulo del cargo (primera linea de cada bloque)
-- company: nombre de la empresa
-- position: el titulo del cargo
-- start_date: fecha de inicio en formato YYYY-MM-DD (ej: '2023-09-01')
-- end_date: fecha de fin en formato YYYY-MM-DD, o null si es el puesto actual
-- description: TODAS las lineas de texto descriptivo del puesto. Incluye TODO el contenido, no resumas. Si hay viñetas o listas, inclúyelas también.
+Ignora 'Aptitudes: ...'.
 
-Ignora las lineas de 'Aptitudes: ...' y las listas de skills.
-
-Texto a analizar:
 {truncated}";
 
         var schema = JsonDocument.Parse("""
@@ -294,17 +286,16 @@ Texto a analizar:
     {
         var truncated = rawText.Length > 8000 ? rawText[..8000] : rawText;
 
-        var prompt = $@"Eres un extractor de datos de LinkedIn. Te voy a dar el texto en bruto de la seccion 'Educacion' copiada directamente de un perfil de LinkedIn.
+        var prompt = $@"Extrae cada entrada educativa del perfil de LinkedIn como JSON.
 
-Extrae cada entrada educativa como un objeto JSON con estos campos:
-- institution: nombre de la institucion (primera linea de cada bloque)
-- degree: titulo o campo de estudio (segunda linea)
-- start_year: año de inicio como numero (p.ej. 2024). Ejemplos: 'ene. 2024 – may. 2025' → 2024, 'sept. 2009 – jun. 2011' → 2009, 'oct. 2024 – jul. 2025' → 2024, 'sept. 2007 – jun. 2009' → 2007.
-- end_year: año de fin como numero, o null si no ha terminado. De los ejemplos: → 2025, 2011, 2025, 2009.
+Para cada entrada extrae:
+- institution: institucion
+- degree: titulo o campo de estudio
+- start_year: año inicio como numero (de 'ene. 2024 – may. 2025' → 2024)
+- end_year: año fin como numero o null
 
-Ignora las lineas de 'Aptitudes: ...' y listas de skills. Ignora 'Actividades y grupos:'.
+Ignora 'Aptitudes:', 'Actividades y grupos:'.
 
-Texto a analizar:
 {truncated}";
 
         var schema = JsonDocument.Parse("""
