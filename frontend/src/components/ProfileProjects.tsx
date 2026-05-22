@@ -17,6 +17,7 @@ export default function ProfileProjects() {
   const [importing, setImporting] = useState(false);
   const [importStatus, setImportStatus] = useState<{ message: string; type: 'info' | 'success' | 'error'; processed?: number; total?: number } | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const activeJobRef = useRef<string | null>(null);
 
   async function load() {
     const res = await fetch('/api/projects');
@@ -26,6 +27,19 @@ export default function ProfileProjects() {
   }
 
   useEffect(() => { load(); }, []);
+
+  useEffect(() => {
+    return () => {
+      if (pollRef.current) clearInterval(pollRef.current);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (activeJobRef.current) {
+      setImporting(true);
+      pollImport(activeJobRef.current);
+    }
+  }, []);
 
   function resetForm() {
     setForm({ name: '', description: '', type: 'personal' });
@@ -86,44 +100,54 @@ export default function ProfileProjects() {
         return;
       }
 
-      await new Promise<void>((resolve) => {
-        pollRef.current = setInterval(async () => {
-          try {
-            const r = await fetch(`/api/projects/import-github/${jobId}`);
-            const d = await r.json();
-            if (d.status === 'completed') {
-              clearInterval(pollRef.current!);
-              setImportStatus({ message: `${d.inserted} projects imported`, type: 'success' });
-              setTimeout(() => setImportStatus(null), 12000);
-              load();
-              resolve();
-            } else if (d.status === 'failed') {
-              clearInterval(pollRef.current!);
-              setImportStatus({ message: d.error || 'Import failed', type: 'error' });
-              setTimeout(() => setImportStatus(null), 5000);
-              resolve();
-            } else if (d.status === 'running') {
-              const total = d.total || 0;
-              const processed = d.processed || 0;
-              setImportStatus({
-                message: d.message || `Processing... ${processed}/${total}`,
-                type: 'info',
-                processed: total > 0 ? processed : undefined,
-                total: total > 0 ? total : undefined,
-              });
-            }
-          } catch {
-            clearInterval(pollRef.current!);
-            resolve();
-          }
-        }, 2000);
-      });
+      activeJobRef.current = jobId;
+
+      await new Promise<void>((resolve) => { pollImportInternal(jobId, resolve); });
     } catch {
       setImportStatus({ message: 'Connection error', type: 'error' });
       setTimeout(() => setImportStatus(null), 4000);
     } finally {
       setImporting(false);
     }
+  }
+
+  function pollImportInternal(jobId: string, resolve: () => void) {
+    pollRef.current = setInterval(async () => {
+      try {
+        const r = await fetch(`/api/projects/import-github/${jobId}`);
+        const d = await r.json();
+        if (d.status === 'completed') {
+          clearInterval(pollRef.current!);
+          activeJobRef.current = null;
+          setImportStatus({ message: `${d.inserted} projects imported`, type: 'success' });
+          setTimeout(() => setImportStatus(null), 12000);
+          load();
+          resolve();
+        } else if (d.status === 'failed') {
+          clearInterval(pollRef.current!);
+          activeJobRef.current = null;
+          setImportStatus({ message: d.error || 'Import failed', type: 'error' });
+          setTimeout(() => setImportStatus(null), 5000);
+          resolve();
+        } else if (d.status === 'running') {
+          const total = d.total || 0;
+          const processed = d.processed || 0;
+          setImportStatus({
+            message: d.message || `Processing... ${processed}/${total}`,
+            type: 'info',
+            processed: total > 0 ? processed : undefined,
+            total: total > 0 ? total : undefined,
+          });
+        }
+      } catch {
+        clearInterval(pollRef.current!);
+        resolve();
+      }
+    }, 2000);
+  }
+
+  function pollImport(jobId: string) {
+    pollImportInternal(jobId, () => {});
   }
 
   if (loading) return <div className="loading">Loading...</div>;
