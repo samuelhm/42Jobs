@@ -209,10 +209,10 @@ ESTRUCTURA DEL CV (HTML):
 1. HEADER: nombre como h1, puesto ofertado como h2 subtítulo, contacto (email, teléfono, LinkedIn, GitHub). Si el CV es en español: foto de perfil a la izquierda usando la URL /resources/YoFinal.webp como <img> redonda. Si es en inglés: SIN foto.
 2. PERFIL: 3-4 líneas en el idioma de la oferta, destacando experiencia más relevante para este puesto. Adapta la presentación del usuario.
 3. EXPERIENCIA (sección separada): Mínimo 1, máximo 5. Las más relevantes primero. Cada una con rol, empresa, fechas y descripción adaptada a la oferta.
-4. PROYECTOS (sección separada): Los más relevantes primero. El total de experiencia+proyectos debe ser exactamente 6. NO menciones si es "school" o "personal". Solo nombre y descripción adaptada.
-4. EDUCACIÓN: máximo 3, las más recientes primero.
-5. SKILLS: Agrupadas por categorías (Backend, Frontend, Databases, DevOps, AI, Tools...). MÍNIMO 8 skills por categoría. Usa las keywords del usuario. Si no llega a 8, INFIERE las que faltan basándote en experiencia y proyectos. NUNCA inventes tecnologías sin sentido. Todo en minúsculas excepto nombres propios.
-6. IDIOMAS: solo nombres (sin nivel): Inglés, Español, Catalán...
+4. PROYECTOS (sección separada): Los más relevantes primero. El total de experiencia+proyectos debe ser exactamente 6. NO menciones si es school o personal. Solo nombre y descripción adaptada.
+5. EDUCACIÓN: máximo 3, las más recientes primero.
+6. SKILLS: Agrupadas por categorías (Backend, Frontend, Databases, DevOps, AI, Tools...). MÍNIMO 8 skills por categoría. Usa las keywords del usuario. Si no llega a 8, INFIERE las que faltan basándote en experiencia y proyectos. NUNCA inventes tecnologías sin sentido. Todo en minúsculas excepto nombres propios.
+7. IDIOMAS: solo nombres (sin nivel): Inglés, Español, Catalán...
 
 CSS: mínimo imprescindible, legible (Arial/Helvetica), A4-friendly, márgenes normales, sin colores estridentes. Los títulos de sección (h2) DEBEN ser visiblemente más grandes que el texto del contenido. Las secciones separadas con <hr> sutil. SIN fuentes externas. SIN emojis.
 
