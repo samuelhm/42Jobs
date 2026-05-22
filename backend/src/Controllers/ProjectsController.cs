@@ -148,11 +148,13 @@ public class ProjectsController : ControllerBase
         var jobId = Guid.NewGuid();
         ImportStatuses[jobId] = new ImportStatus { Status = "queued", JobId = jobId };
 
+        var token = body.Token;
+
         var scopeFactory = _scopeFactory;
         var httpFactory = _httpFactory;
         var logger = _logger;
 
-        _ = Task.Run(async () => await ProcessImportAsync(jobId, userId, username, scopeFactory, httpFactory, logger));
+        _ = Task.Run(async () => await ProcessImportAsync(jobId, userId, username, token, scopeFactory, httpFactory, logger));
 
         return Accepted(new { job_id = jobId, status = "queued", status_url = $"/api/projects/import-github/{jobId}" });
     }
@@ -167,7 +169,7 @@ public class ProjectsController : ControllerBase
     }
 
     private static async Task ProcessImportAsync(
-        Guid jobId, Guid userId, string username,
+        Guid jobId, Guid userId, string username, string? token,
         IServiceScopeFactory scopeFactory, IHttpClientFactory httpFactory,
         ILogger logger)
     {
@@ -183,6 +185,8 @@ public class ProjectsController : ControllerBase
 
             using var http = httpFactory.CreateClient();
             http.DefaultRequestHeaders.Add("User-Agent", "bimjobsnet");
+            if (!string.IsNullOrWhiteSpace(token))
+                http.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
 
             var reposUrl = $"https://api.github.com/users/{Uri.EscapeDataString(username)}/repos?per_page=20&sort=updated";
             var reposJson = await http.GetStringAsync(reposUrl);

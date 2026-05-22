@@ -14,6 +14,7 @@ export default function ProfileProjects() {
   const [form, setForm] = useState({ name: '', description: '', type: 'personal' });
   const [editingId, setEditingId] = useState<number | null>(null);
   const [ghUsername, setGhUsername] = useState('');
+  const [ghToken, setGhToken] = useState('');
   const [importing, setImporting] = useState(false);
   const [importStatus, setImportStatus] = useState<{ message: string; type: 'info' | 'success' | 'error'; processed?: number; total?: number } | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -81,7 +82,7 @@ export default function ProfileProjects() {
       const res = await fetch('/api/projects/import-github', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username }),
+        body: JSON.stringify({ username, token: ghToken || null }),
       });
       const data = await res.json();
 
@@ -166,7 +167,12 @@ export default function ProfileProjects() {
             placeholder="github username"
             value={ghUsername}
             onChange={(e) => setGhUsername(e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter') handleImport(); }}
+          />
+          <input
+            type="password"
+            placeholder="token (optional)"
+            value={ghToken}
+            onChange={(e) => setGhToken(e.target.value)}
           />
           <button className="btn-confirm" onClick={handleImport} disabled={importing}>
             {importing ? 'Importing...' : 'Import'}
