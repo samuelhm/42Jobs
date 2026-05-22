@@ -118,9 +118,9 @@ public class CategoriesController : ControllerBase
         }
 
         if (category.LastFetchedAt is not null
-            && DateTime.UtcNow - category.LastFetchedAt.Value < TimeSpan.FromHours(3))
+            && DateTime.UtcNow - category.LastFetchedAt.Value < TimeSpan.FromHours(4))
         {
-            return Ok(new { status = "fresh", message = "Category already fetched within the last 3 hours" });
+            return Ok(new { status = "fresh", message = "Category already fetched within the last 4 hours" });
         }
 
         var existingJobId = _fetchOrchestrator.Enqueue(id, category.Name, body);
@@ -162,6 +162,99 @@ public class CategoriesController : ControllerBase
         }
 
         return Ok(status);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetAll()
+    {
+        var userId = GetUserId();
+
+        var categories = await _db.UserCategories
+            .Where(uc => uc.UserId == userId)
+            .Include(uc => uc.Category)
+            .ThenInclude(c => c.Jobs)
+            .Select(uc => new CategoryResponseDto
+            {
+                Id = uc.Category.Id,
+                Name = uc.Category.Name,
+                JobCount = uc.Category.Jobs.Count,
+                LastFetchedAt = uc.Category.LastFetchedAt,
+            })
+            .OrderBy(c => c.Name)
+            .ToListAsync();
+
+        return Ok(new { success = true, data = categories });
+    }
+
+    [HttpGet("{id:int}/jobs")]
+    public async Task<IActionResult> GetJobs([FromRoute] int id)
+    {
+        var userId = GetUserId();
+
+        var follows = await _db.UserCategories.AnyAsync(uc => uc.UserId == userId && uc.CategoryId == id);
+        if (!follows)
+            return NotFound(new { error = "Category not found" });
+
+        var jobs = await _db.Jobs
+            .Where(j => j.CategoryId == id)
+            .Include(j => j.Company)
+            .Include(j => j.Keywords)
+            .OrderByDescending(j => j.PostedDate)
+            .Select(j => new JobResponseDto
+            {
+                Id = j.Id,
+                Title = j.Title ?? string.Empty,
+                Description = j.Description,
+                Location = j.Location,
+                PostedDate = j.PostedDate.HasValue ? j.PostedDate.Value.ToString("yyyy-MM-dd") : null,
+                Salary = j.Salary,
+                Benefits = j.Benefits,
+                JobType = j.JobType,
+                ExperienceLevel = j.ExperienceLevel,
+                JobUrl = j.JobUrl,
+                CompanyName = j.Company != null ? j.Company.Name : null,
+                CompanyType = j.Company != null ? j.Company.CompanyType : null,
+                Keywords = j.Keywords.Select(k => k.Name).ToList(),
+                CreatedAt = j.CreatedAt,
+            })
+            .ToListAsync();
+
+        var jobIds = jobs.Select(j => j.Id).ToList();
+        var userJobs = await _db.UserJobs
+            .Where(uj => uj.UserId == userId && jobIds.Contains(uj.JobId))
+            .ToListAsync();
+
+        foreach (var job in jobs)
+        {
+            var uj = userJobs.FirstOrDefault(u => u.JobId == job.Id);
+            if (uj is not null)
+                job.Notes = uj.Notes;
+        }
+
+        return Ok(new { success = true, data = jobs });
+    }
+
+    [HttpGet("{id:int}/keywords")]
+    public async Task<IActionResult> GetKeywords([FromRoute] int id)
+    {
+        var userId = GetUserId();
+
+        var follows = await _db.UserCategories.AnyAsync(uc => uc.UserId == userId && uc.CategoryId == id);
+        if (!follows)
+            return NotFound(new { error = "Category not found" });
+
+        var keywords = await _db.Keywords
+            .Where(k => k.Jobs.Any(j => j.CategoryId == id))
+            .Select(k => new CategoryKeywordDto
+            {
+                Name = k.Name,
+                Count = k.Jobs.Count(j => j.CategoryId == id),
+            })
+            .OrderByDescending(k => k.Count)
+            .Take(25)
+            .ToListAsync();
+
+        return Ok(new { success = true, data = keywords });
     }
 
     private Guid GetUserId()

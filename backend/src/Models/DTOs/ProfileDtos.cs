@@ -111,3 +111,42 @@ public class UpdateKeywordDto
 {
     public string? LearningStatus { get; set; }
 }
+
+// ─── Category listing ──────────────────────────────────────
+
+public class CategoryResponseDto
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public int JobCount { get; set; }
+    public DateTime? LastFetchedAt { get; set; }
+}
+
+// ─── Job listing ───────────────────────────────────────────
+
+public class JobResponseDto
+{
+    public int Id { get; set; }
+    public string Title { get; set; } = string.Empty;
+    public string? Description { get; set; }
+    public string? Location { get; set; }
+    public string? PostedDate { get; set; }
+    public string? Salary { get; set; }
+    public string? Benefits { get; set; }
+    public string? JobType { get; set; }
+    public string? ExperienceLevel { get; set; }
+    public string? JobUrl { get; set; }
+    public string? CompanyName { get; set; }
+    public string? CompanyType { get; set; }
+    public List<string> Keywords { get; set; } = [];
+    public string? Notes { get; set; }
+    public DateTime CreatedAt { get; set; }
+}
+
+// ─── Keywords per category ─────────────────────────────────
+
+public class CategoryKeywordDto
+{
+    public string Name { get; set; } = string.Empty;
+    public int Count { get; set; }
+}
