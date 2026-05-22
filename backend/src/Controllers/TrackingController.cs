@@ -24,7 +24,10 @@ public class TrackingController : ControllerBase
         var userId = GetUserId();
 
         var jobs = await _db.Resumes
-            .Where(r => r.UserId == userId)
+            .Where(r => r.UserId == userId && r.Job != null)
+            .Include(r => r.Job!)
+            .ThenInclude(j => j.Company)
+            .OrderByDescending(r => r.Job!.UpdatedAt)
             .Select(r => new
             {
                 r.Job!.Id,
@@ -32,7 +35,6 @@ public class TrackingController : ControllerBase
                 CompanyName = r.Job.Company != null ? r.Job.Company.Name : null,
                 r.Job.JobUrl
             })
-            .OrderByDescending(r => r.Job!.UpdatedAt)
             .ToListAsync();
 
         return Ok(new { success = true, data = jobs });
