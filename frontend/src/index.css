@@ -629,26 +629,48 @@ main {
 
 /* ── Description text ── */
 .desc-text {
-  max-height: 120px;
+  max-height: 200px;
   overflow-y: auto;
-  font-size: 0.68rem;
-  line-height: 1.5;
+  font-size: 0.7rem;
+  line-height: 1.65;
   color: var(--text-dim);
-  padding: 0.4rem;
+  padding: 0.5rem;
   background: var(--bg);
   border-radius: 4px;
   margin-top: 0.3rem;
   scrollbar-width: thin;
   scrollbar-color: var(--border) transparent;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 .desc-text::-webkit-scrollbar { width: 3px; }
 .desc-text::-webkit-scrollbar-track { background: transparent; }
 .desc-text::-webkit-scrollbar-thumb { background: var(--border); border-radius: 999px; }
 
-/* ── Notes modal textarea ── */
+/* ── Notes modal ── */
 #notes-modal .notes-textarea {
   min-height: 200px;
   margin-bottom: 0.5rem;
+}
+
+.dialog-box .notes-textarea {
+  width: 100%;
+  min-height: 150px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  padding: 0.5rem;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.dialog-box .notes-textarea:focus {
+  border-color: var(--amber);
+  box-shadow: 0 0 8px var(--amber-glow);
 }
 
 /* ── Delete button ── */

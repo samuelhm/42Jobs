@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import CategoriesBar from '../components/CategoriesBar';
-import JobNotes from '../components/JobNotes';
+import NotesModal from '../components/NotesModal';
 
 interface Job {
   id: number;
@@ -36,6 +36,7 @@ export default function Offers() {
   const [userKeywords, setUserKeywords] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [expandedId, setExpandedId] = useState<number | null>(null);
+  const [notesJob, setNotesJob] = useState<Job | null>(null);
 
   useEffect(() => {
     fetch('/api/keywords')
@@ -144,7 +145,7 @@ export default function Offers() {
                     <button
                       className="notes-btn"
                       title="Notes"
-                      onClick={(e) => { e.stopPropagation(); setExpandedId(expandedId === job.id ? null : job.id); }}
+                      onClick={(e) => { e.stopPropagation(); setNotesJob(job); }}
                     >
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="12" height="12">
                         <path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
@@ -182,14 +183,20 @@ export default function Offers() {
                         <span key={kw} className={`kw-tag ${getKwClass(kw)}`}>{kw}</span>
                       ))}
                     </div>
-
-                    <JobNotes jobId={job.id} initialNotes={job.notes} />
                   </div>
                 </div>
               );
             })}
           </div>
         </div>
+      )}
+      {notesJob && (
+        <NotesModal
+          jobId={notesJob.id}
+          jobTitle={notesJob.title}
+          initialNotes={notesJob.notes}
+          onClose={() => setNotesJob(null)}
+        />
       )}
     </>
   );

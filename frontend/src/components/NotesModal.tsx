@@ -2,10 +2,12 @@ import { useState, useEffect, useRef } from 'react';
 
 interface Props {
   jobId: number;
+  jobTitle: string;
   initialNotes: string | null;
+  onClose: () => void;
 }
 
-export default function JobNotes({ jobId, initialNotes }: Props) {
+export default function NotesModal({ jobId, jobTitle, initialNotes, onClose }: Props) {
   const [notes, setNotes] = useState(initialNotes || '');
   const [saved, setSaved] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -30,16 +32,23 @@ export default function JobNotes({ jobId, initialNotes }: Props) {
   }
 
   return (
-    <div className="offer-notes">
-      <textarea
-        className="notes-textarea"
-        value={notes}
-        onChange={(e) => handleChange(e.target.value)}
-        onClick={(e) => e.stopPropagation()}
-        placeholder="Notes..."
-        rows={3}
-      />
-      {saved && <span className="notes-saved visible">Saved</span>}
+    <div className="dialog-overlay" onClick={onClose}>
+      <div className="dialog-box" onClick={(e) => e.stopPropagation()}>
+        <h3>Notes</h3>
+        <p>{jobTitle}</p>
+        <textarea
+          className="notes-textarea"
+          value={notes}
+          onChange={(e) => handleChange(e.target.value)}
+          placeholder="Write your notes..."
+          rows={8}
+          autoFocus
+        />
+        {saved && <span className="notes-saved visible">Saved</span>}
+        <div className="dialog-actions">
+          <button className="btn-cancel" onClick={onClose}>Close</button>
+        </div>
+      </div>
     </div>
   );
 }
