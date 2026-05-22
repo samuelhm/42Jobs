@@ -156,7 +156,7 @@ export default function ProfileProjects() {
         <p className="hint">
           Enter your GitHub username and a{' '}
           <a href="https://github.com/settings/tokens" target="_blank" rel="noopener noreferrer">personal access token</a>
-          {' '}with <code>repo</code> scope to import your repositories.
+          {' '}(classic). Only <code>repo</code> scope is needed to read both public and private repositories.
         </p>
         <div className="pf-import-row">
           <input
