@@ -1,11 +1,15 @@
 # =============================================================================
 # 42jobs - Docker Compose Production overrides
 # =============================================================================
-# Usage:
-#   cp .env.example .env    # edit with production values
+#
+# Images are built on CI and pushed to GitHub Container Registry.
+# deploy.yml pulls from ghcr.io — no local build in production.
+#
+# Manual deploy:
+#   docker login ghcr.io -u <user> --password-stdin
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml pull
 #   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 #
-# This file is deployed to the production server alongside docker-compose.yml.
 # The .env file is NOT committed — create it manually on the server.
 # API keys are configured via the admin panel, not env vars.
 # =============================================================================
@@ -31,6 +35,7 @@ services:
 
   # ─── Backend (.NET) ─────────────────────────────────────
   backend:
+    image: ghcr.io/samuelhm/42jobs-backend:latest
     restart: always
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8080 || exit 1"]
@@ -53,6 +58,7 @@ services:
 
   # ─── Frontend (Nginx) ───────────────────────────────────
   frontend:
+    image: ghcr.io/samuelhm/42jobs-frontend:latest
     restart: always
     expose:
       - "80"
