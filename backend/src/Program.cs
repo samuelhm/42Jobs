@@ -8,6 +8,8 @@ using src.Services.Ai;
 using src.Services.Ai.Providers;
 using src.Services.Ai.Providers.Gemini;
 using src.Services.Ai.Providers.OpenAI;
+using src.Services.Jobs.Providers;
+using src.Services.Jobs.Providers.LinkedIn.RapidApi;
 using src.Utils;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -26,6 +28,15 @@ builder.Services.AddHttpClient<LinkedInApiService>(client =>
     client.DefaultRequestHeaders.Add("x-rapidapi-key", Environment.GetEnvironmentVariable("LINKEDIN_API_KEY"));
     client.DefaultRequestHeaders.Add("x-rapidapi-host", Environment.GetEnvironmentVariable("LINKEDIN_API_HOST"));
 });
+
+builder.Services.AddHttpClient<LinkedInRapidApiProvider>(client =>
+{
+    client.BaseAddress = new Uri($"https://{Environment.GetEnvironmentVariable("LINKEDIN_API_HOST")}/");
+    client.DefaultRequestHeaders.Add("x-rapidapi-key", Environment.GetEnvironmentVariable("LINKEDIN_API_KEY"));
+    client.DefaultRequestHeaders.Add("x-rapidapi-host", Environment.GetEnvironmentVariable("LINKEDIN_API_HOST"));
+});
+
+builder.Services.AddSingleton<IJobProvider, LinkedInRapidApiProvider>();
 
 builder.Services.AddSingleton<IAiProvider, GeminiProvider>();
 builder.Services.AddSingleton<IAiProvider, OpenAiProvider>();
