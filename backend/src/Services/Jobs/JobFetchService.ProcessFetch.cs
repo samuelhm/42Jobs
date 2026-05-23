@@ -1,4 +1,3 @@
-using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using src.Data;
@@ -66,16 +65,6 @@ public partial class JobFetchService
             }, ct));
 
             await Task.WhenAll(tasks);
-
-            if (status.Inserted > 0)
-            {
-                var kwCount = await db.Keywords.CountAsync(ct);
-                if (kwCount - _lastDedupCount >= 20)
-                {
-                    _lastDedupCount = kwCount;
-                    await DedupKeywordsAsync(db, ai, _logger);
-                }
-            }
 
             status.Status = "completed";
             _logger.LogInformation("Fetch {JobId} done: {Inserted} inserted, {Skipped} skipped",

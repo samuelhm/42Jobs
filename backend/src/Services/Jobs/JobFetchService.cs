@@ -15,7 +15,6 @@ public partial class JobFetchService : BackgroundService, IJobFetchService
     private readonly Dictionary<string, IJobProvider> _providers;
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<JobFetchService> _logger;
-    private static int _lastDedupCount;
 
     private static readonly Dictionary<string, string> CompanyTypeMap = new()
     {
