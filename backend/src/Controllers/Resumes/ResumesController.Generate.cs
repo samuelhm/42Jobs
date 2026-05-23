@@ -50,18 +50,15 @@ public partial class ResumesController
             .Include(uk => uk.Keyword)
             .ToListAsync();
 
+        var template = await _db.Set<CvTemplate>()
+            .FirstOrDefaultAsync(t => t.IsActive);
+
         var context = new Dictionary<string, string>
         {
             ["job_title"] = job.Title ?? "",
             ["company"] = job.Company?.Name ?? "Not specified",
             ["job_description"] = job.Description ?? "",
             ["job_keywords"] = string.Join(", ", job.Keywords.Select(k => k.Name)),
-            ["user_name"] = $"{user.Name ?? ""} {user.LastName ?? ""}".Trim(),
-            ["user_email"] = user.Email,
-            ["user_phone"] = user.Phone ?? "",
-            ["user_location"] = user.Address ?? "",
-            ["user_linkedin"] = user.LinkedinUrl ?? "",
-            ["user_github"] = user.GithubUrl ?? "",
             ["user_presentation"] = user.Presentation ?? "",
             ["user_languages"] = string.Join(", ", user.Languages.Select(l => l.Name)),
             ["user_experiences"] = string.Join("\n", experiences.Select(e =>
@@ -78,15 +75,16 @@ public partial class ResumesController
         try
         {
             var result = await _ai.GenerateCvAsync(context);
-            var cvData = result.GetProperty("html").GetString() ?? "";
             var fullJson = result.GetRawText();
+            var html = RenderTemplate(template?.HtmlTemplate, user, job, result, educations);
+            var modelName = body?.Model ?? "gpt-5.4-mini";
 
             var resume = new Resume
             {
                 UserId = userId,
                 JobId = jobId,
-                Model = body?.Model ?? "gpt-5.4-mini",
-                CvData = cvData,
+                Model = modelName,
+                CvData = html,
                 JsonData = fullJson,
             };
 
@@ -112,5 +110,111 @@ public partial class ResumesController
             _logger.LogError(ex, "Failed to generate CV for job {JobId}", jobId);
             return StatusCode(500, new { error = ex.Message });
         }
+    }
+
+    private static string RenderTemplate(string? templateHtml, User user, Job job, JsonElement aiData, List<Education> educations)
+    {
+        var html = templateHtml ?? "<html><body><h1>{{name}}</h1>{{profile}}{{experiences}}{{projects}}{{education}}{{skills}}{{languages}}</body></html>";
+
+        var replacements = new Dictionary<string, string>
+        {
+            ["name"] = $"{user.Name ?? ""} {user.LastName ?? ""}".Trim(),
+            ["job_title"] = job.Title ?? "",
+            ["company"] = job.Company?.Name ?? "",
+            ["email"] = user.Email,
+            ["phone"] = user.Phone ?? "",
+            ["linkedin"] = user.LinkedinUrl ?? "",
+            ["github"] = user.GithubUrl ?? "",
+            ["location"] = user.Address ?? "",
+            ["profile"] = aiData.TryGetProperty("profile", out var p) ? p.GetString() ?? "" : "",
+            ["experiences"] = RenderExperiences(aiData),
+            ["projects"] = RenderProjects(aiData),
+            ["education"] = RenderEducation(educations),
+            ["skills"] = RenderSkills(aiData),
+            ["languages"] = string.Join(" ", user.Languages.Select(l => $"<span>{l.Name}</span>")),
+        };
+
+        foreach (var (key, value) in replacements)
+            html = html.Replace($"{{{{{key}}}}}", value);
+
+        return html;
+    }
+
+    private static string RenderExperiences(JsonElement aiData)
+    {
+        if (!aiData.TryGetProperty("experiences", out var arr)) return "";
+        var parts = new List<string>();
+        foreach (var exp in arr.EnumerateArray())
+        {
+            var company = exp.TryGetProperty("company", out var c) ? c.GetString() ?? "" : "";
+            var position = exp.TryGetProperty("position", out var pos) ? pos.GetString() ?? "" : "";
+            var start = exp.TryGetProperty("start_date", out var sd) ? sd.GetString() ?? "" : "";
+            var end = exp.TryGetProperty("end_date", out var ed) ? ed.GetString() ?? "" : "";
+
+            var highlights = "";
+            if (exp.TryGetProperty("highlights", out var hl))
+            {
+                var items = hl.EnumerateArray().Select(h => $"<li>{h.GetString()}</li>");
+                highlights = $"<ul>{string.Join("", items)}</ul>";
+            }
+
+            parts.Add($@"<div class=""entry"">
+  <div class=""entry-header"">{position} — {company}</div>
+  <div class=""entry-dates"">{start} — {end}</div>
+  {highlights}
+</div>");
+        }
+        return string.Join("\n", parts);
+    }
+
+    private static string RenderProjects(JsonElement aiData)
+    {
+        if (!aiData.TryGetProperty("projects", out var arr)) return "";
+        var parts = new List<string>();
+        foreach (var proj in arr.EnumerateArray())
+        {
+            var name = proj.TryGetProperty("name", out var n) ? n.GetString() ?? "" : "";
+            var desc = proj.TryGetProperty("description", out var d) ? d.GetString() ?? "" : "";
+
+            var highlights = "";
+            if (proj.TryGetProperty("highlights", out var hl))
+            {
+                var items = hl.EnumerateArray().Select(h => $"<li>{h.GetString()}</li>");
+                highlights = $"<ul>{string.Join("", items)}</ul>";
+            }
+
+            parts.Add($@"<div class=""entry"">
+  <div class=""entry-header"">{name}</div>
+  <div class=""entry-desc"">{desc}</div>
+  {highlights}
+</div>");
+        }
+        return string.Join("\n", parts);
+    }
+
+    private static string RenderEducation(List<Education> educations)
+    {
+        var recent = educations.OrderByDescending(e => e.StartYear).Take(3);
+        return string.Join("\n", recent.Select(e =>
+            $@"<div class=""edu-entry"">{e.Degree} — {e.Institution ?? ""} ({e.StartYear} - {e.EndYear})</div>"));
+    }
+
+    private static string RenderSkills(JsonElement aiData)
+    {
+        if (!aiData.TryGetProperty("skills", out var arr)) return "";
+        var parts = new List<string>();
+        foreach (var group in arr.EnumerateArray())
+        {
+            var category = group.TryGetProperty("category", out var cat) ? cat.GetString() ?? "" : "";
+            var tags = "";
+            if (group.TryGetProperty("items", out var items))
+                tags = string.Join("", items.EnumerateArray().Select(i => $"<span class=\"skill-tag\">{i.GetString()}</span>"));
+
+            parts.Add($@"<div class=""skill-group"">
+  <h3>{category}</h3>
+  <div class=""skill-tags"">{tags}</div>
+</div>");
+        }
+        return string.Join("\n", parts);
     }
 }

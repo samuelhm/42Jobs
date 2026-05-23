@@ -163,26 +163,17 @@ INSERT INTO ai_schemas (name, description, json_schema) VALUES
   "required": ["education"]
 }'),
 
-('cv_generation', 'Generates structured CV data from user profile and job offer', '{
+('cv_generation', 'Generates structured CV content from user profile and job offer', '{
   "type": "OBJECT",
   "properties": {
     "error": {
       "type": "STRING",
       "description": "Null if successful. Error description if generation fails."
     },
-    "contact": {
-      "type": "OBJECT",
-      "properties": {
-        "name": { "type": "STRING" },
-        "email": { "type": "STRING" },
-        "phone": { "type": "STRING" },
-        "linkedin": { "type": "STRING" },
-        "github": { "type": "STRING" },
-        "location": { "type": "STRING" }
-      },
-      "required": ["name", "email"]
+    "profile": {
+      "type": "STRING",
+      "description": "3-4 line professional summary tailored to this specific job offer."
     },
-    "summary": { "type": "STRING" },
     "experiences": {
       "type": "ARRAY",
       "items": {
@@ -194,11 +185,13 @@ INSERT INTO ai_schemas (name, description, json_schema) VALUES
           "end_date": { "type": "STRING" },
           "highlights": {
             "type": "ARRAY",
-            "items": { "type": "STRING" }
+            "items": { "type": "STRING" },
+            "description": "3-5 bullet points highlighting achievements relevant to this job."
           }
         },
         "required": ["company", "position", "highlights"]
-      }
+      },
+      "description": "1 to 3 most relevant experiences, descriptions enhanced for this job."
     },
     "projects": {
       "type": "ARRAY",
@@ -209,23 +202,13 @@ INSERT INTO ai_schemas (name, description, json_schema) VALUES
           "description": { "type": "STRING" },
           "highlights": {
             "type": "ARRAY",
-            "items": { "type": "STRING" }
+            "items": { "type": "STRING" },
+            "description": "2-4 key technical achievements or features."
           }
         },
         "required": ["name", "highlights"]
-      }
-    },
-    "education": {
-      "type": "ARRAY",
-      "items": {
-        "type": "OBJECT",
-        "properties": {
-          "degree": { "type": "STRING" },
-          "institution": { "type": "STRING" },
-          "year": { "type": "STRING" }
-        },
-        "required": ["degree", "institution"]
-      }
+      },
+      "description": "1 to 3 most relevant projects."
     },
     "skills": {
       "type": "ARRAY",
@@ -239,18 +222,11 @@ INSERT INTO ai_schemas (name, description, json_schema) VALUES
           }
         },
         "required": ["category", "items"]
-      }
-    },
-    "languages": {
-      "type": "ARRAY",
-      "items": { "type": "STRING" }
-    },
-    "html": {
-      "type": "STRING",
-      "description": "The complete rendered CV as HTML with inline CSS. No markdown."
+      },
+      "description": "4 skill categories, at least 8 skills each. Most relevant for this job."
     }
   },
-  "required": ["contact", "summary", "skills", "html"]
+  "required": ["profile", "experiences", "projects", "skills"]
 }')
 ON CONFLICT (name) DO NOTHING;
 
@@ -349,10 +325,9 @@ Ignore "Aptitudes:", "Actividades y grupos:".
 (SELECT id FROM ai_schemas WHERE name = 'education_parse'),
 (SELECT id FROM ai_models WHERE name = 'gpt-5.4-nano')),
 
-('cv_generation', 'Generate CV', 'Generates a structured CV from user profile and job offer',
-'You are a professional CV generator optimized for ATS (Applicant Tracking Systems). Generate structured CV data AND a fully rendered HTML version.',
-'Generate a CV in the same language as the job offer. If the offer is in Spanish, CV in Spanish. If in English, CV in English.
-OUTPUT FORMAT: Return a JSON object with BOTH structured data fields AND an "html" field containing the complete rendered CV as HTML with inline CSS.
+('cv_generation', 'Generate CV', 'Generates structured CV content tailored to a job offer',
+'You are a professional CV writer optimized for ATS (Applicant Tracking Systems). Generate structured CV content tailored to a specific job offer.',
+'Generate CV content in the same language as the job offer. Return ONLY the JSON object as specified in the schema.
 
 JOB OFFER:
 Title: {{job_title}}
@@ -360,14 +335,8 @@ Company: {{company}}
 Description: {{job_description}}
 Offer keywords: {{job_keywords}}
 
-USER PROFILE:
-Name: {{user_name}}
-Email: {{user_email}}
-Phone: {{user_phone}}
-Location: {{user_location}}
-LinkedIn: {{user_linkedin}}
-GitHub: {{user_github}}
-Summary: {{user_presentation}}
+USER BACKGROUND:
+{{user_presentation}}
 Languages: {{user_languages}}
 
 EXPERIENCE:
@@ -379,27 +348,14 @@ EDUCATION:
 PROJECTS:
 {{user_projects}}
 
-USER KEYWORDS (learned): {{user_keywords}}
+USER SKILLS: {{user_keywords}}
 
-INSTRUCTIONS:
-1. Contact: full name, email, phone, linkedin, github, location.
-2. Summary: 3-4 lines in the offer''s language highlighting the most relevant experience.
-3. Experiences: MIN 1, MAX 3. Most relevant first, with highlights using offer keywords.
-4. Projects: MIN 1, MAX 3. Most relevant first.
-5. Education: max 3, most recent first.
-6. Skills: Grouped by category (Backend, Frontend, Databases, DevOps, AI, Tools, Soft Skills...). MIN 8 skills per category. If the offer mentions soft skills, include a Soft Skills category with at least 8 relevant soft skills.
-7. Languages: names only (no level).
-
-HTML REQUIREMENTS:
-- A4-friendly layout, Arial/Helvetica font
-- Section titles (h2) visibly larger than content
-- Sections separated by subtle <hr>
-- Contact info on one line separated by |
-- If CV in Spanish: profile photo <img> on the left using /resources/YoFinal.webp as a round image. If English: NO photo.
-- NO external fonts, NO emojis, NO markdown
-- Minimal CSS, no flashy colors
-
-FINAL REVIEW: Check the CV against the offer. Add missing keywords. Improve any descriptions for ATS compatibility.',
+RULES:
+1. PROFILE: 3-4 lines in the offer''s language. Highlight the most relevant experience and skills for this specific job. Use offer keywords naturally.
+2. EXPERIENCES: Select the 1 to 3 most relevant positions. Enhance descriptions to match the offer''s keywords and requirements. 3-5 highlights each, achievement-oriented.
+3. PROJECTS: Select the 1 to 3 most relevant projects. Enhance descriptions and highlights to emphasize technologies and skills matching the offer.
+4. SKILLS: 4 categories, at least 8 skills per category. Pick the most relevant categories for the job (e.g. Backend, Frontend, Databases, DevOps, AI, Tools, Soft Skills...). Use the user''s known skills and infer additional ones if needed. NEVER invent nonsense technologies. All lowercase except proper nouns. If the offer mentions soft skills, include a Soft Skills category.
+5. COHERENCE: Everything must be consistent. Experiences, projects, and skills should align with each other and with the profile summary.',
 (SELECT id FROM ai_schemas WHERE name = 'cv_generation'),
 (SELECT id FROM ai_models WHERE name = 'gemini-3.5-flash'))
 ON CONFLICT (functionality) DO NOTHING;
