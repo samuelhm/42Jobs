@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { get, put } from './api';
 
-interface AiService { id: number; name: string; is_active: boolean; is_free_tier: boolean; models: { id: number; name: string; is_active: boolean }[]; }
+interface AiService { id: number; name: string; base_url: string; api_key: string | null; is_active: boolean; is_free_tier: boolean; models: { id: number; name: string; is_active: boolean }[]; }
 
 function useDebouncedSave(delay = 800) {
   const [timer, setTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
@@ -78,14 +78,21 @@ export default function AdminAiServices() {
               <div>
                 <h3>{s.name}</h3>
                 <span className="service-count">{s.models.length} models</span>
-                {s.is_free_tier && <span className="free-tier-badge">FREE TIER</span>}
               </div>
-              <button className={`toggle-switch ${s.is_free_tier ? 'on' : ''}`}
-                onClick={() => toggleFreeTier(s)}>
-                <span className="toggle-knob" />
-              </button>
             </div>
             <ApiKeyInput service={s} />
+            <div className="free-tier-row">
+              <label className="checkbox-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <span>Free tier</span>
+                <button className={`toggle-switch ${s.is_free_tier ? 'on' : ''}`}
+                  onClick={() => toggleFreeTier(s)}>
+                  <span className="toggle-knob" />
+                </button>
+              </label>
+              <span className="text-dim" style={{ fontSize: '0.7rem' }}>
+                {s.is_free_tier ? 'Delays + retries active' : 'No rate limiting'}
+              </span>
+            </div>
             <div className="service-models">
               {s.models.map(m => (
                 <span key={m.id} className={`model-chip ${!m.is_active ? 'muted' : ''}`}>

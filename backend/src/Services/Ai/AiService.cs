@@ -55,9 +55,9 @@ public partial class AiService : IAiService
         JsonElement schema, string model, string? apiKey, bool isFreeTier, CancellationToken ct)
     {
         if (isFreeTier)
-            await Task.Delay(1500, ct);
+            await Task.Delay(1500 + Random.Shared.Next(500), ct);
 
-        for (var attempt = 1; attempt <= 4; attempt++)
+        for (var attempt = 1; attempt <= 5; attempt++)
         {
             try
             {
@@ -71,9 +71,9 @@ public partial class AiService : IAiService
                         "Go to Admin > AI Services and enable 'Free tier' for this provider. " +
                         "The process will be slower but will respect rate limits.", ex);
 
-                if (attempt == 4) throw;
-                var delay = attempt * 2000;
-                _logger.LogWarning("Free tier rate limit (429), retry {Attempt}/3 in {Delay}ms", attempt, delay);
+                if (attempt == 5) throw;
+                var delay = (int)Math.Pow(2, attempt) * 1000 + Random.Shared.Next(800);
+                _logger.LogWarning("Free tier rate limit (429), retry {Attempt}/5 in {Delay}ms", attempt, delay);
                 await Task.Delay(delay, ct);
             }
         }

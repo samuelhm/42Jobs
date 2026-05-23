@@ -1583,3 +1583,5 @@ textarea.input { resize: vertical; font-family: 'JetBrains Mono', monospace; fon
 .admin-dash-card:hover { border-color: var(--amber); background: var(--surface-hover); }
 .admin-dash-card .icon { font-size: 1.5rem; }
 .admin-dash-card .label { color: var(--text-dim); font-size: 0.68rem; font-weight: 400; }
+
+.free-tier-row { display: flex; align-items: center; gap: 1rem; margin-top: 0.5rem; }
