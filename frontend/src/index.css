@@ -1590,3 +1590,16 @@ textarea.input { resize: vertical; font-family: 'JetBrains Mono', monospace; fon
 .provider-config summary { cursor: pointer; font-family: "JetBrains Mono", monospace; font-size: 0.7rem; color: var(--amber-dim); margin-bottom: 0.5rem; }
 .config-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 0.3rem; }
 .form-field { display: flex; flex-direction: column; gap: 0.15rem; }
+
+.available-list { display: flex; flex-direction: column; gap: 0.3rem; margin-bottom: 0.5rem; }
+.available-item {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 0.4rem 0.6rem; background: var(--bg); border: 1px solid var(--border);
+  border-radius: var(--radius); color: var(--text); cursor: pointer; transition: all 0.15s;
+  font-family: "Outfit", sans-serif; font-size: 0.82rem; width: 100%;
+}
+.available-item:hover { border-color: var(--amber-dim); background: var(--surface-hover); }
+.available-item:disabled { opacity: 0.5; cursor: not-allowed; }
+.av-name { font-weight: 500; }
+.av-meta { font-family: "JetBrains Mono", monospace; font-size: 0.62rem; color: var(--text-dim); }
+.hint-text { font-size: 0.75rem; color: var(--text-dim); margin-bottom: 0.4rem; }

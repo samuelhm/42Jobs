@@ -1,14 +1,30 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface Props {
   onClose: () => void;
   onCreated: (id: number) => void;
+  onSubscribed: (id: number, name: string) => void;
 }
 
-export default function AddCategoryDialog({ onClose, onCreated }: Props) {
+interface AvailableCategory {
+  id: number;
+  name: string;
+  last_fetched_at: string | null;
+  job_count: number;
+}
+
+export default function AddCategoryDialog({ onClose, onCreated, onSubscribed }: Props) {
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [available, setAvailable] = useState<AvailableCategory[]>([]);
+
+  useEffect(() => {
+    fetch('/api/categories/available')
+      .then(r => r.json())
+      .then(d => { if (d.success) setAvailable(d.data); })
+      .catch(() => {});
+  }, []);
 
   async function handleCreate() {
     const trimmed = name.trim();
@@ -35,11 +51,47 @@ export default function AddCategoryDialog({ onClose, onCreated }: Props) {
     }
   }
 
+  async function handleSubscribe(id: number, categoryName: string) {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/categories', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: categoryName }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        onSubscribed(id, categoryName);
+      } else {
+        setError(data.error || 'Could not subscribe');
+      }
+    } catch {
+      setError('Connection error');
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <div className="dialog-overlay" onClick={onClose}>
       <div className="dialog-box" onClick={(e) => e.stopPropagation()}>
-        <h3>New category</h3>
-        <p>Enter a keyword to search for jobs on LinkedIn:</p>
+        <h3>Add Category</h3>
+
+        {available.length > 0 && (
+          <>
+            <p className="hint-text">Available categories:</p>
+            <div className="available-list">
+              {available.map(c => (
+                <button key={c.id} className="available-item" onClick={() => handleSubscribe(c.id, c.name)} disabled={loading}>
+                  <span className="av-name">{c.name}</span>
+                  <span className="av-meta">{c.job_count} jobs · {c.last_fetched_at ? new Date(c.last_fetched_at).toLocaleDateString() : 'never'}</span>
+                </button>
+              ))}
+            </div>
+            <p className="hint-text" style={{ marginTop: '1rem' }}>Or create a new one:</p>
+          </>
+        )}
+
         <input
           type="text"
           value={name}
@@ -51,8 +103,8 @@ export default function AddCategoryDialog({ onClose, onCreated }: Props) {
         {error && <div id="add-status">{error}</div>}
         <div className="dialog-actions">
           <button className="btn-cancel" onClick={onClose} disabled={loading}>Cancel</button>
-          <button className="btn-confirm" onClick={handleCreate} disabled={loading}>
-            {loading ? 'Searching...' : 'Search'}
+          <button className="btn-confirm" onClick={handleCreate} disabled={loading || !name.trim()}>
+            {loading ? '...' : 'Create'}
           </button>
         </div>
       </div>

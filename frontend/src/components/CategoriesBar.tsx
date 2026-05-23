@@ -151,6 +151,17 @@ export default function CategoriesBar() {
     setShowAdd(false);
     await loadCategories();
     setSearchParams({ category: String(id) });
+    await fetchAndReload(id);
+  }
+
+  async function handleSubscribed(id: number, _name: string) {
+    setShowAdd(false);
+    await loadCategories();
+    setSearchParams({ category: String(id) });
+    await fetchAndReload(id);
+  }
+
+  async function fetchAndReload(id: number) {
     setUpdating(true);
     try {
       const ok = await triggerFetch(id);
@@ -212,6 +223,7 @@ export default function CategoriesBar() {
           <AddCategoryDialog
             onClose={() => setShowAdd(false)}
             onCreated={handleCreated}
+            onSubscribed={handleSubscribed}
           />
         )}
       </div>
