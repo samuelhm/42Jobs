@@ -71,36 +71,42 @@ public class OpenAiProvider : IAiProvider
         return JsonDocument.Parse(text).RootElement;
     }
 
-    private static void WriteSchemaElement(Utf8JsonWriter writer, JsonElement element, bool isType = false)
+    private static void WriteSchemaElement(Utf8JsonWriter writer, JsonElement element)
     {
         switch (element.ValueKind)
         {
             case JsonValueKind.Object:
+                var hasType = element.TryGetProperty("type", out var _);
                 writer.WriteStartObject();
+                var hasAdditional = false;
                 foreach (var prop in element.EnumerateObject())
                 {
                     if (prop.NameEquals("additionalProperties"))
                     {
-                        writer.WriteBoolean("additionalProperties", false);
+                        if (!hasAdditional && hasType)
+                        {
+                            writer.WriteBoolean("additionalProperties", false);
+                            hasAdditional = true;
+                        }
                         continue;
                     }
                     writer.WritePropertyName(prop.Name);
-                    WriteSchemaElement(writer, prop.Value, prop.NameEquals("type"));
+                    WriteSchemaElement(writer, prop.Value);
                 }
+                if (!hasAdditional && hasType)
+                    writer.WriteBoolean("additionalProperties", false);
                 writer.WriteEndObject();
                 break;
 
             case JsonValueKind.Array:
                 writer.WriteStartArray();
                 foreach (var item in element.EnumerateArray())
-                    WriteSchemaElement(writer, item, isType);
+                    WriteSchemaElement(writer, item);
                 writer.WriteEndArray();
                 break;
 
             case JsonValueKind.String:
-                var val = element.GetString() ?? "";
-                if (isType) val = val.ToLowerInvariant();
-                writer.WriteStringValue(val);
+                writer.WriteStringValue(element.GetString());
                 break;
 
             case JsonValueKind.Number:

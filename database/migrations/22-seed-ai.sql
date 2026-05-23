@@ -30,18 +30,18 @@ ON CONFLICT (ai_service_id, name) DO NOTHING;
 INSERT INTO ai_schemas (name, description, json_schema) VALUES
 
 ('job_filter', 'Filters job relevance and junior suitability', '{
-  "type": "OBJECT",
+  "type": "object",
   "properties": {
     "error": {
-      "type": "STRING",
+      "type": "string",
       "description": "Set only if an error occurred during extraction. Omit this field entirely if successful."
     },
     "relevant": {
-      "type": "STRING",
+      "type": "string",
       "description": "\"yes\" if the offer is clearly relevant for the profile, \"no\" if it clearly is not, \"unknown\" if uncertain."
     },
     "junior_friendly": {
-      "type": "STRING",
+      "type": "string",
       "description": "\"no\" if the offer explicitly requires a senior profile or more than 4 years of experience. \"yes\" otherwise."
     }
   },
@@ -49,19 +49,19 @@ INSERT INTO ai_schemas (name, description, json_schema) VALUES
 }'),
 
 ('keyword_extraction', 'Extracts technologies and company type from job offers', '{
-  "type": "OBJECT",
+  "type": "object",
   "properties": {
     "error": {
-      "type": "STRING",
+      "type": "string",
       "description": "Null if successful. Error description if extraction fails."
     },
     "skills": {
-      "type": "ARRAY",
-      "items": { "type": "STRING" },
+      "type": "array",
+      "items": { "type": "string" },
       "description": "Exhaustive list of ALL technologies, languages, frameworks, tools, and soft skills mentioned in the offer."
     },
     "company_type": {
-      "type": "STRING",
+      "type": "string",
       "description": "Company type: Multinational, Startup, SME, Consultancy, or \"Not identified\"."
     }
   },
@@ -69,23 +69,23 @@ INSERT INTO ai_schemas (name, description, json_schema) VALUES
 }'),
 
 ('github_projects', 'Extracts project info from GitHub repositories', '{
-  "type": "OBJECT",
+  "type": "object",
   "properties": {
     "error": {
-      "type": "STRING",
+      "type": "string",
       "description": "Null if successful. Error description if analysis fails."
     },
     "projects": {
-      "type": "ARRAY",
+      "type": "array",
       "items": {
-        "type": "OBJECT",
+        "type": "object",
         "properties": {
-          "name": { "type": "STRING" },
-          "description": { "type": "STRING" },
-          "type": { "type": "STRING", "enum": ["personal", "school"] },
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "type": { "type": "string", "enum": ["personal", "school"] },
           "keywords": {
-            "type": "ARRAY",
-            "items": { "type": "STRING" }
+            "type": "array",
+            "items": { "type": "string" }
           }
         },
         "required": ["name", "description", "type", "keywords"]
@@ -96,17 +96,17 @@ INSERT INTO ai_schemas (name, description, json_schema) VALUES
 }'),
 
 ('keyword_dedup', 'Groups duplicate/similar keywords', '{
-  "type": "OBJECT",
+  "type": "object",
   "properties": {
     "error": {
-      "type": "STRING",
+      "type": "string",
       "description": "Null if successful. Error description if dedup fails."
     },
     "groups": {
-      "type": "ARRAY",
+      "type": "array",
       "items": {
-        "type": "ARRAY",
-        "items": { "type": "STRING" }
+        "type": "array",
+        "items": { "type": "string" }
       }
     }
   },
@@ -114,22 +114,22 @@ INSERT INTO ai_schemas (name, description, json_schema) VALUES
 }'),
 
 ('experience_parse', 'Parses LinkedIn experience text into structured data', '{
-  "type": "OBJECT",
+  "type": "object",
   "properties": {
     "error": {
-      "type": "STRING",
+      "type": "string",
       "description": "Null if successful. Error description if parsing fails."
     },
     "experiences": {
-      "type": "ARRAY",
+      "type": "array",
       "items": {
-        "type": "OBJECT",
+        "type": "object",
         "properties": {
-          "company": { "type": "STRING" },
-          "position": { "type": "STRING" },
-          "start_date": { "type": "STRING" },
-          "end_date": { "type": "STRING" },
-          "description": { "type": "STRING" }
+          "company": { "type": "string" },
+          "position": { "type": "string" },
+          "start_date": { "type": "string" },
+          "end_date": { "type": "string" },
+          "description": { "type": "string" }
         },
         "required": ["company"]
       }
@@ -139,21 +139,21 @@ INSERT INTO ai_schemas (name, description, json_schema) VALUES
 }'),
 
 ('education_parse', 'Parses LinkedIn education text into structured data', '{
-  "type": "OBJECT",
+  "type": "object",
   "properties": {
     "error": {
-      "type": "STRING",
+      "type": "string",
       "description": "Null if successful. Error description if parsing fails."
     },
     "education": {
-      "type": "ARRAY",
+      "type": "array",
       "items": {
-        "type": "OBJECT",
+        "type": "object",
         "properties": {
-          "institution": { "type": "STRING" },
-          "degree": { "type": "STRING" },
-          "start_year": { "type": "NUMBER" },
-          "end_year": { "type": "NUMBER" }
+          "institution": { "type": "string" },
+          "degree": { "type": "string" },
+          "start_year": { "type": "number" },
+          "end_year": { "type": "number" }
         },
         "required": ["degree"]
       }
@@ -163,28 +163,28 @@ INSERT INTO ai_schemas (name, description, json_schema) VALUES
 }'),
 
 ('cv_generation', 'Generates structured CV content from user profile and job offer', '{
-  "type": "OBJECT",
+  "type": "object",
   "properties": {
     "error": {
-      "type": "STRING",
+      "type": "string",
       "description": "Null if successful. Error description if generation fails."
     },
     "profile": {
-      "type": "STRING",
+      "type": "string",
       "description": "3-4 line professional summary tailored to this specific job offer."
     },
     "experiences": {
-      "type": "ARRAY",
+      "type": "array",
       "items": {
-        "type": "OBJECT",
+        "type": "object",
         "properties": {
-          "company": { "type": "STRING" },
-          "position": { "type": "STRING" },
-          "start_date": { "type": "STRING" },
-          "end_date": { "type": "STRING" },
+          "company": { "type": "string" },
+          "position": { "type": "string" },
+          "start_date": { "type": "string" },
+          "end_date": { "type": "string" },
           "highlights": {
-            "type": "ARRAY",
-            "items": { "type": "STRING" },
+            "type": "array",
+            "items": { "type": "string" },
             "description": "3-5 bullet points highlighting achievements relevant to this job."
           }
         },
@@ -193,15 +193,15 @@ INSERT INTO ai_schemas (name, description, json_schema) VALUES
       "description": "1 to 3 most relevant experiences, descriptions enhanced for this job."
     },
     "projects": {
-      "type": "ARRAY",
+      "type": "array",
       "items": {
-        "type": "OBJECT",
+        "type": "object",
         "properties": {
-          "name": { "type": "STRING" },
-          "description": { "type": "STRING" },
+          "name": { "type": "string" },
+          "description": { "type": "string" },
           "highlights": {
-            "type": "ARRAY",
-            "items": { "type": "STRING" },
+            "type": "array",
+            "items": { "type": "string" },
             "description": "2-4 key technical achievements or features."
           }
         },
@@ -210,14 +210,14 @@ INSERT INTO ai_schemas (name, description, json_schema) VALUES
       "description": "1 to 3 most relevant projects."
     },
     "skills": {
-      "type": "ARRAY",
+      "type": "array",
       "items": {
-        "type": "OBJECT",
+        "type": "object",
         "properties": {
-          "category": { "type": "STRING" },
+          "category": { "type": "string" },
           "items": {
-            "type": "ARRAY",
-            "items": { "type": "STRING" }
+            "type": "array",
+            "items": { "type": "string" }
           }
         },
         "required": ["category", "items"]
