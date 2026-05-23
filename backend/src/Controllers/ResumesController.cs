@@ -103,17 +103,19 @@ public class ResumesController : ControllerBase
             };
 
             var json = JsonSerializer.Serialize(requestBody);
+            _logger.LogInformation("OpenAI request for job {JobId} with model {Model}: {Length} chars", jobId, model, json.Length);
+
             var content = new StringContent(json, Encoding.UTF8, "application/json");
             var response = await http.PostAsync("https://api.openai.com/v1/responses", content);
 
+            var responseBody = await response.Content.ReadAsStringAsync();
+            _logger.LogInformation("OpenAI response for job {JobId}: Status={Status}, Body={Body}", jobId, (int)response.StatusCode,
+                responseBody.Length > 500 ? responseBody[..500] : responseBody);
+
             if (!response.IsSuccessStatusCode)
             {
-                var errorBody = await response.Content.ReadAsStringAsync();
-                _logger.LogError("OpenAI error {Status}: {Body}", (int)response.StatusCode, errorBody);
-                return StatusCode(500, new { error = $"OpenAI API error: {errorBody}" });
+                return StatusCode(500, new { error = $"OpenAI API error: {responseBody}" });
             }
-
-            var responseBody = await response.Content.ReadAsStringAsync();
             using var doc = JsonDocument.Parse(responseBody);
             var outputText = doc.RootElement
                 .GetProperty("output")[0]
