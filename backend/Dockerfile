@@ -23,6 +23,7 @@ RUN dotnet publish src/src.csproj -c Release -o /out
 
 # ─── Production ────────────────────────────────────────────
 FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine AS production
+RUN apk add --no-cache krb5-libs icu-libs
 WORKDIR /app
 COPY --from=build /out .
 ENV ASPNETCORE_URLS=http://+:8080
