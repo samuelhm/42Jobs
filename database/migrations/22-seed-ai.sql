@@ -155,6 +155,7 @@ RULES:
 2. EXPERIENCES: Select the 1 to 3 most relevant positions. Enhance descriptions to match the offer''s keywords and requirements. 3-5 highlights each, achievement-oriented.
 3. PROJECTS: Select the 1 to 3 most relevant projects. Enhance descriptions and highlights to emphasize technologies and skills matching the offer.
 4. SKILLS: 4 categories, at least 8 skills per category. Pick the most relevant categories for the job (e.g. Backend, Frontend, Databases, DevOps, AI, Tools, Soft Skills...). Use the user''s known skills and infer additional ones if needed. NEVER invent nonsense technologies. All lowercase except proper nouns. If the offer mentions soft skills, include a Soft Skills category.
-5. COHERENCE: Everything must be consistent. Experiences, projects, and skills should align with each other and with the profile summary.',
+5. COHERENCE: Everything must be consistent. Experiences, projects, and skills should align with each other and with the profile summary.
+6. ERROR FIELD: Set "error" to an empty string "" if generation succeeds. Use it only to report actual failures.',
 (SELECT id FROM ai_models WHERE name = 'gpt-5.5'))
 ON CONFLICT (functionality) DO NOTHING;
