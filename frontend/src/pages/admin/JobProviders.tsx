@@ -81,6 +81,12 @@ function ProviderCard({ p }: { p: Provider }) {
       <details className="provider-config">
         <summary>Search defaults</summary>
         <div className="config-grid">
+          <label className="form-field" style={{marginBottom: '0.4rem'}}>
+            <span className="form-label">location</span>
+            <input className="input" value={config['location'] || ''}
+              placeholder="e.g. Barcelona"
+              onChange={e => setCfg('location', e.target.value)} />
+          </label>
           {Object.entries(FILTERS).map(([name, options]) => (
             <label key={name} className="form-field" style={{marginBottom: '0.4rem'}}>
               <span className="form-label">{name}</span>
