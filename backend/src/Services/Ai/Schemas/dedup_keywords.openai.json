@@ -1,12 +1,11 @@
 {
   "type": "object",
   "required": [
-    "error",
     "groups"
   ],
   "properties": {
     "error": {
-      "type": "string",
+      "type": ["string", "null"],
       "description": "Null if successful. Error description if dedup fails."
     },
     "groups": {

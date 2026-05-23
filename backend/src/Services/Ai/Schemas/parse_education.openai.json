@@ -1,12 +1,11 @@
 {
   "type": "object",
   "required": [
-    "error",
     "education"
   ],
   "properties": {
     "error": {
-      "type": "string",
+      "type": ["string", "null"],
       "description": "Null if successful. Error description if parsing fails."
     },
     "education": {

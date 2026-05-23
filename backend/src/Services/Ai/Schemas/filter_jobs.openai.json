@@ -1,13 +1,12 @@
 {
   "type": "object",
   "required": [
-    "error",
     "relevant",
     "junior_friendly"
   ],
   "properties": {
     "error": {
-      "type": "string",
+      "type": ["string", "null"],
       "description": "Null if successful. Error description if the model cannot determine the result."
     },
     "relevant": {

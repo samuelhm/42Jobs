@@ -1,13 +1,12 @@
 {
   "type": "object",
   "required": [
-    "error",
     "skills",
     "company_type"
   ],
   "properties": {
     "error": {
-      "type": "string",
+      "type": ["string", "null"],
       "description": "Null if successful. Error description if extraction fails."
     },
     "skills": {
