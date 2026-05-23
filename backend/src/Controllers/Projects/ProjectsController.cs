@@ -20,15 +20,15 @@ public partial class ProjectsController : ControllerBase
     private readonly ILogger<ProjectsController> _logger;
     private readonly AppDbContext _db;
     private readonly IHttpClientFactory _httpFactory;
-    private readonly GeminiService _gemini;
+    private readonly IAiService _ai;
     private readonly IServiceScopeFactory _scopeFactory;
 
-    public ProjectsController(ILogger<ProjectsController> logger, AppDbContext db, IHttpClientFactory httpFactory, GeminiService gemini, IServiceScopeFactory scopeFactory)
+    public ProjectsController(ILogger<ProjectsController> logger, AppDbContext db, IHttpClientFactory httpFactory, IAiService ai, IServiceScopeFactory scopeFactory)
     {
         _logger = logger;
         _db = db;
         _httpFactory = httpFactory;
-        _gemini = gemini;
+        _ai = ai;
         _scopeFactory = scopeFactory;
     }
 
@@ -137,9 +137,9 @@ public partial class ProjectsController : ControllerBase
             string error;
             using (var geminiScope = scopeFactory.CreateScope())
             {
-                var gemini = geminiScope.ServiceProvider.GetRequiredService<GeminiService>();
+                var ai = geminiScope.ServiceProvider.GetRequiredService<IAiService>();
                 var allText = string.Join("\n\n---\n\n", projectTexts.Select((t, i) => $"PROJECT {i}: {t.name}\n{t.text}"));
-                (projects, error) = await gemini.AnalyzeGithubProjectsAsync(allText);
+                (projects, error) = await ai.AnalyzeGithubProjectsAsync(allText);
             }
 
             if (!string.IsNullOrEmpty(error))

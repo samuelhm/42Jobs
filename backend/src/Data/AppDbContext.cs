@@ -462,6 +462,7 @@ public class AppDbContext : DbContext
             entity.Property(m => m.Id).ValueGeneratedOnAdd();
             entity.Property(m => m.Name).IsRequired().HasMaxLength(100);
             entity.Property(m => m.IsActive).HasDefaultValue(true);
+            entity.Property(m => m.IsDefault).HasDefaultValue(false);
             entity.Property(m => m.CreatedAt)
                   .HasDefaultValueSql("NOW()")
                   .ValueGeneratedOnAdd();

@@ -1,0 +1,123 @@
+using System.Text;
+using System.Text.Json;
+
+namespace src.Services.Ai.Providers.OpenAI;
+
+public class OpenAiProvider : IAiProvider
+{
+    private readonly IHttpClientFactory _httpFactory;
+    private readonly ILogger<OpenAiProvider> _logger;
+    private const string BaseUrl = "https://api.openai.com";
+    private const string EnvApiKey = "LLM_OPENAI_API_KEY";
+
+    public static string ServiceName => "OpenAI";
+    string IAiProvider.ServiceName => ServiceName;
+
+    public OpenAiProvider(IHttpClientFactory httpFactory, ILogger<OpenAiProvider> logger)
+    {
+        _httpFactory = httpFactory;
+        _logger = logger;
+    }
+
+    public async Task<JsonElement> CallAsync(
+        string systemPrompt, string userPrompt, JsonElement schema, string model, string? apiKey, CancellationToken ct)
+    {
+        var combinedPrompt = $"{systemPrompt}\n\n{userPrompt}";
+        var key = apiKey ?? Environment.GetEnvironmentVariable(EnvApiKey);
+
+        var requestBody = new
+        {
+            model,
+            input = combinedPrompt,
+            text = new
+            {
+                format = new
+                {
+                    type = "json_schema",
+                    name = "response",
+                    strict = true,
+                    schema = AdaptSchema(schema)
+                }
+            }
+        };
+
+        var json = JsonSerializer.Serialize(requestBody);
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+        using var http = _httpFactory.CreateClient();
+        http.Timeout = TimeSpan.FromSeconds(120);
+        http.DefaultRequestHeaders.Add("Authorization", $"Bearer {key}");
+
+        var response = await http.PostAsync($"{BaseUrl}/v1/responses", content, ct);
+        response.EnsureSuccessStatusCode();
+
+        var responseBody = await response.Content.ReadAsStringAsync(ct);
+        using var doc = JsonDocument.Parse(responseBody);
+        var root = doc.RootElement;
+
+        var text = root
+            .GetProperty("output")[0]
+            .GetProperty("content")[0]
+            .GetProperty("text")
+            .GetString()!;
+
+        return JsonDocument.Parse(text).RootElement;
+    }
+
+    private static object AdaptSchema(JsonElement schema)
+    {
+        using var ms = new MemoryStream();
+        using var writer = new Utf8JsonWriter(ms);
+        WriteSchemaElement(writer, schema);
+        writer.Flush();
+        return System.Text.Json.JsonSerializer.Deserialize<object>(ms.ToArray())!;
+    }
+
+    private static void WriteSchemaElement(Utf8JsonWriter writer, JsonElement element)
+    {
+        switch (element.ValueKind)
+        {
+            case JsonValueKind.Object:
+                writer.WriteStartObject();
+                foreach (var prop in element.EnumerateObject())
+                {
+                    if (prop.NameEquals("additionalProperties"))
+                    {
+                        writer.WriteBoolean("additionalProperties", false);
+                        continue;
+                    }
+                    writer.WritePropertyName(prop.Name);
+                    WriteSchemaElement(writer, prop.Value);
+                }
+                writer.WriteEndObject();
+                break;
+
+            case JsonValueKind.Array:
+                writer.WriteStartArray();
+                foreach (var item in element.EnumerateArray())
+                    WriteSchemaElement(writer, item);
+                writer.WriteEndArray();
+                break;
+
+            case JsonValueKind.String:
+                writer.WriteStringValue(element.GetString());
+                break;
+
+            case JsonValueKind.Number:
+                writer.WriteNumberValue(element.GetDecimal());
+                break;
+
+            case JsonValueKind.True:
+                writer.WriteBooleanValue(true);
+                break;
+
+            case JsonValueKind.False:
+                writer.WriteBooleanValue(false);
+                break;
+
+            case JsonValueKind.Null:
+                writer.WriteNullValue();
+                break;
+        }
+    }
+}

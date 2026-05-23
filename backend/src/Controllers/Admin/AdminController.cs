@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using src.Data;
+using src.Models;
 using src.Services;
 
 namespace src.Controllers;
@@ -9,11 +11,11 @@ namespace src.Controllers;
 public partial class AdminController : ControllerBase
 {
     private readonly AppDbContext _db;
-    private readonly GeminiService _gemini;
+    private readonly IAiService _ai;
 
-    public AdminController(AppDbContext db, GeminiService gemini)
+    public AdminController(AppDbContext db, IAiService ai)
     {
         _db = db;
-        _gemini = gemini;
+        _ai = ai;
     }
 }

@@ -46,7 +46,7 @@ public partial class JobsController
 
             var parts = new List<string?> { job.Title, job.Benefits, job.Description };
             var inputText = string.Join(". ", parts.Where(p => !string.IsNullOrWhiteSpace(p)));
-            var (skills, _) = await _gemini.ExtractKeywordsAsync(inputText);
+            var (skills, _) = await _ai.ExtractKeywordsAsync(inputText);
 
             var existingKws = await _db.Set<Dictionary<string, object>>("job_keywords")
                 .Where(jk => EF.Property<int>(jk, "job_id") == job.Id)

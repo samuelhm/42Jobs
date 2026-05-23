@@ -13,13 +13,13 @@ public partial class EducationController : ControllerBase
 {
     private readonly ILogger<EducationController> _logger;
     private readonly AppDbContext _db;
-    private readonly GeminiService _gemini;
+    private readonly IAiService _ai;
 
-    public EducationController(ILogger<EducationController> logger, AppDbContext db, GeminiService gemini)
+    public EducationController(ILogger<EducationController> logger, AppDbContext db, IAiService ai)
     {
         _logger = logger;
         _db = db;
-        _gemini = gemini;
+        _ai = ai;
     }
 
     private Guid GetUserId() =>

@@ -104,7 +104,7 @@ public class JobFetchOrchestrator : BackgroundService
         {
             using var scope = _scopeFactory.CreateScope();
             var linkedIn = scope.ServiceProvider.GetRequiredService<LinkedInApiService>();
-            var gemini = scope.ServiceProvider.GetRequiredService<GeminiService>();
+            var ai = scope.ServiceProvider.GetRequiredService<IAiService>();
             var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
             var allJobs = await FetchAllJobsAsync(linkedIn, request, ct);
@@ -120,7 +120,7 @@ public class JobFetchOrchestrator : BackgroundService
                 {
                     await semaphore.WaitAsync(ct);
                     var result = await ProcessJobAsync(
-                        scope, linkedIn, gemini, job, request.CategoryId, request.CategoryName, ct);
+                        scope, linkedIn, ai, job, request.CategoryId, request.CategoryName, ct);
 
                     lock (status)
                     {
@@ -143,7 +143,7 @@ public class JobFetchOrchestrator : BackgroundService
                 if (kwCount - _lastDedupCount >= 20)
                 {
                     _lastDedupCount = kwCount;
-                    await DedupKeywordsAsync(db, gemini, _logger);
+                    await DedupKeywordsAsync(db, ai, _logger);
                 }
             }
 
@@ -233,7 +233,7 @@ public class JobFetchOrchestrator : BackgroundService
     private async Task<string> ProcessJobAsync(
         IServiceScope outerScope,
         LinkedInApiService linkedIn,
-        GeminiService gemini,
+        IAiService ai,
         JsonElement job,
         int categoryId,
         string categoryName,
@@ -267,7 +267,7 @@ public class JobFetchOrchestrator : BackgroundService
         var description = details?.TryGetProperty("description", out var desc) == true
             ? desc.GetString() : null;
 
-        var (relevante, aptoJunior) = await gemini.FilterJobRelevanceAsync(
+        var (relevante, aptoJunior) = await ai.FilterJobRelevanceAsync(
             categoryName, jobTitle, description, ct);
 
         if (relevante == "no")
@@ -320,7 +320,7 @@ public class JobFetchOrchestrator : BackgroundService
         {
             var parts = new List<string?> { jobTitle, TryGetString(job, "benefits"), description };
             var inputText = string.Join(". ", parts.Where(p => !string.IsNullOrWhiteSpace(p)));
-            var (skills, companyType) = await gemini.ExtractKeywordsAsync(inputText, ct);
+            var (skills, companyType) = await ai.ExtractKeywordsAsync(inputText, ct);
 
             foreach (var rawName in skills)
             {
@@ -411,7 +411,7 @@ public class JobFetchOrchestrator : BackgroundService
             jobId, keywordId);
     }
 
-    private static async Task DedupKeywordsAsync(AppDbContext db, GeminiService gemini, ILogger logger)
+    private static async Task DedupKeywordsAsync(AppDbContext db, IAiService ai, ILogger logger)
     {
         try
         {
@@ -419,7 +419,7 @@ public class JobFetchOrchestrator : BackgroundService
             if (allKeywords.Count < 2) return;
 
             var names = allKeywords.Select(k => k.Name).ToList();
-            var groups = await gemini.DedupKeywordsAsync(names);
+            var groups = await ai.DedupKeywordsAsync(names);
 
             int merged = 0;
             foreach (var group in groups)

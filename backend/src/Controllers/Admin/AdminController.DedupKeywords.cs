@@ -14,7 +14,7 @@ public partial class AdminController
             return Ok(new { message = "Not enough keywords to deduplicate", merged = 0 });
 
         var names = allKeywords.Select(k => k.Name).ToList();
-        var result = await _gemini.DedupKeywordsAsync(names);
+        var result = await _ai.DedupKeywordsAsync(names);
 
         int merged = 0;
         foreach (var group in result)

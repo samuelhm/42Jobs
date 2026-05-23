@@ -4,6 +4,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using src.Data;
 using src.Services;
+using src.Services.Ai;
+using src.Services.Ai.Providers;
+using src.Services.Ai.Providers.Gemini;
+using src.Services.Ai.Providers.OpenAI;
 using src.Utils;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -23,21 +27,9 @@ builder.Services.AddHttpClient<LinkedInApiService>(client =>
     client.DefaultRequestHeaders.Add("x-rapidapi-host", Environment.GetEnvironmentVariable("LINKEDIN_API_HOST"));
 });
 
-builder.Services.AddHttpClient<GeminiService>(client =>
-{
-    var apiKey = Environment.GetEnvironmentVariable("LLM_GOOGLE_API_KEY");
-    client.BaseAddress = new Uri($"https://generativelanguage.googleapis.com/");
-    client.DefaultRequestHeaders.Add("x-goog-api-key", apiKey);
-    client.Timeout = TimeSpan.FromSeconds(120);
-});
-
-builder.Services.AddHttpClient<OpenAIService>(client =>
-{
-    var apiKey = Environment.GetEnvironmentVariable("LLM_OPENAI_API_KEY");
-    client.BaseAddress = new Uri("https://api.openai.com/");
-    client.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
-    client.Timeout = TimeSpan.FromSeconds(120);
-});
+builder.Services.AddSingleton<IAiProvider, GeminiProvider>();
+builder.Services.AddSingleton<IAiProvider, OpenAiProvider>();
+builder.Services.AddScoped<IAiService, AiService>();
 
 builder.Services.AddSingleton<JobFetchOrchestrator>();
 builder.Services.AddHostedService(sp => sp.GetRequiredService<JobFetchOrchestrator>());

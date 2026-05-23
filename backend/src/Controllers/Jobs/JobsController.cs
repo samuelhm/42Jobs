@@ -13,13 +13,13 @@ public partial class JobsController : ControllerBase
 {
     private readonly AppDbContext _db;
     private readonly LinkedInApiService _linkedIn;
-    private readonly GeminiService _gemini;
+    private readonly IAiService _ai;
 
-    public JobsController(AppDbContext db, LinkedInApiService linkedIn, GeminiService gemini)
+    public JobsController(AppDbContext db, LinkedInApiService linkedIn, IAiService ai)
     {
         _db = db;
         _linkedIn = linkedIn;
-        _gemini = gemini;
+        _ai = ai;
     }
 
     private Guid GetUserId()
