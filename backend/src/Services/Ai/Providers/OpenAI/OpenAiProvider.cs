@@ -42,7 +42,7 @@ public class OpenAiProvider : IAiProvider
             writer.WriteString("name", "response");
             writer.WriteBoolean("strict", true);
             writer.WritePropertyName("schema");
-            WriteSchemaElement(writer, schema);
+            schema.WriteTo(writer);
             writer.WriteEndObject();
             writer.WriteEndObject();
             writer.WriteEndObject();
@@ -69,61 +69,5 @@ public class OpenAiProvider : IAiProvider
             .GetString()!;
 
         return JsonDocument.Parse(text).RootElement;
-    }
-
-    private static void WriteSchemaElement(Utf8JsonWriter writer, JsonElement element)
-    {
-        switch (element.ValueKind)
-        {
-            case JsonValueKind.Object:
-                var hasType = element.TryGetProperty("type", out var _);
-                writer.WriteStartObject();
-                var hasAdditional = false;
-                foreach (var prop in element.EnumerateObject())
-                {
-                    if (prop.NameEquals("additionalProperties"))
-                    {
-                        if (!hasAdditional && hasType)
-                        {
-                            writer.WriteBoolean("additionalProperties", false);
-                            hasAdditional = true;
-                        }
-                        continue;
-                    }
-                    writer.WritePropertyName(prop.Name);
-                    WriteSchemaElement(writer, prop.Value);
-                }
-                if (!hasAdditional && hasType)
-                    writer.WriteBoolean("additionalProperties", false);
-                writer.WriteEndObject();
-                break;
-
-            case JsonValueKind.Array:
-                writer.WriteStartArray();
-                foreach (var item in element.EnumerateArray())
-                    WriteSchemaElement(writer, item);
-                writer.WriteEndArray();
-                break;
-
-            case JsonValueKind.String:
-                writer.WriteStringValue(element.GetString());
-                break;
-
-            case JsonValueKind.Number:
-                writer.WriteNumberValue(element.GetDecimal());
-                break;
-
-            case JsonValueKind.True:
-                writer.WriteBooleanValue(true);
-                break;
-
-            case JsonValueKind.False:
-                writer.WriteBooleanValue(false);
-                break;
-
-            case JsonValueKind.Null:
-                writer.WriteNullValue();
-                break;
-        }
     }
 }
