@@ -26,8 +26,3 @@ public partial class ResumesController : ControllerBase
         Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value
                 ?? User.FindFirst("sub")?.Value!);
 }
-
-public class GenerateResumeDto
-{
-    public string? Model { get; set; }
-}

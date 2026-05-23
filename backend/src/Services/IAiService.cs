@@ -23,6 +23,6 @@ public interface IAiService
     Task<(List<LinkedInEducationParsed> items, string? error)> ParseLinkedInEducationAsync(
         string rawText, CancellationToken ct = default);
 
-    Task<JsonElement> GenerateCvAsync(
+    Task<(JsonElement result, string modelName)> GenerateCvAsync(
         Dictionary<string, string> context, CancellationToken ct = default);
 }

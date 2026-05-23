@@ -4,13 +4,14 @@ namespace src.Services.Ai;
 
 public partial class AiService
 {
-    public async Task<JsonElement> GenerateCvAsync(
+    public async Task<(JsonElement result, string modelName)> GenerateCvAsync(
         Dictionary<string, string> context, CancellationToken ct = default)
     {
-        var (systemPrompt, userTemplate, schema, defaultModelId) = await LoadPromptAsync("cv_generation");
+        var (systemPrompt, userTemplate, defaultModelId) = await LoadPromptAsync("cv_generation");
         var userPrompt = FillTemplate(userTemplate, context);
 
         var (provider, model, apiKey, isFreeTier) = await ResolveModelAsync(defaultModelId);
+        var schema = LoadSchema("cv_generation", provider.ServiceName);
         var result = await CallWithRetryAsync(provider, systemPrompt, userPrompt, schema, model, apiKey, isFreeTier, ct);
 
         if (result.TryGetProperty("error", out var err) && err.ValueKind != JsonValueKind.Null)
@@ -23,6 +24,6 @@ public partial class AiService
             }
         }
 
-        return result;
+        return (result, model);
     }
 }

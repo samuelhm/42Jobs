@@ -8,7 +8,7 @@ namespace src.Controllers;
 public partial class ResumesController
 {
     [HttpPost("{jobId:int}")]
-    public async Task<IActionResult> Generate([FromRoute] int jobId, [FromBody] GenerateResumeDto? body)
+    public async Task<IActionResult> Generate([FromRoute] int jobId)
     {
         var userId = GetUserId();
 
@@ -74,10 +74,9 @@ public partial class ResumesController
 
         try
         {
-            var result = await _ai.GenerateCvAsync(context);
+            var (result, modelName) = await _ai.GenerateCvAsync(context);
             var fullJson = result.GetRawText();
             var html = RenderTemplate(template?.HtmlTemplate, user, job, result, educations);
-            var modelName = body?.Model ?? "gpt-5.4-mini";
 
             var resume = new Resume
             {
@@ -103,7 +102,7 @@ public partial class ResumesController
             }
             await _db.SaveChangesAsync();
 
-            return Ok(new { success = true, id = resume.Id, html = resume.CvData, tracked = true });
+            return Ok(new { success = true, id = resume.Id, html = resume.CvData, tracked = true, model = resume.Model });
         }
         catch (Exception ex)
         {
