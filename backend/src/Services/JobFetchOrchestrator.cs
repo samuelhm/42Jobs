@@ -244,11 +244,11 @@ public class JobFetchOrchestrator : BackgroundService
 
         var jobTitle = job.TryGetProperty("title", out var t) ? t.GetString() ?? "Unknown" : "Unknown";
         var companyName = job.TryGetProperty("company", out var comp) ? comp.GetString() ?? "Unknown" : "Unknown";
-        var linkedinId = job.TryGetProperty("id", out var lid) ? lid.GetString() : null;
+        var externalId = job.TryGetProperty("id", out var lid) ? lid.GetString() : null;
 
-        if (linkedinId is null) return "skipped";
+        if (externalId is null) return "skipped";
 
-        var existingJob = await db.Jobs.FirstOrDefaultAsync(j => j.LinkedinId == linkedinId, ct);
+        var existingJob = await db.Jobs.FirstOrDefaultAsync(j => j.ExternalId == externalId && j.Source == "linkedin", ct);
         if (existingJob is not null)
         {
             return "skipped";
@@ -257,7 +257,7 @@ public class JobFetchOrchestrator : BackgroundService
         JsonElement? details = null;
         try
         {
-            details = await linkedIn.GetJobDetailsAsync(linkedinId, ct);
+            details = await linkedIn.GetJobDetailsAsync(externalId, ct);
         }
         catch (Exception ex)
         {
@@ -286,7 +286,8 @@ public class JobFetchOrchestrator : BackgroundService
 
         var newJob = new Job
         {
-            LinkedinId = linkedinId,
+            ExternalId = externalId,
+            Source = "linkedin",
             CompanyId = companyId,
             Title = jobTitle,
             Location = job.TryGetProperty("location", out var loc) ? loc.GetString() : null,
@@ -354,7 +355,7 @@ public class JobFetchOrchestrator : BackgroundService
         var company = await db.Companies.FirstOrDefaultAsync(c => c.Name == name, ct);
         if (company is null)
         {
-            company = new Company { Name = name, LinkedinUrl = linkedinUrl };
+            company = new Company { Name = name, WebsiteUrl = linkedinUrl };
             db.Companies.Add(company);
             try
             {
@@ -369,9 +370,9 @@ public class JobFetchOrchestrator : BackgroundService
                 if (company is null) throw;
             }
         }
-        else if (linkedinUrl is not null && company.LinkedinUrl is null)
+        else if (linkedinUrl is not null && company.WebsiteUrl is null)
         {
-            company.LinkedinUrl = linkedinUrl;
+            company.WebsiteUrl = linkedinUrl;
             await db.SaveChangesAsync(ct);
         }
         return company.Id;

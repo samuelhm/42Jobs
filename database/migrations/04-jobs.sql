@@ -1,6 +1,7 @@
 CREATE TABLE IF NOT EXISTS jobs (
     id               SERIAL PRIMARY KEY,
-    linkedin_id      VARCHAR(50) NOT NULL UNIQUE,
+    external_id     VARCHAR(100) NOT NULL,
+    source          VARCHAR(50) NOT NULL DEFAULT 'linkedin',
     company_id       INTEGER REFERENCES companies(id) ON DELETE SET NULL,
     title            VARCHAR(500),
     location         VARCHAR(500),
@@ -20,3 +21,4 @@ CREATE TABLE IF NOT EXISTS jobs (
 
 CREATE INDEX IF NOT EXISTS idx_jobs_company     ON jobs(company_id);
 CREATE INDEX IF NOT EXISTS idx_jobs_posted_date ON jobs(posted_date);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_jobs_external_source ON jobs(external_id, source);

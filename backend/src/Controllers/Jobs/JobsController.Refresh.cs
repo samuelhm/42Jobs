@@ -14,8 +14,8 @@ public partial class JobsController
             .FirstOrDefaultAsync(j => j.Id == id);
 
         if (job is null) return NotFound(new { error = "Job not found" });
-        if (string.IsNullOrEmpty(job.LinkedinId))
-            return BadRequest(new { error = "Job has no LinkedIn ID" });
+        if (string.IsNullOrEmpty(job.ExternalId))
+            return BadRequest(new { error = "Job has no external ID" });
 
         var neverRefreshed = Math.Abs((job.UpdatedAt - job.CreatedAt).TotalSeconds) < 2;
         if (!neverRefreshed
@@ -32,7 +32,7 @@ public partial class JobsController
 
         try
         {
-            var details = await _linkedIn.GetJobDetailsAsync(job.LinkedinId);
+            var details = await _linkedIn.GetJobDetailsAsync(job.ExternalId);
             if (details is not null)
             {
                 var d = details.Value;

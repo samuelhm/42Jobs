@@ -25,6 +25,7 @@ public class AppDbContext : DbContext
     public DbSet<AiSchema> AiSchemas => Set<AiSchema>();
     public DbSet<AiPrompt> AiPrompts => Set<AiPrompt>();
     public DbSet<CvTemplate> CvTemplates => Set<CvTemplate>();
+    public DbSet<JobProvider> JobProviders => Set<JobProvider>();
 
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
@@ -49,7 +50,7 @@ public class AppDbContext : DbContext
             entity.Property(c => c.Id).ValueGeneratedOnAdd();
             entity.Property(c => c.Name).IsRequired().HasMaxLength(500);
             entity.HasIndex(c => c.Name).IsUnique();
-            entity.Property(c => c.LinkedinUrl).HasColumnType("text");
+            entity.Property(c => c.WebsiteUrl).HasColumnType("text");
             entity.Property(c => c.CompanyType).HasMaxLength(50);
             entity.ToTable(t => t.HasCheckConstraint(
                 "CK_companies_company_type",
@@ -75,8 +76,9 @@ public class AppDbContext : DbContext
             entity.ToTable("jobs");
             entity.HasKey(j => j.Id);
             entity.Property(j => j.Id).ValueGeneratedOnAdd();
-            entity.Property(j => j.LinkedinId).IsRequired().HasMaxLength(50);
-            entity.HasIndex(j => j.LinkedinId).IsUnique();
+            entity.Property(j => j.ExternalId).IsRequired().HasMaxLength(100);
+            entity.Property(j => j.Source).IsRequired().HasMaxLength(50).HasDefaultValue("linkedin");
+            entity.HasIndex(j => new { j.ExternalId, j.Source }).IsUnique();
             entity.Property(j => j.Title).HasMaxLength(500);
             entity.Property(j => j.Location).HasMaxLength(500);
             entity.Property(j => j.Salary).HasMaxLength(200);
@@ -535,6 +537,28 @@ public class AppDbContext : DbContext
                   .HasDefaultValueSql("NOW()")
                   .ValueGeneratedOnAdd();
             entity.Property(t => t.UpdatedAt)
+                  .HasDefaultValueSql("NOW()")
+                  .ValueGeneratedOnAddOrUpdate();
+        });
+
+        // ── JobProvider ──────────────────────────────────────
+        modelBuilder.Entity<JobProvider>(entity =>
+        {
+            entity.ToTable("job_providers");
+            entity.HasKey(p => p.Id);
+            entity.Property(p => p.Id).ValueGeneratedOnAdd();
+            entity.Property(p => p.Portal).IsRequired().HasMaxLength(50);
+            entity.Property(p => p.ProviderName).IsRequired().HasMaxLength(100);
+            entity.HasIndex(p => new { p.Portal, p.ProviderName }).IsUnique();
+            entity.Property(p => p.IsActive).HasDefaultValue(true);
+            entity.Property(p => p.IsEnabled).HasDefaultValue(false);
+            entity.Property(p => p.BaseUrl).HasMaxLength(300);
+            entity.Property(p => p.ApiKey).HasMaxLength(500);
+            entity.Property(p => p.Config).HasColumnType("jsonb");
+            entity.Property(p => p.CreatedAt)
+                  .HasDefaultValueSql("NOW()")
+                  .ValueGeneratedOnAdd();
+            entity.Property(p => p.UpdatedAt)
                   .HasDefaultValueSql("NOW()")
                   .ValueGeneratedOnAddOrUpdate();
         });

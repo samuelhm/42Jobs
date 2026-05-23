@@ -3,7 +3,8 @@ namespace src.Models;
 public class Job
 {
     public int Id { get; set; }
-    public string LinkedinId { get; set; } = string.Empty;
+    public string ExternalId { get; set; } = string.Empty;
+    public string Source { get; set; } = "linkedin";
     public int? CompanyId { get; set; }
     public string? Title { get; set; }
     public string? Location { get; set; }
