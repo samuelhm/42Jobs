@@ -26,13 +26,22 @@ public partial class JobFetchService
             {
                 try
                 {
-                    var result = await provider.SearchAsync(
-                        new JobSearchRequest(request.CategoryName, request.Location, request.Limit,
-                            request.DatePosted, request.SortBy, 0), ct);
+                    var start = 0;
+                    var limit = request.Limit > 0 ? request.Limit : 10;
 
-                    allJobs.AddRange(result.Jobs);
-                    _logger.LogDebug("Fetched {Count} jobs from {Portal}:{Provider}",
-                        result.Jobs.Count, provider.Portal, provider.ProviderName);
+                    while (true)
+                    {
+                        var result = await provider.SearchAsync(
+                            new JobSearchRequest(request.CategoryName, request.Location, limit,
+                                request.DatePosted, request.SortBy, start), ct);
+
+                        allJobs.AddRange(result.Jobs);
+                        _logger.LogDebug("Fetched {Count} jobs from {Portal}:{Provider} (start={Start})",
+                            result.Jobs.Count, provider.Portal, provider.ProviderName, start);
+
+                        if (result.Jobs.Count < limit) break;
+                        start += limit;
+                    }
                 }
                 catch (Exception ex)
                 {
