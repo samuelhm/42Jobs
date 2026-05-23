@@ -51,7 +51,13 @@ public class GeminiProvider : IAiProvider
             url += $"?key={apiKey}";
 
         var response = await http.PostAsync(url, content, ct);
-        response.EnsureSuccessStatusCode();
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorBody = await response.Content.ReadAsStringAsync(ct);
+            _logger.LogError("Gemini HTTP {Status}: {Error}", (int)response.StatusCode, errorBody);
+            response.EnsureSuccessStatusCode();
+        }
 
         var responseBody = await response.Content.ReadAsStringAsync(ct);
         using var doc = JsonDocument.Parse(responseBody);
