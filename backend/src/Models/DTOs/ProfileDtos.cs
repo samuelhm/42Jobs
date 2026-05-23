@@ -78,6 +78,7 @@ public class ProfileResponseDto
     public bool Junior { get; set; }
     public string? Presentation { get; set; }
     public string? AvatarUrl { get; set; }
+    public string Role { get; set; } = "User";
     public DateTime CreatedAt { get; set; }
 
     public List<LanguageDto> Languages { get; set; } = [];

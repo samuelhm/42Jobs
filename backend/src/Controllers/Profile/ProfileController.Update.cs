@@ -43,6 +43,7 @@ public partial class ProfileController
                 Junior = user.Junior,
                 Presentation = user.Presentation,
                 AvatarUrl = user.AvatarUrl,
+                Role = user.Role,
                 CreatedAt = user.CreatedAt,
             }
         });
