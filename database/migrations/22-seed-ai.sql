@@ -244,9 +244,13 @@ INSERT INTO ai_schemas (name, description, json_schema) VALUES
     "languages": {
       "type": "ARRAY",
       "items": { "type": "STRING" }
+    },
+    "html": {
+      "type": "STRING",
+      "description": "The complete rendered CV as HTML with inline CSS. No markdown."
     }
   },
-  "required": ["contact", "summary", "skills"]
+  "required": ["contact", "summary", "skills", "html"]
 }')
 ON CONFLICT (name) DO NOTHING;
 
@@ -340,8 +344,9 @@ Ignore "Aptitudes:", "Actividades y grupos:".
 (SELECT id FROM ai_schemas WHERE name = 'education_parse')),
 
 ('cv_generation', 'Generate CV', 'Generates a structured CV from user profile and job offer',
-'You are a professional CV generator optimized for ATS (Applicant Tracking Systems). Generate structured data for a tailored CV.',
+'You are a professional CV generator optimized for ATS (Applicant Tracking Systems). Generate structured CV data AND a fully rendered HTML version.',
 'Generate a CV in the same language as the job offer. If the offer is in Spanish, CV in Spanish. If in English, CV in English.
+OUTPUT FORMAT: Return a JSON object with BOTH structured data fields AND an "html" field containing the complete rendered CV as HTML with inline CSS.
 
 JOB OFFER:
 Title: {{job_title}}
@@ -379,6 +384,15 @@ INSTRUCTIONS:
 6. Skills: Grouped by category (Backend, Frontend, Databases, DevOps, AI, Tools, Soft Skills...). MIN 8 skills per category. If the offer mentions soft skills, include a Soft Skills category with at least 8 relevant soft skills.
 7. Languages: names only (no level).
 
-FINAL REVIEW: Review the CV against the offer. If any important offer keyword the user knows is missing, add it. If any experience can be described better for this position, improve it.',
+HTML REQUIREMENTS:
+- A4-friendly layout, Arial/Helvetica font
+- Section titles (h2) visibly larger than content
+- Sections separated by subtle <hr>
+- Contact info on one line separated by |
+- If CV in Spanish: profile photo <img> on the left using /resources/YoFinal.webp as a round image. If English: NO photo.
+- NO external fonts, NO emojis, NO markdown
+- Minimal CSS, no flashy colors
+
+FINAL REVIEW: Check the CV against the offer. Add missing keywords. Improve any descriptions for ATS compatibility.',
 (SELECT id FROM ai_schemas WHERE name = 'cv_generation'))
 ON CONFLICT (functionality) DO NOTHING;

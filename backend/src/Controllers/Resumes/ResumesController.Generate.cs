@@ -1,4 +1,3 @@
-using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -12,7 +11,6 @@ public partial class ResumesController
     public async Task<IActionResult> Generate([FromRoute] int jobId, [FromBody] GenerateResumeDto? body)
     {
         var userId = GetUserId();
-        var model = body?.Model ?? DefaultModel;
 
         var existing = await _db.Resumes.FirstOrDefaultAsync(r => r.UserId == userId && r.JobId == jobId);
         if (existing is not null)
@@ -52,87 +50,44 @@ public partial class ResumesController
             .Include(uk => uk.Keyword)
             .ToListAsync();
 
-        var prompt = BuildPrompt(user, job, experiences, educations, projects, userKeywords);
+        var context = new Dictionary<string, string>
+        {
+            ["job_title"] = job.Title ?? "",
+            ["company"] = job.Company?.Name ?? "Not specified",
+            ["job_description"] = job.Description ?? "",
+            ["job_keywords"] = string.Join(", ", job.Keywords.Select(k => k.Name)),
+            ["user_name"] = $"{user.Name ?? ""} {user.LastName ?? ""}".Trim(),
+            ["user_email"] = user.Email,
+            ["user_phone"] = user.Phone ?? "",
+            ["user_location"] = user.Address ?? "",
+            ["user_linkedin"] = user.LinkedinUrl ?? "",
+            ["user_github"] = user.GithubUrl ?? "",
+            ["user_presentation"] = user.Presentation ?? "",
+            ["user_languages"] = string.Join(", ", user.Languages.Select(l => l.Name)),
+            ["user_experiences"] = string.Join("\n", experiences.Select(e =>
+                $"- {e.Position ?? ""} at {e.Company} ({e.StartDate} - {e.EndDate}): {e.Description ?? ""}. Keywords: {string.Join(", ", e.Keywords.Select(k => k.Name))}")),
+            ["user_education"] = string.Join("\n", educations.Select(e =>
+                $"- {e.Degree} at {e.Institution ?? ""} ({e.StartYear} - {e.EndYear})")),
+            ["user_projects"] = string.Join("\n", projects.Select(p =>
+                $"- {p.Name} ({p.Type}): {p.Description ?? ""}. Keywords: {string.Join(", ", p.Keywords.Select(k => k.Name))}")),
+            ["user_keywords"] = string.Join(", ", userKeywords
+                .Where(uk => uk.LearningStatus != "not_learned")
+                .Select(uk => uk.Keyword.Name)),
+        };
 
         try
         {
-            using var http = _httpFactory.CreateClient();
-            http.DefaultRequestHeaders.Add("Authorization", $"Bearer {Environment.GetEnvironmentVariable("LLM_OPENAI_API_KEY")}");
-
-            var requestBody = new
-            {
-                model,
-                input = prompt,
-                text = new
-                {
-                    format = new
-                    {
-                        type = "json_schema",
-                        name = "cv_output",
-                        strict = true,
-                        schema = new
-                        {
-                            type = "object",
-                            properties = new
-                            {
-                                html = new { type = "string" }
-                            },
-                            required = new[] { "html" },
-                            additionalProperties = false
-                        }
-                    }
-                }
-            };
-
-            var json = JsonSerializer.Serialize(requestBody);
-            _logger.LogInformation("OpenAI request for job {JobId} with model {Model}: {Length} chars", jobId, model, json.Length);
-
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
-            var response = await http.PostAsync("https://api.openai.com/v1/responses", content);
-
-            var responseBody = await response.Content.ReadAsStringAsync();
-            _logger.LogInformation("OpenAI response for job {JobId}: Status={Status}, Body={Body}", jobId, (int)response.StatusCode,
-                responseBody.Length > 500 ? responseBody[..500] : responseBody);
-
-            if (!response.IsSuccessStatusCode)
-            {
-                return StatusCode(500, new { error = $"OpenAI API error: {responseBody}" });
-            }
-            using var doc = JsonDocument.Parse(responseBody);
-            var outputArr = doc.RootElement.GetProperty("output");
-
-            string? outputText = null;
-            foreach (var item in outputArr.EnumerateArray())
-            {
-                if (item.TryGetProperty("content", out var contentArr))
-                {
-                    foreach (var c in contentArr.EnumerateArray())
-                    {
-                        if (c.TryGetProperty("text", out var t))
-                        {
-                            outputText = t.GetString();
-                            break;
-                        }
-                    }
-                }
-                if (outputText is not null) break;
-            }
-
-            if (outputText is null)
-            {
-                _logger.LogError("OpenAI response missing output text: {Body}", responseBody);
-                return StatusCode(500, new { error = "Unexpected response format from OpenAI" });
-            }
-
-            using var outputDoc = JsonDocument.Parse(outputText);
-            var cvData = outputDoc.RootElement;
+            var result = await _ai.GenerateCvAsync(context);
+            var cvData = result.GetProperty("html").GetString() ?? "";
+            var fullJson = result.GetRawText();
 
             var resume = new Resume
             {
                 UserId = userId,
                 JobId = jobId,
-                Model = model,
-                CvData = cvData.GetProperty("html").GetString() ?? "",
+                Model = body?.Model ?? "gpt-5.4-mini",
+                CvData = cvData,
+                JsonData = fullJson,
             };
 
             _db.Resumes.Add(resume);

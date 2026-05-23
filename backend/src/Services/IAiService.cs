@@ -1,3 +1,4 @@
+using System.Text.Json;
 using src.Models.DTOs;
 
 namespace src.Services;
@@ -21,4 +22,7 @@ public interface IAiService
 
     Task<(List<LinkedInEducationParsed> items, string? error)> ParseLinkedInEducationAsync(
         string rawText, CancellationToken ct = default);
+
+    Task<JsonElement> GenerateCvAsync(
+        Dictionary<string, string> context, CancellationToken ct = default);
 }
