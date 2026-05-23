@@ -1,17 +1,83 @@
 # =============================================================================
-# 42jobs - Docker Compose Prod (añadidos de PRODUCCIÓN)
-# Uso: docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
-# Este archivo SÍ se despliega en el VPS
+# 42jobs - Docker Compose Production overrides
+# =============================================================================
+# Usage:
+#   cp .env.example .env    # edit with production values
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+#
+# This file is deployed to the production server alongside docker-compose.yml.
+# The .env file is NOT committed — create it manually on the server.
+# API keys are configured via the admin panel, not env vars.
 # =============================================================================
 
 services:
-  # ─── Frontend (prod: conectar a red_proxy de NPM) ────────
+
+  # ─── PostgreSQL ──────────────────────────────────────────
+  db:
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '1.0'
+        reservations:
+          memory: 128M
+
+  # ─── Backend (.NET) ─────────────────────────────────────
+  backend:
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080 || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '2.0'
+        reservations:
+          memory: 256M
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "5"
+
+  # ─── Frontend (Nginx) ───────────────────────────────────
   frontend:
+    restart: always
+    expose:
+      - "80"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O - http://localhost:80 || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: '0.5'
+        reservations:
+          memory: 64M
+    logging:
+      driver: json-file
+      options:
+        max-size: "20m"
+        max-file: "3"
     networks:
       - internal
       - red_proxy
 
-# ─── Networks ──────────────────────────────────────────────
 networks:
   red_proxy:
     external: true
