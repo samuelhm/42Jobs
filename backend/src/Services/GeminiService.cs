@@ -59,7 +59,7 @@ Descripcion: ""{description ?? "No disponible"}""";
     public async Task<(List<string> skills, string companyType)> ExtractKeywordsAsync(
         string text, CancellationToken ct = default)
     {
-        var prompt = $@"Analiza esta oferta de trabajo y extrae las tecnologias, lenguajes, herramientas, frameworks y conceptos tecnicos mencionados. NO incluyas habilidades blandas (comunicacion, liderazgo, trabajo en equipo, etc.). Determina tambien el tipo de empresa.
+        var prompt = $@"Analiza esta oferta de trabajo y extrae las tecnologias, lenguajes, herramientas, frameworks, conceptos tecnicos Y habilidades blandas mencionados (comunicacion, liderazgo, trabajo en equipo, etc.). Determina tambien el tipo de empresa.
 
 Oferta: ""{text}""";
 
