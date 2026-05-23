@@ -13,8 +13,8 @@ public partial class AiService
             var (systemPrompt, userTemplate, schema, defaultModelId) = await LoadPromptAsync("analyze_github");
             var userPrompt = FillTemplate(userTemplate, new() { ["input"] = inputText });
 
-            var (provider, model, apiKey) = await ResolveModelAsync(defaultModelId);
-            var result = await provider.CallAsync(systemPrompt, userPrompt, schema, model, apiKey, ct);
+            var (provider, model, apiKey, isFreeTier) = await ResolveModelAsync(defaultModelId);
+            var result = await CallWithRetryAsync(provider, systemPrompt, userPrompt, schema, model, apiKey, isFreeTier, ct);
 
             if (result.TryGetProperty("error", out var err) && err.ValueKind != JsonValueKind.Null)
             {

@@ -1492,6 +1492,11 @@ main {
 .service-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem; }
 .service-header h3 { font-size: 0.95rem; color: var(--text-bright); margin: 0; }
 .service-count { font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; color: var(--text-dim); }
+.free-tier-banner {
+  background: rgba(212,168,83,0.08); border-bottom: 1px solid var(--amber-dim);
+  color: var(--amber); text-align: center; padding: 0.5rem 1rem;
+  font-size: 0.78rem; font-family: 'Outfit', sans-serif;
+}
 .service-models { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.75rem; }
 .model-chip {
   font-family: 'JetBrains Mono', monospace; font-size: 0.62rem;

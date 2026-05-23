@@ -34,7 +34,7 @@ public partial class AiService : IAiService
         return (prompt.SystemPrompt, prompt.UserPromptTemplate, schema, prompt.DefaultModelId);
     }
 
-    private async Task<(IAiProvider provider, string model, string? apiKey)> ResolveModelAsync(int? defaultModelId)
+    private async Task<(IAiProvider provider, string model, string? apiKey, bool isFreeTier)> ResolveModelAsync(int? defaultModelId)
     {
         using var scope = _scopeFactory.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -47,7 +47,38 @@ public partial class AiService : IAiService
         var provider = _providers.GetValueOrDefault(model.AiService.Name)
             ?? throw new InvalidOperationException($"No provider registered for service '{model.AiService.Name}'");
 
-        return (provider, model.Name, model.AiService.ApiKey);
+        return (provider, model.Name, model.AiService.ApiKey, model.AiService.IsFreeTier);
+    }
+
+    private async Task<JsonElement> CallWithRetryAsync(
+        IAiProvider provider, string systemPrompt, string userPrompt,
+        JsonElement schema, string model, string? apiKey, bool isFreeTier, CancellationToken ct)
+    {
+        if (isFreeTier)
+            await Task.Delay(1500, ct);
+
+        for (var attempt = 1; attempt <= 4; attempt++)
+        {
+            try
+            {
+                return await provider.CallAsync(systemPrompt, userPrompt, schema, model, apiKey, ct);
+            }
+            catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
+            {
+                if (!isFreeTier)
+                    throw new InvalidOperationException(
+                        "Rate limit (429) detected but API key is not marked as free tier. " +
+                        "Go to Admin > AI Services and enable 'Free tier' for this provider. " +
+                        "The process will be slower but will respect rate limits.", ex);
+
+                if (attempt == 4) throw;
+                var delay = attempt * 2000;
+                _logger.LogWarning("Free tier rate limit (429), retry {Attempt}/3 in {Delay}ms", attempt, delay);
+                await Task.Delay(delay, ct);
+            }
+        }
+
+        throw new InvalidOperationException("Unreachable");
     }
 
     private static string FillTemplate(string template, Dictionary<string, string> values)

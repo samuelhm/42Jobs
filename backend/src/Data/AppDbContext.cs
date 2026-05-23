@@ -448,6 +448,7 @@ public class AppDbContext : DbContext
             entity.Property(s => s.BaseUrl).IsRequired().HasMaxLength(300);
             entity.Property(s => s.ApiKey).HasMaxLength(500);
             entity.Property(s => s.IsActive).HasDefaultValue(true);
+            entity.Property(s => s.IsFreeTier).HasDefaultValue(false);
             entity.Property(s => s.CreatedAt)
                   .HasDefaultValueSql("NOW()")
                   .ValueGeneratedOnAdd();

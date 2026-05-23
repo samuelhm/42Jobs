@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { get, put } from './api';
 
-interface AiService { id: number; name: string; is_active: boolean; models: { id: number; name: string; is_active: boolean }[]; }
+interface AiService { id: number; name: string; is_active: boolean; is_free_tier: boolean; models: { id: number; name: string; is_active: boolean }[]; }
 
 function useDebouncedSave(delay = 800) {
   const [timer, setTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
@@ -18,7 +18,7 @@ function ApiKeyInput({ service }: { service: AiService }) {
   const debounce = useDebouncedSave();
 
   useEffect(() => {
-    get<any[]>(`/api/admin/ai-services`).then(r => {
+    get<any[]>('/api/admin/ai-services').then(r => {
       if (r.success) {
         const s = r.data.find((x: any) => x.id === service.id);
         if (s) setKey(s.api_key || '');
@@ -31,7 +31,7 @@ function ApiKeyInput({ service }: { service: AiService }) {
     setKey(val);
     setSaved(false);
     debounce(async () => {
-      await put(`/api/admin/ai-services/${service.id}`, { name: service.name, base_url: '', api_key: val, is_active: service.is_active });
+      await put(`/api/admin/ai-services/${service.id}`, { name: service.name, base_url: '', api_key: val, is_active: service.is_active, is_free_tier: service.is_free_tier });
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     });
@@ -60,12 +60,17 @@ export default function AdminAiServices() {
     });
   }, []);
 
+  async function toggleFreeTier(s: AiService) {
+    await put(`/api/admin/ai-services/${s.id}`, { name: s.name, base_url: s.base_url, api_key: s.api_key, is_active: s.is_active, is_free_tier: !s.is_free_tier });
+    setServices(prev => prev.map(x => x.id === s.id ? { ...x, is_free_tier: !x.is_free_tier } : x));
+  }
+
   if (loading) return <div className="p-4 text-muted">Loading...</div>;
 
   return (
     <div>
       <h2>AI Services</h2>
-      <p className="text-muted">Configure API keys for each provider. Models and prompts are managed in their respective sections.</p>
+      <p className="text-muted">Configure API keys. Mark as <b>Free Tier</b> if the key has strict rate limits — the system will add delays between calls to avoid 429 errors.</p>
       <div className="service-grid">
         {services.map(s => (
           <div key={s.id} className="service-card">
@@ -73,7 +78,12 @@ export default function AdminAiServices() {
               <div>
                 <h3>{s.name}</h3>
                 <span className="service-count">{s.models.length} models</span>
+                {s.is_free_tier && <span className="free-tier-badge">FREE TIER</span>}
               </div>
+              <button className={`toggle-switch ${s.is_free_tier ? 'on' : ''}`}
+                onClick={() => toggleFreeTier(s)}>
+                <span className="toggle-knob" />
+              </button>
             </div>
             <ApiKeyInput service={s} />
             <div className="service-models">

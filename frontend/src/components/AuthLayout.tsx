@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router';
 import { ToastProvider } from '../context/ToastContext';
 import { useAuth } from '../context/AuthContext';
+import FreeTierBanner from './FreeTierBanner';
 import ToastContainer from './ToastContainer';
 
 const navItems = [
@@ -76,9 +77,10 @@ function AuthLayoutInner() {
         </div>
       </header>
 
-      <div className="layout-body">
-        <Outlet />
-      </div>
+        <div className="layout-body">
+          <FreeTierBanner />
+          <Outlet />
+        </div>
     </div>
   );
 }

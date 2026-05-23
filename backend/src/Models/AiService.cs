@@ -7,6 +7,7 @@ public class AiService
     public string BaseUrl { get; set; } = string.Empty;
     public string? ApiKey { get; set; }
     public bool IsActive { get; set; } = true;
+    public bool IsFreeTier { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 

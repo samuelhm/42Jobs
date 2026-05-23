@@ -13,7 +13,7 @@ public partial class AdminController
         var services = await _db.AiServices.Include(s => s.Models).AsNoTracking().OrderBy(s => s.Name).ToListAsync();
         return Ok(new { success = true, data = services.Select(s => new
         {
-            s.Id, s.Name, s.BaseUrl, s.IsActive,
+            s.Id, s.Name, s.BaseUrl, s.IsActive, s.IsFreeTier,
             models = s.Models.Select(m => new { m.Id, m.Name, m.IsActive }).ToList()
         }).ToList() });
     }
@@ -22,7 +22,7 @@ public partial class AdminController
     public async Task<IActionResult> CreateAiService([FromBody] AiServiceDto body)
     {
         var check = EnsureAdmin(); if (check is not null) return check;
-        var service = new AiService { Name = body.Name, BaseUrl = body.BaseUrl, ApiKey = body.ApiKey, IsActive = body.IsActive };
+        var service = new AiService { Name = body.Name, BaseUrl = body.BaseUrl, ApiKey = body.ApiKey, IsActive = body.IsActive, IsFreeTier = body.IsFreeTier };
         _db.AiServices.Add(service);
         await _db.SaveChangesAsync();
         return Ok(new { success = true, data = service });
@@ -38,6 +38,7 @@ public partial class AdminController
         service.BaseUrl = body.BaseUrl;
         service.ApiKey = body.ApiKey;
         service.IsActive = body.IsActive;
+        service.IsFreeTier = body.IsFreeTier;
         service.UpdatedAt = DateTime.UtcNow;
         await _db.SaveChangesAsync();
         return Ok(new { success = true, data = service });
@@ -61,4 +62,5 @@ public class AiServiceDto
     public string BaseUrl { get; set; } = "";
     public string? ApiKey { get; set; }
     public bool IsActive { get; set; } = true;
+    public bool IsFreeTier { get; set; }
 }
