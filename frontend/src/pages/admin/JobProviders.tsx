@@ -82,8 +82,6 @@ function ProviderCard({ p }: { p: Provider }) {
         <summary>Search defaults</summary>
         <p className="text-muted" style={{fontSize: '0.7rem', marginBottom: '0.5rem'}}>Tip: leave salary, experience level, and industry empty — many job offers don't include this data and filtering by them may hide valid results. Location and date are configured per-user in Profile.</p>
         <div className="config-grid">
-          {Object.entries(FILTERS).map(([name, options]) => (
-        <div className="config-grid">
           <label className="form-field" style={{marginBottom: '0.4rem'}}>
             <span className="form-label">location</span>
             <input className="input" value={config['location'] || ''}
