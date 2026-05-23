@@ -26,33 +26,39 @@ public class OpenAiProvider : IAiProvider
         if (string.IsNullOrWhiteSpace(apiKey))
             throw new InvalidOperationException("OpenAI API key not configured. Set it in Admin > AI Services.");
 
-        var requestBody = new
-        {
-            model,
-            input = combinedPrompt,
-            text = new
-            {
-                format = new
-                {
-                    type = "json_schema",
-                    name = "response",
-                    strict = true,
-                    schema = AdaptSchema(schema)
-                }
-            }
-        };
-
-        var json = JsonSerializer.Serialize(requestBody);
-        var content = new StringContent(json, Encoding.UTF8, "application/json");
-
         using var http = _httpFactory.CreateClient();
         http.Timeout = TimeSpan.FromSeconds(120);
         http.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
 
+        using var bodyStream = new MemoryStream();
+        using (var writer = new Utf8JsonWriter(bodyStream))
+        {
+            writer.WriteStartObject();
+            writer.WriteString("model", model);
+            writer.WriteString("input", combinedPrompt);
+            writer.WriteStartObject("text");
+            writer.WriteStartObject("format");
+            writer.WriteString("type", "json_schema");
+            writer.WriteString("name", "response");
+            writer.WriteBoolean("strict", true);
+            writer.WritePropertyName("schema");
+            WriteSchemaElement(writer, schema);
+            writer.WriteEndObject();
+            writer.WriteEndObject();
+            writer.WriteEndObject();
+        }
+
+        var content = new StringContent(Encoding.UTF8.GetString(bodyStream.ToArray()), Encoding.UTF8, "application/json");
         var response = await http.PostAsync($"{BaseUrl}/v1/responses", content, ct);
-        response.EnsureSuccessStatusCode();
 
         var responseBody = await response.Content.ReadAsStringAsync(ct);
+        if (!response.IsSuccessStatusCode)
+        {
+            _logger.LogError("OpenAI error (HTTP {Status}): {Body}", (int)response.StatusCode,
+                responseBody.Length > 500 ? responseBody[..500] : responseBody);
+            response.EnsureSuccessStatusCode();
+        }
+
         using var doc = JsonDocument.Parse(responseBody);
         var root = doc.RootElement;
 
@@ -63,15 +69,6 @@ public class OpenAiProvider : IAiProvider
             .GetString()!;
 
         return JsonDocument.Parse(text).RootElement;
-    }
-
-    private static object AdaptSchema(JsonElement schema)
-    {
-        using var ms = new MemoryStream();
-        using var writer = new Utf8JsonWriter(ms);
-        WriteSchemaElement(writer, schema);
-        writer.Flush();
-        return System.Text.Json.JsonSerializer.Deserialize<object>(ms.ToArray())!;
     }
 
     private static void WriteSchemaElement(Utf8JsonWriter writer, JsonElement element, bool isType = false)
@@ -88,8 +85,7 @@ public class OpenAiProvider : IAiProvider
                         continue;
                     }
                     writer.WritePropertyName(prop.Name);
-                    var nextIsType = prop.NameEquals("type");
-                    WriteSchemaElement(writer, prop.Value, nextIsType);
+                    WriteSchemaElement(writer, prop.Value, prop.NameEquals("type"));
                 }
                 writer.WriteEndObject();
                 break;
@@ -103,8 +99,7 @@ public class OpenAiProvider : IAiProvider
 
             case JsonValueKind.String:
                 var val = element.GetString() ?? "";
-                if (isType)
-                    val = val.ToLowerInvariant();
+                if (isType) val = val.ToLowerInvariant();
                 writer.WriteStringValue(val);
                 break;
 
