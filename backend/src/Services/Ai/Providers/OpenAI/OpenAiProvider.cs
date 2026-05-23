@@ -74,7 +74,7 @@ public class OpenAiProvider : IAiProvider
         return System.Text.Json.JsonSerializer.Deserialize<object>(ms.ToArray())!;
     }
 
-    private static void WriteSchemaElement(Utf8JsonWriter writer, JsonElement element)
+    private static void WriteSchemaElement(Utf8JsonWriter writer, JsonElement element, bool isType = false)
     {
         switch (element.ValueKind)
         {
@@ -88,7 +88,8 @@ public class OpenAiProvider : IAiProvider
                         continue;
                     }
                     writer.WritePropertyName(prop.Name);
-                    WriteSchemaElement(writer, prop.Value);
+                    var nextIsType = prop.NameEquals("type");
+                    WriteSchemaElement(writer, prop.Value, nextIsType);
                 }
                 writer.WriteEndObject();
                 break;
@@ -96,12 +97,15 @@ public class OpenAiProvider : IAiProvider
             case JsonValueKind.Array:
                 writer.WriteStartArray();
                 foreach (var item in element.EnumerateArray())
-                    WriteSchemaElement(writer, item);
+                    WriteSchemaElement(writer, item, isType);
                 writer.WriteEndArray();
                 break;
 
             case JsonValueKind.String:
-                writer.WriteStringValue(element.GetString());
+                var val = element.GetString() ?? "";
+                if (isType)
+                    val = val.ToLowerInvariant();
+                writer.WriteStringValue(val);
                 break;
 
             case JsonValueKind.Number:

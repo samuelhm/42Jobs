@@ -15,7 +15,7 @@ export default function LinkedInImport({ endpoint, placeholder, onImported }: Pr
     const raw = text.trim();
     if (!raw) return;
     setLoading(true);
-    setMsg('Analyzing with Gemini...');
+    setMsg('Analyzing with AI...');
     try {
       const res = await fetch(endpoint, {
         method: 'POST',
