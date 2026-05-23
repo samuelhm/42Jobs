@@ -4,7 +4,7 @@ namespace src.Services;
 
 public interface IAiService
 {
-    Task<(string relevante, string aptoJunior)> FilterJobRelevanceAsync(
+    Task<(string relevant, string juniorFriendly)> FilterJobRelevanceAsync(
         string keyword, string title, string? description, CancellationToken ct = default);
 
     Task<(List<string> skills, string companyType)> ExtractKeywordsAsync(

@@ -18,7 +18,7 @@ public partial class AiService
             if (result.TryGetProperty("error", out var err) && err.ValueKind != JsonValueKind.Null)
             {
                 _logger.LogWarning("AI keyword extraction error: {Error}", err.GetString());
-                return ([], "No identificado");
+                return ([], "Not identified");
             }
 
             var skills = new List<string>();
@@ -28,9 +28,9 @@ public partial class AiService
                     skills.Add(skill.GetString() ?? string.Empty);
             }
 
-            var companyType = "No identificado";
-            if (result.TryGetProperty("tipo_empresa", out var tipoElement))
-                companyType = tipoElement.GetString() ?? "No identificado";
+            var companyType = "Not identified";
+            if (result.TryGetProperty("company_type", out var tipoElement))
+                companyType = tipoElement.GetString() ?? "Not identified";
 
             _logger.LogDebug("Extracted {Count} keywords, company type: {Type}", skills.Count, companyType);
 

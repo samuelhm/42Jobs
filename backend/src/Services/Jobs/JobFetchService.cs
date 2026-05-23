@@ -18,10 +18,10 @@ public partial class JobFetchService : BackgroundService, IJobFetchService
 
     private static readonly Dictionary<string, string> CompanyTypeMap = new()
     {
-        ["Multinacional"] = "Multinacional",
+        ["Multinational"] = "Multinacional",
         ["Startup"] = "Startup",
-        ["Pyme"] = "Pyme",
-        ["Consultora"] = "Consultora",
+        ["SME"] = "Pyme",
+        ["Consultancy"] = "Consultora",
     };
 
     public JobFetchService(IEnumerable<IJobProvider> providers, IServiceScopeFactory scopeFactory, ILogger<JobFetchService> logger)

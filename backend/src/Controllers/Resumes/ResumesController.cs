@@ -29,23 +29,23 @@ public partial class ResumesController : ControllerBase
         List<Education> educations, List<Project> projects, List<UserKeyword> userKeywords)
     {
         var userInfo = $@"
-PERFIL:
-Nombre: {user.Name ?? ""} {user.LastName ?? ""}
+PROFILE:
+Name: {user.Name ?? ""} {user.LastName ?? ""}
 Email: {user.Email}
-Teléfono: {user.Phone ?? ""}
-Dirección: {user.Address ?? ""}
+Phone: {user.Phone ?? ""}
+Location: {user.Address ?? ""}
 LinkedIn: {user.LinkedinUrl ?? ""}
 GitHub: {user.GithubUrl ?? ""}
 Junior: {user.Junior}
-Presentación: {user.Presentation ?? ""}
-Idiomas: {string.Join(", ", user.Languages.Select(l => l.Name))}
+Summary: {user.Presentation ?? ""}
+Languages: {string.Join(", ", user.Languages.Select(l => l.Name))}
 ";
 
         var expText = string.Join("\n", experiences.Select(e =>
-            $"- {e.Position ?? ""} en {e.Company} ({e.StartDate} - {e.EndDate}): {e.Description ?? ""}. Keywords: {string.Join(", ", e.Keywords.Select(k => k.Name))}"));
+            $"- {e.Position ?? ""} at {e.Company} ({e.StartDate} - {e.EndDate}): {e.Description ?? ""}. Keywords: {string.Join(", ", e.Keywords.Select(k => k.Name))}"));
 
         var eduText = string.Join("\n", educations.Select(e =>
-            $"- {e.Degree} en {e.Institution ?? ""} ({e.StartYear} - {e.EndYear})"));
+            $"- {e.Degree} at {e.Institution ?? ""} ({e.StartYear} - {e.EndYear})"));
 
         var projText = string.Join("\n", projects.Select(p =>
             $"- {p.Name} ({p.Type}): {p.Description ?? ""}. Keywords: {string.Join(", ", p.Keywords.Select(k => k.Name))}"));
@@ -54,43 +54,43 @@ Idiomas: {string.Join(", ", user.Languages.Select(l => l.Name))}
             .Where(uk => uk.LearningStatus != "not_learned")
             .Select(uk => uk.Keyword.Name));
 
-        return $@"Eres un generador de CVs profesionales optimizados para ATS (Applicant Tracking Systems). Genera SOLO HTML con CSS inline. SIN markdown.
+        return $@"You are a professional CV generator optimized for ATS (Applicant Tracking Systems). Generate ONLY HTML with inline CSS. NO markdown.
 
-OFERTA DE TRABAJO:
-Título: {job.Title}
-Empresa: {job.Company?.Name ?? "No especificada"}
-Descripción: {job.Description ?? ""}
-Keywords de la oferta: {string.Join(", ", job.Keywords.Select(k => k.Name))}
+JOB OFFER:
+Title: {job.Title}
+Company: {job.Company?.Name ?? "Not specified"}
+Description: {job.Description ?? ""}
+Offer keywords: {string.Join(", ", job.Keywords.Select(k => k.Name))}
 
 {userInfo}
 
-EXPERIENCIA:
+EXPERIENCE:
 {expText}
 
-EDUCACIÓN:
+EDUCATION:
 {eduText}
 
-PROYECTOS:
+PROJECTS:
 {projText}
 
-KEYWORDS DEL USUARIO (aprendidas): {kwText}
+USER KEYWORDS (learned): {kwText}
 
-ESTRUCTURA DEL CV (HTML):
-1. HEADER: nombre como h1, puesto ofertado como h2 subtítulo. Datos de contacto (email, teléfono, LinkedIn, GitHub) en UNA SOLA LÍNEA separados por |, con letra pequeña. Si el CV es en español: foto de perfil a la izquierda usando la URL /resources/YoFinal.webp como <img> redonda. Si es en inglés: SIN foto.
-2. PERFIL: 3-4 líneas en el idioma de la oferta, destacando experiencia más relevante para este puesto. Adapta la presentación del usuario.
-3. EXPERIENCIA (sección separada): MÍNIMO 1, MÁXIMO 3. Las más relevantes primero. NO agregues más de 3 bajo ningún concepto.
-4. PROYECTOS (sección separada): MÍNIMO 1, MÁXIMO 3. Los más relevantes primero. NO agregues más de 3 bajo ningún concepto. NO menciones si es school o personal.
-5. EDUCACIÓN: máximo 3, las más recientes primero.
-6. SKILLS: Agrupadas por categorías (Backend, Frontend, Databases, DevOps, AI, Tools, Soft Skills...). MÍNIMO 8 skills por categoría. Si la oferta menciona soft skills (comunicación, liderazgo, trabajo en equipo, etc.), incluye una categoría Soft Skills con al menos 8 habilidades blandas relevantes. Para las categorías técnicas, usa las keywords del usuario. Si no llega a 8, INFIERE las que faltan. NUNCA inventes tecnologías sin sentido. Todo en minúsculas excepto nombres propios.
-7. IDIOMAS: solo nombres (sin nivel): Inglés, Español, Catalán...
+CV STRUCTURE (HTML):
+1. HEADER: name as h1, target job title as h2 subtitle. Contact info (email, phone, LinkedIn, GitHub) on ONE LINE separated by |, with small font. If the CV is in Spanish: profile picture on the left using URL /resources/YoFinal.webp as a round <img>. If in English: NO picture.
+2. PROFILE: 3-4 lines in the offer's language, highlighting the most relevant experience for this position. Adapt the user's summary.
+3. EXPERIENCE (separate section): MIN 1, MAX 3. Most relevant first. DO NOT add more than 3 under any circumstances.
+4. PROJECTS (separate section): MIN 1, MAX 3. Most relevant first. DO NOT add more than 3 under any circumstances. DO NOT mention if school or personal.
+5. EDUCATION: max 3, most recent first.
+6. SKILLS: Grouped by category (Backend, Frontend, Databases, DevOps, AI, Tools, Soft Skills...). MIN 8 skills per category. If the offer mentions soft skills (communication, leadership, teamwork, etc.), include a Soft Skills category with at least 8 relevant soft skills. For technical categories, use the user's keywords. If fewer than 8, INFER the missing ones. NEVER invent nonsensical technologies. All lowercase except proper nouns.
+7. LANGUAGES: names only (no level): English, Spanish, Catalan...
 
-CSS: mínimo imprescindible, legible (Arial/Helvetica), A4-friendly, márgenes normales, sin colores estridentes. Los títulos de sección (h2) DEBEN ser visiblemente más grandes que el texto del contenido. Las secciones separadas con <hr> sutil. SIN fuentes externas. SIN emojis.
+CSS: minimal, readable (Arial/Helvetica), A4-friendly, normal margins, no flashy colors. Section titles (h2) MUST be visibly larger than content text. Sections separated by subtle <hr>. NO external fonts. NO emojis.
 
-IDIOMA DEL CV: el mismo de la oferta de trabajo. Si la oferta está en español, CV en español. Si en inglés, CV en inglés.
+CV LANGUAGE: same as the job offer. If the offer is in Spanish, CV in Spanish. If in English, CV in English.
 
-PASO FINAL DE REVISIÓN: Después de generar el CV, revísalo contra la oferta. Si detectas que falta alguna keyword importante de la oferta que el usuario conoce, añádela. Si alguna frase puede reescribirse para ser más atractiva para un ATS, hazlo. Si ves que falta algún skill inferido que mejoraría el match, inclúyelo.
+FINAL REVIEW: After generating the CV, review it against the offer. If any important keywords from the offer that the user knows are missing, add them. If any sentence can be rewritten to be more ATS-friendly, do so. If any inferred skill that would improve the match is missing, include it.
 
-Devuelve SOLO este JSON: {{""html"": ""<completo>""}}";
+Return ONLY this JSON: {{""html"": ""<complete>""}}";
     }
 
     private Guid GetUserId() =>

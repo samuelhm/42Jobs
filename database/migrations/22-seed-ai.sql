@@ -1,4 +1,4 @@
--- 022-seed-ai.sql
+-- 22-seed-ai.sql
 -- Seed data: AI services, models, schemas and prompts
 
 -- ═══════════════════════════════════════════════════════════
@@ -37,16 +37,16 @@ INSERT INTO ai_schemas (name, description, json_schema) VALUES
       "type": "STRING",
       "description": "Null if successful. Error description if the model cannot determine the result."
     },
-    "relevante": {
+    "relevant": {
       "type": "STRING",
-      "description": "\"si\" si la oferta es claramente relevante para el perfil, \"no\" si claramente no lo es, \"no_se\" si hay duda."
+      "description": "\"yes\" if the offer is clearly relevant for the profile, \"no\" if it clearly is not, \"unknown\" if uncertain."
     },
-    "apto_junior": {
+    "junior_friendly": {
       "type": "STRING",
-      "description": "\"no\" si la oferta exige explicitamente un perfil senior, o mas de 4 años de experiencia. \"si\" en caso contrario."
+      "description": "\"no\" if the offer explicitly requires a senior profile or more than 4 years of experience. \"yes\" otherwise."
     }
   },
-  "required": ["relevante", "apto_junior"]
+  "required": ["relevant", "junior_friendly"]
 }'),
 
 ('keyword_extraction', 'Extracts technologies and company type from job offers', '{
@@ -59,14 +59,14 @@ INSERT INTO ai_schemas (name, description, json_schema) VALUES
     "skills": {
       "type": "ARRAY",
       "items": { "type": "STRING" },
-      "description": "List of technologies, languages, frameworks, tools, and soft skills mentioned in the offer."
+      "description": "Exhaustive list of ALL technologies, languages, frameworks, tools, and soft skills mentioned in the offer."
     },
-    "tipo_empresa": {
+    "company_type": {
       "type": "STRING",
-      "description": "Company type: Multinacional, Startup, Pyme, Consultora, or No identificado."
+      "description": "Company type: Multinational, Startup, SME, Consultancy, or \"Not identified\"."
     }
   },
-  "required": ["skills", "tipo_empresa"]
+  "required": ["skills", "company_type"]
 }'),
 
 ('github_projects', 'Extracts project info from GitHub repositories', '{
@@ -256,129 +256,129 @@ ON CONFLICT (name) DO NOTHING;
 INSERT INTO ai_prompts (functionality, name, description, system_prompt, user_prompt_template, schema_id) VALUES
 
 ('filter_jobs', 'Filter job relevance', 'Determines if a job offer is relevant and junior-friendly',
-'Eres un filtro de ofertas de trabajo especializado en perfiles de Software Engineering.',
-'Tu tarea es:
-1. Determinar si una oferta de trabajo es RELEVANTE para un perfil de Software Engineer especializado en "{{keyword}}".
-2. Determinar si la oferta es APTA PARA UN PERFIL JUNIOR.
+'You are a job offer filter specialized in Software Engineering profiles.',
+'Your task is:
+1. Determine if a job offer is RELEVANT for a Software Engineer specialized in "{{keyword}}".
+2. Determine if the offer is SUITABLE FOR A JUNIOR PROFILE.
 
-CRITERIOS DE RELEVANCIA:
-- Puestos directamente relacionados como "{{keyword}} Engineer", "{{keyword}} Developer", etc. son relevantes.
-- Puestos de disciplinas cercanas como Firmware, Embedded Systems, Hardware, IoT, RTOS, etc. (segun aplique al keyword) son relevantes.
-- Puestos completamente no relacionados como "Sales Manager", "Backend Developer" (si el keyword es Embedded), "Recruiter", etc. NO son relevantes.
-- En caso de duda, responde "no_se" en el campo relevante.
+RELEVANCE CRITERIA:
+- Positions directly related such as "{{keyword}} Engineer", "{{keyword}} Developer", etc. are relevant.
+- Positions in adjacent disciplines such as Firmware, Embedded Systems, Hardware, IoT, RTOS, etc. (depending on the keyword) are relevant.
+- Completely unrelated positions such as "Sales Manager", "Backend Developer" (if keyword is Embedded), "Recruiter", etc. are NOT relevant.
+- If unsure, respond "unknown" in the relevant field.
 
-CRITERIOS DE PERFIL JUNIOR (apto_junior):
-- Responde "no" si la oferta exige EXPLICITAMENTE: perfil "Senior", "Senior Software Engineer", "Lead", "Principal", "Staff Engineer", "Tech Lead", "Engineering Manager", o mas de 4 años de experiencia.
-- Responde "si" si la oferta menciona "Junior", "Internship", "Becario", "Graduate", "Entry Level", "Sin experiencia", "0-2 años", "1-3 años", o no especifica nivel de seniority.
-- Si la oferta pide "3-4 años" o "Mid-level" o similar, responde "si" (es borde pero aceptable para junior).
-- Si no se menciona nada sobre seniority o años de experiencia, responde "si".
+JUNIOR PROFILE CRITERIA (junior_friendly):
+- Respond "no" if the offer EXPLICITLY requires: "Senior", "Senior Software Engineer", "Lead", "Principal", "Staff Engineer", "Tech Lead", "Engineering Manager", or more than 4 years of experience.
+- Respond "yes" if the offer mentions "Junior", "Internship", "Intern", "Graduate", "Entry Level", "0-2 years", "1-3 years", or does not specify seniority level.
+- If the offer asks for "3-4 years" or "Mid-level" or similar, respond "yes" (borderline but acceptable for junior).
+- If nothing is mentioned about seniority or years of experience, respond "yes".
 
-Oferta: "{{title}}"
-Descripcion: "{{description}}"',
+Offer: "{{title}}"
+Description: "{{description}}"',
 (SELECT id FROM ai_schemas WHERE name = 'job_filter')),
 
 ('extract_keywords', 'Extract keywords from job offers', 'Extracts technologies, skills and company type from a job description',
-'Eres un analizador de ofertas de trabajo. Extraes tecnologias, skills y tipo de empresa.',
-'Analiza esta oferta de trabajo y extrae las tecnologias, lenguajes, herramientas, frameworks, conceptos tecnicos Y habilidades blandas mencionados (comunicacion, liderazgo, trabajo en equipo, etc.). Determina tambien el tipo de empresa.
+'You are a job offer analyzer. You extract technologies, skills, and company type.',
+'Analyze this job offer and extract technologies, languages, tools, frameworks, technical concepts AND soft skills mentioned (communication, leadership, teamwork, etc.). Also determine the company type.
 
-Oferta: "{{text}}"',
+Offer: "{{text}}"',
 (SELECT id FROM ai_schemas WHERE name = 'keyword_extraction')),
 
 ('analyze_github', 'Analyze GitHub repositories', 'Extracts structured project information from GitHub repos',
-'Eres un analizador de proyectos de GitHub. Tu tarea es analizar los repositorios de un usuario y extraer informacion estructurada de cada uno.',
-'Analiza cada proyecto. Por cada uno debes:
-1. Extraer un nombre descriptivo (limpio, sin guiones, max 60 caracteres).
-2. Generar una descripcion en castellano (2-4 frases) explicando el proposito, tecnologias usadas y alcance del proyecto.
-3. Determinar si es un proyecto PERSONAL o de ESCUELA/BOOTCAMP (type: "personal" o "school"). Si hay README que mencione "42", "42 School", "42 Barcelona", "cursus", "bootcamp" -> es school. Si no se puede determinar -> personal.
-4. Extraer una lista EXHAUSTIVA de tecnologias, lenguajes, frameworks, librerias, herramientas y conceptos tecnicos (skills). Incluye TODO lo que veas en el README, package.json, requirements.txt, Makefile, CMakeLists, docker-compose, etc. Se muy minucioso.
+'You are a GitHub project analyzer. Your task is to analyze a user''s repositories and extract structured information from each one.',
+'Analyze each project. For each one you must:
+1. Extract a descriptive name (clean, no hyphens, max 60 characters).
+2. Generate a description in English (2-4 sentences) explaining the purpose, technologies used, and scope of the project.
+3. Determine if it is a PERSONAL project or a SCHOOL/BOOTCAMP project (type: "personal" or "school"). If the README mentions "42", "42 School", "42 Barcelona", "cursus", "bootcamp" -> it is school. If it cannot be determined -> personal.
+4. Extract an EXHAUSTIVE list of technologies, languages, frameworks, libraries, tools, and technical concepts (skills). Include EVERYTHING you see in the README, package.json, requirements.txt, Makefile, CMakeLists, docker-compose, etc. Be very thorough.
 
-Proyectos a analizar:
+Projects to analyze:
 {{input}}',
 (SELECT id FROM ai_schemas WHERE name = 'github_projects')),
 
 ('dedup_keywords', 'Deduplicate keywords', 'Groups equivalent/similar keywords into clusters',
-'Eres un deduplicador de palabras clave técnicas. Tu tarea es agrupar palabras clave que significan el mismo concepto o area.',
-'Agrupa las siguientes palabras clave. Reglas:
-- Agrupa términos que se refieran al mismo concepto o área, aunque no sean sinónimos exactos.
-- Ejemplos de grupos válidos: ui + ui/ux + ui/ux design + user interface, ai + artificial intelligence + machine learning/ai, aws + amazon web services, docker + docker compose + containerization, react + react.js, node + node.js, python + python3, c# + csharp + .net.
-- No agrupes tecnologías claramente diferentes (ej: react y vue NO).
-- Cada grupo debe tener las palabras en minúsculas.
-- Si una palabra no tiene equivalentes, va en su propio grupo de 1 elemento.
-- Devuelve un array de grupos, donde cada grupo es un array de strings equivalentes.
+'You are a technical keyword deduplicator. Your task is to group keywords that mean the same concept or area.',
+'Group the following keywords. Rules:
+- Group terms that refer to the same concept or area, even if they are not exact synonyms.
+- Examples of valid groups: ui + ui/ux + ui/ux design + user interface, ai + artificial intelligence + machine learning/ai, aws + amazon web services, docker + docker compose + containerization, react + react.js, node + node.js, python + python3, c# + csharp + .net.
+- Do not group clearly different technologies (e.g., react and vue: NO).
+- Each group must have words in lowercase.
+- If a word has no equivalents, it goes in its own group of 1 element.
+- Return an array of groups, where each group is an array of equivalent strings.
 
-Palabras clave a analizar:
+Keywords to analyze:
 {{keywords}}',
 (SELECT id FROM ai_schemas WHERE name = 'keyword_dedup')),
 
 ('parse_experience', 'Parse LinkedIn experience', 'Extracts structured work experience from LinkedIn raw text',
-'Eres un extractor de datos de LinkedIn. Conviertes texto de experiencias laborales a JSON estructurado.',
-'Extrae experiencias laborales a JSON. La linea de fechas SIEMPRE tiene este formato exacto: "mes. año - mes. año · X años/meses".
+'You are a LinkedIn data extractor. You convert work experience text to structured JSON.',
+'Extract work experiences to JSON. The date line ALWAYS has this exact format: "month. year - month. year · X years/months".
 
-Ejemplo de linea de fechas: "sept. 2023 - ene. 2024 · 5 meses"
+Example date line: "sept. 2023 - ene. 2024 · 5 months"
 -> start_date: "2023-09-01", end_date: "2024-01-01"
 
-IGNORA la parte "· X años/meses". SOLO extrae las dos fechas de esa linea.
-Meses: ene=01 feb=02 mar=03 abr=04 may=05 jun=06 jul=07 ago=08 sept=09 oct=10 nov=11 dic=12
+IGNORE the "· X years/months" part. ONLY extract the two dates from that line.
+Months: ene=01 feb=02 mar=03 abr=04 may=05 jun=06 jul=07 ago=08 sept=09 oct=10 nov=11 dic=12
 
-Campos: company, position, start_date, end_date, description
+Fields: company, position, start_date, end_date, description
 
 {{raw_text}}',
 (SELECT id FROM ai_schemas WHERE name = 'experience_parse')),
 
 ('parse_education', 'Parse LinkedIn education', 'Extracts structured education from LinkedIn raw text',
-'Eres un extractor de datos de LinkedIn. Conviertes texto de educacion a JSON estructurado.',
-'Extrae educacion a JSON. La linea de fechas tiene formato: "mes. año – mes. año".
+'You are a LinkedIn data extractor. You convert education text to structured JSON.',
+'Extract education to JSON. The date line has format: "month. year – month. year".
 
-Ej: "ene. 2024 – may. 2025" -> start_year:2024, end_year:2025
-Ej: "sept. 2009 – jun. 2011" -> start_year:2009, end_year:2011
-Solo extrae el año (4 digitos).
+Ex: "ene. 2024 – may. 2025" -> start_year:2024, end_year:2025
+Ex: "sept. 2009 – jun. 2011" -> start_year:2009, end_year:2011
+Only extract the year (4 digits).
 
-Campos: institution, degree, start_year, end_year.
-Ignora "Aptitudes:", "Actividades y grupos:".
+Fields: institution, degree, start_year, end_year.
+Ignore "Aptitudes:", "Actividades y grupos:".
 
 {{raw_text}}',
 (SELECT id FROM ai_schemas WHERE name = 'education_parse')),
 
 ('cv_generation', 'Generate CV', 'Generates a structured CV from user profile and job offer',
-'Eres un generador de CVs profesionales optimizados para ATS (Applicant Tracking Systems). Genera datos estructurados para un CV personalizado.',
-'Genera un CV en el mismo idioma que la oferta de trabajo. Si la oferta esta en español, CV en español. Si en ingles, CV en ingles.
+'You are a professional CV generator optimized for ATS (Applicant Tracking Systems). Generate structured data for a tailored CV.',
+'Generate a CV in the same language as the job offer. If the offer is in Spanish, CV in Spanish. If in English, CV in English.
 
-OFERTA DE TRABAJO:
-Titulo: {{job_title}}
-Empresa: {{company}}
-Descripcion: {{job_description}}
-Keywords de la oferta: {{job_keywords}}
+JOB OFFER:
+Title: {{job_title}}
+Company: {{company}}
+Description: {{job_description}}
+Offer keywords: {{job_keywords}}
 
-PERFIL DEL USUARIO:
-Nombre: {{user_name}}
+USER PROFILE:
+Name: {{user_name}}
 Email: {{user_email}}
-Telefono: {{user_phone}}
-Ubicacion: {{user_location}}
+Phone: {{user_phone}}
+Location: {{user_location}}
 LinkedIn: {{user_linkedin}}
 GitHub: {{user_github}}
-Presentacion: {{user_presentation}}
-Idiomas: {{user_languages}}
+Summary: {{user_presentation}}
+Languages: {{user_languages}}
 
-EXPERIENCIA:
+EXPERIENCE:
 {{user_experiences}}
 
-EDUCACION:
+EDUCATION:
 {{user_education}}
 
-PROYECTOS:
+PROJECTS:
 {{user_projects}}
 
-KEYWORDS DEL USUARIO (aprendidas): {{user_keywords}}
+USER KEYWORDS (learned): {{user_keywords}}
 
-INSTRUCCIONES:
-1. Contact: nombre completo, email, telefono, linkedin, github, ubicacion.
-2. Summary: 3-4 lineas en el idioma de la oferta destacando la experiencia mas relevante.
-3. Experiences: MINIMO 1, MAXIMO 3. Las mas relevantes primero, con highlights que usen keywords de la oferta.
-4. Projects: MINIMO 1, MAXIMO 3. Los mas relevantes primero.
-5. Education: maximo 3, las mas recientes primero.
-6. Skills: Agrupadas por categorias (Backend, Frontend, Databases, DevOps, AI, Tools, Soft Skills...). MINIMO 8 skills por categoria. Si la oferta menciona soft skills, incluye categoria Soft Skills con al menos 8 habilidades blandas.
-7. Languages: solo nombres (sin nivel).
+INSTRUCTIONS:
+1. Contact: full name, email, phone, linkedin, github, location.
+2. Summary: 3-4 lines in the offer''s language highlighting the most relevant experience.
+3. Experiences: MIN 1, MAX 3. Most relevant first, with highlights using offer keywords.
+4. Projects: MIN 1, MAX 3. Most relevant first.
+5. Education: max 3, most recent first.
+6. Skills: Grouped by category (Backend, Frontend, Databases, DevOps, AI, Tools, Soft Skills...). MIN 8 skills per category. If the offer mentions soft skills, include a Soft Skills category with at least 8 relevant soft skills.
+7. Languages: names only (no level).
 
-PASO FINAL: Revisa el CV contra la oferta. Si falta alguna keyword importante que el usuario conoce, añadela. Si alguna experiencia puede describirse mejor para este puesto, mejoralo.',
+FINAL REVIEW: Review the CV against the offer. If any important offer keyword the user knows is missing, add it. If any experience can be described better for this position, improve it.',
 (SELECT id FROM ai_schemas WHERE name = 'cv_generation'))
 ON CONFLICT (functionality) DO NOTHING;

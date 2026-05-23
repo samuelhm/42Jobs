@@ -44,15 +44,15 @@ public partial class JobFetchService
         }
 
         var description = details?.Description;
-        var (relevante, aptoJunior) = await ai.FilterJobRelevanceAsync(
+        var (relevant, juniorFriendly) = await ai.FilterJobRelevanceAsync(
             categoryName, job.Title, description, ct);
 
-        if (relevante == "no")
+        if (relevant == "no")
         {
             _logger.LogDebug("Job \"{Title}\" skipped: not relevant", job.Title);
             return "skipped";
         }
-        if (aptoJunior == "no")
+        if (juniorFriendly == "no")
         {
             _logger.LogDebug("Job \"{Title}\" skipped: senior only", job.Title);
             return "skipped";
