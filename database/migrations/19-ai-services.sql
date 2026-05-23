@@ -1,7 +1,6 @@
 CREATE TABLE IF NOT EXISTS ai_services (
     id         SERIAL PRIMARY KEY,
     name       VARCHAR(50) NOT NULL UNIQUE,
-    base_url   VARCHAR(300) NOT NULL,
     api_key    VARCHAR(500),
     is_active  BOOLEAN DEFAULT TRUE,
     is_free_tier BOOLEAN DEFAULT FALSE,

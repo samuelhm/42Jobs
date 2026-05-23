@@ -4,9 +4,9 @@
 -- ═══════════════════════════════════════════════════════════
 -- AI Services
 -- ═══════════════════════════════════════════════════════════
-INSERT INTO ai_services (name, base_url, is_free_tier) VALUES
-    ('Google', 'https://generativelanguage.googleapis.com/', TRUE),
-    ('OpenAI', 'https://api.openai.com/', FALSE)
+INSERT INTO ai_services (name, is_free_tier) VALUES
+    ('Google', TRUE),
+    ('OpenAI', FALSE)
 ON CONFLICT (name) DO NOTHING;
 
 -- ═══════════════════════════════════════════════════════════
