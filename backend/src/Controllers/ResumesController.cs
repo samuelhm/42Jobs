@@ -85,7 +85,19 @@ public class ResumesController : ControllerBase
                 {
                     format = new
                     {
-                        type = "json_object"
+                        type = "json_schema",
+                        name = "cv_output",
+                        strict = true,
+                        schema = new
+                        {
+                            type = "object",
+                            properties = new
+                            {
+                                html = new { type = "string" }
+                            },
+                            required = new[] { "html" },
+                            additionalProperties = false
+                        }
                     }
                 }
             };
