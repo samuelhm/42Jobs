@@ -21,8 +21,6 @@ public class OpenAiProvider : IAiProvider
     public async Task<JsonElement> CallAsync(
         string systemPrompt, string userPrompt, JsonElement schema, string model, string? apiKey, CancellationToken ct)
     {
-        var combinedPrompt = $"{systemPrompt}\n\n{userPrompt}";
-
         if (string.IsNullOrWhiteSpace(apiKey))
             throw new InvalidOperationException("OpenAI API key not configured. Set it in Admin > AI Services.");
 
@@ -35,23 +33,36 @@ public class OpenAiProvider : IAiProvider
         {
             writer.WriteStartObject();
             writer.WriteString("model", model);
-            writer.WriteString("input", combinedPrompt);
-            writer.WriteStartObject("text");
-            writer.WriteStartObject("format");
+
+            writer.WriteStartArray("messages");
+            writer.WriteStartObject();
+            writer.WriteString("role", "system");
+            writer.WriteString("content", systemPrompt);
+            writer.WriteEndObject();
+            writer.WriteStartObject();
+            writer.WriteString("role", "user");
+            writer.WriteString("content", userPrompt);
+            writer.WriteEndObject();
+            writer.WriteEndArray();
+
+            writer.WriteStartObject("response_format");
             writer.WriteString("type", "json_schema");
+            writer.WriteStartObject("json_schema");
             writer.WriteString("name", "response");
             writer.WriteBoolean("strict", true);
             writer.WritePropertyName("schema");
             WriteSchemaElement(writer, schema);
             writer.WriteEndObject();
             writer.WriteEndObject();
+
+            writer.WriteNumber("temperature", 0.1);
             writer.WriteEndObject();
         }
 
         var content = new StringContent(Encoding.UTF8.GetString(bodyStream.ToArray()), Encoding.UTF8, "application/json");
-        var response = await http.PostAsync($"{BaseUrl}/v1/responses", content, ct);
-
+        var response = await http.PostAsync($"{BaseUrl}/v1/chat/completions", content, ct);
         var responseBody = await response.Content.ReadAsStringAsync(ct);
+
         if (!response.IsSuccessStatusCode)
         {
             _logger.LogError("OpenAI error (HTTP {Status}): {Body}", (int)response.StatusCode,
@@ -60,12 +71,10 @@ public class OpenAiProvider : IAiProvider
         }
 
         using var doc = JsonDocument.Parse(responseBody);
-        var root = doc.RootElement;
-
-        var text = root
-            .GetProperty("output")[0]
-            .GetProperty("content")[0]
-            .GetProperty("text")
+        var text = doc.RootElement
+            .GetProperty("choices")[0]
+            .GetProperty("message")
+            .GetProperty("content")
             .GetString()!;
 
         return JsonDocument.Parse(text).RootElement;
