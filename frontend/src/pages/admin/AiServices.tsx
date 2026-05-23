@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { get, put } from './api';
 
-interface AiService { id: number; name: string; base_url: string; api_key: string | null; is_active: boolean; is_free_tier: boolean; models: { id: number; name: string; is_active: boolean }[]; }
+interface AiService { id: number; name: string; api_key: string | null; is_active: boolean; is_free_tier: boolean; models: { id: number; name: string; is_active: boolean }[]; }
 
 function useDebouncedSave(delay = 800) {
   const [timer, setTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
@@ -61,7 +61,7 @@ export default function AdminAiServices() {
   }, []);
 
   async function toggleFreeTier(s: AiService) {
-    await put(`/api/admin/ai-services/${s.id}`, { name: s.name, base_url: s.base_url, api_key: s.api_key, is_active: s.is_active, is_free_tier: !s.is_free_tier });
+    await put(`/api/admin/ai-services/${s.id}`, { name: s.name, base_url: '', api_key: s.api_key, is_active: s.is_active, is_free_tier: !s.is_free_tier });
     setServices(prev => prev.map(x => x.id === s.id ? { ...x, is_free_tier: !x.is_free_tier } : x));
   }
 
