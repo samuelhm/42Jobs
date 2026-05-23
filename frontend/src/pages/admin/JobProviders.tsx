@@ -80,6 +80,7 @@ function ProviderCard({ p }: { p: Provider }) {
       </div>
       <details className="provider-config">
         <summary>Search defaults</summary>
+        <p className="text-muted" style={{fontSize: '0.7rem', marginBottom: '0.5rem'}}>Tip: leave salary, experience level, and industry empty — many job offers don't include this data and filtering by them may hide valid results.</p>
         <div className="config-grid">
           <label className="form-field" style={{marginBottom: '0.4rem'}}>
             <span className="form-label">location</span>
