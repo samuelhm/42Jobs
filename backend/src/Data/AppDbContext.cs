@@ -20,6 +20,11 @@ public class AppDbContext : DbContext
     public DbSet<UserJob> UserJobs => Set<UserJob>();
     public DbSet<Resume> Resumes => Set<Resume>();
     public DbSet<UserKeyword> UserKeywords => Set<UserKeyword>();
+    public DbSet<AiService> AiServices => Set<AiService>();
+    public DbSet<AiModel> AiModels => Set<AiModel>();
+    public DbSet<AiSchema> AiSchemas => Set<AiSchema>();
+    public DbSet<AiPrompt> AiPrompts => Set<AiPrompt>();
+    public DbSet<CvTemplate> CvTemplates => Set<CvTemplate>();
 
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
@@ -154,6 +159,12 @@ public class AppDbContext : DbContext
             entity.Property(u => u.Junior).HasDefaultValue(true);
             entity.Property(u => u.Presentation).HasColumnType("text");
             entity.Property(u => u.AvatarUrl).HasColumnType("text");
+            entity.Property(u => u.Role)
+                  .HasMaxLength(20)
+                  .HasDefaultValue("User");
+            entity.HasCheckConstraint(
+                "CK_users_role",
+                "role IN ('Admin', 'User')");
             entity.Property(u => u.CreatedAt)
                   .HasDefaultValueSql("NOW()")
                   .ValueGeneratedOnAdd();
@@ -300,8 +311,15 @@ public class AppDbContext : DbContext
                   .HasDefaultValueSql("NOW()")
                   .ValueGeneratedOnAdd();
             entity.Property(u => u.Notes).HasColumnType("text");
-            entity.Property(u => u.Applied).HasDefaultValue(false);
-            entity.Property(u => u.AppliedAt);
+            entity.Property(u => u.Status)
+                  .HasMaxLength(30)
+                  .HasDefaultValue("saved");
+            entity.HasCheckConstraint(
+                "CK_user_jobs_status",
+                "status IN ('saved', 'cv_enviado', 'entrevista_conseguida', 'empleo_conseguido', 'rechazado')");
+            entity.Property(u => u.StatusUpdatedAt)
+                  .HasDefaultValueSql("NOW()")
+                  .ValueGeneratedOnAdd();
 
             entity.HasOne(u => u.User)
                   .WithMany(u => u.UserJobs)
@@ -352,6 +370,7 @@ public class AppDbContext : DbContext
                   .IsRequired()
                   .HasColumnType("text")
                   .HasDefaultValue("");
+            entity.Property(r => r.JsonData).HasColumnType("jsonb");
             entity.Property(r => r.Model)
                   .HasMaxLength(30)
                   .HasDefaultValue("gpt-5.4-mini");
@@ -373,6 +392,21 @@ public class AppDbContext : DbContext
             entity.HasOne(r => r.Job)
                   .WithMany(j => j.Resumes)
                   .HasForeignKey(r => r.JobId)
+                  .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasOne(r => r.Template)
+                  .WithMany(t => t.Resumes)
+                  .HasForeignKey(r => r.TemplateId)
+                  .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasOne(r => r.Prompt)
+                  .WithMany(p => p.Resumes)
+                  .HasForeignKey(r => r.PromptId)
+                  .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasOne(r => r.AiModel)
+                  .WithMany(m => m.Resumes)
+                  .HasForeignKey(r => r.ModelId)
                   .OnDelete(DeleteBehavior.SetNull);
         });
 
@@ -399,6 +433,109 @@ public class AppDbContext : DbContext
                   .WithMany(k => k.UserKeywords)
                   .HasForeignKey(uk => uk.KeywordId)
                   .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // ── AiService ─────────────────────────────────────────
+        modelBuilder.Entity<AiService>(entity =>
+        {
+            entity.ToTable("ai_services");
+            entity.HasKey(s => s.Id);
+            entity.Property(s => s.Id).ValueGeneratedOnAdd();
+            entity.Property(s => s.Name).IsRequired().HasMaxLength(50);
+            entity.HasIndex(s => s.Name).IsUnique();
+            entity.Property(s => s.BaseUrl).IsRequired().HasMaxLength(300);
+            entity.Property(s => s.ApiKey).HasMaxLength(500);
+            entity.Property(s => s.IsActive).HasDefaultValue(true);
+            entity.Property(s => s.CreatedAt)
+                  .HasDefaultValueSql("NOW()")
+                  .ValueGeneratedOnAdd();
+            entity.Property(s => s.UpdatedAt)
+                  .HasDefaultValueSql("NOW()")
+                  .ValueGeneratedOnAddOrUpdate();
+        });
+
+        // ── AiModel ───────────────────────────────────────────
+        modelBuilder.Entity<AiModel>(entity =>
+        {
+            entity.ToTable("ai_models");
+            entity.HasKey(m => m.Id);
+            entity.Property(m => m.Id).ValueGeneratedOnAdd();
+            entity.Property(m => m.Name).IsRequired().HasMaxLength(100);
+            entity.Property(m => m.IsActive).HasDefaultValue(true);
+            entity.Property(m => m.CreatedAt)
+                  .HasDefaultValueSql("NOW()")
+                  .ValueGeneratedOnAdd();
+            entity.HasIndex(m => new { m.AiServiceId, m.Name }).IsUnique();
+            entity.HasIndex(m => m.AiServiceId).HasDatabaseName("idx_ai_models_service");
+
+            entity.HasOne(m => m.AiService)
+                  .WithMany(s => s.Models)
+                  .HasForeignKey(m => m.AiServiceId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // ── AiSchema ──────────────────────────────────────────
+        modelBuilder.Entity<AiSchema>(entity =>
+        {
+            entity.ToTable("ai_schemas");
+            entity.HasKey(s => s.Id);
+            entity.Property(s => s.Id).ValueGeneratedOnAdd();
+            entity.Property(s => s.Name).IsRequired().HasMaxLength(100);
+            entity.HasIndex(s => s.Name).IsUnique();
+            entity.Property(s => s.Description).HasColumnType("text");
+            entity.Property(s => s.JsonSchema).IsRequired().HasColumnType("jsonb");
+            entity.Property(s => s.CreatedAt)
+                  .HasDefaultValueSql("NOW()")
+                  .ValueGeneratedOnAdd();
+            entity.Property(s => s.UpdatedAt)
+                  .HasDefaultValueSql("NOW()")
+                  .ValueGeneratedOnAddOrUpdate();
+        });
+
+        // ── AiPrompt ──────────────────────────────────────────
+        modelBuilder.Entity<AiPrompt>(entity =>
+        {
+            entity.ToTable("ai_prompts");
+            entity.HasKey(p => p.Id);
+            entity.Property(p => p.Id).ValueGeneratedOnAdd();
+            entity.Property(p => p.Functionality).IsRequired().HasMaxLength(100);
+            entity.HasIndex(p => p.Functionality).IsUnique();
+            entity.Property(p => p.Name).IsRequired().HasMaxLength(200);
+            entity.Property(p => p.Description).HasColumnType("text");
+            entity.Property(p => p.SystemPrompt).IsRequired().HasColumnType("text");
+            entity.Property(p => p.UserPromptTemplate).IsRequired().HasColumnType("text");
+            entity.Property(p => p.IsActive).HasDefaultValue(true);
+            entity.Property(p => p.CreatedAt)
+                  .HasDefaultValueSql("NOW()")
+                  .ValueGeneratedOnAdd();
+            entity.Property(p => p.UpdatedAt)
+                  .HasDefaultValueSql("NOW()")
+                  .ValueGeneratedOnAddOrUpdate();
+
+            entity.HasIndex(p => p.SchemaId).HasDatabaseName("idx_ai_prompts_schema");
+            entity.HasOne(p => p.Schema)
+                  .WithMany(s => s.Prompts)
+                  .HasForeignKey(p => p.SchemaId)
+                  .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // ── CvTemplate ────────────────────────────────────────
+        modelBuilder.Entity<CvTemplate>(entity =>
+        {
+            entity.ToTable("cv_templates");
+            entity.HasKey(t => t.Id);
+            entity.Property(t => t.Id).ValueGeneratedOnAdd();
+            entity.Property(t => t.Name).IsRequired().HasMaxLength(200);
+            entity.Property(t => t.Description).HasColumnType("text");
+            entity.Property(t => t.HtmlTemplate).IsRequired().HasColumnType("text");
+            entity.Property(t => t.Css).HasColumnType("text");
+            entity.Property(t => t.IsActive).HasDefaultValue(false);
+            entity.Property(t => t.CreatedAt)
+                  .HasDefaultValueSql("NOW()")
+                  .ValueGeneratedOnAdd();
+            entity.Property(t => t.UpdatedAt)
+                  .HasDefaultValueSql("NOW()")
+                  .ValueGeneratedOnAddOrUpdate();
         });
     }
 }

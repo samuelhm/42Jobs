@@ -15,6 +15,7 @@ public class User
     public bool Junior { get; set; } = true;
     public string? Presentation { get; set; }
     public string? AvatarUrl { get; set; }
+    public string Role { get; set; } = "User";
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
     public DateTime? LastGithubImportAt { get; set; }

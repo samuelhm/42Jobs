@@ -6,8 +6,8 @@ public class UserJob
     public int JobId { get; set; }
     public DateTime SavedAt { get; set; }
     public string? Notes { get; set; }
-    public bool Applied { get; set; }
-    public DateTime? AppliedAt { get; set; }
+    public string Status { get; set; } = "saved";
+    public DateTime StatusUpdatedAt { get; set; }
 
     public User User { get; set; } = null!;
     public Job Job { get; set; } = null!;

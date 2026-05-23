@@ -3,8 +3,9 @@ CREATE TABLE IF NOT EXISTS user_jobs (
     job_id     INTEGER NOT NULL REFERENCES jobs(id) ON DELETE CASCADE,
     saved_at   TIMESTAMP DEFAULT NOW(),
     notes      TEXT,
-    applied    BOOLEAN DEFAULT FALSE,
-    applied_at TIMESTAMP,
+    status            VARCHAR(30) NOT NULL DEFAULT 'saved'
+                      CHECK (status IN ('saved', 'cv_enviado', 'entrevista_conseguida', 'empleo_conseguido', 'rechazado')),
+    status_updated_at TIMESTAMP DEFAULT NOW(),
     PRIMARY KEY (user_id, job_id)
 );
 
