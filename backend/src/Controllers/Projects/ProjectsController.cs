@@ -15,7 +15,7 @@ namespace src.Controllers;
 [ApiController]
 [Route("api/projects")]
 [Authorize]
-public class ProjectsController : ControllerBase
+public partial class ProjectsController : ControllerBase
 {
     private readonly ILogger<ProjectsController> _logger;
     private readonly AppDbContext _db;
@@ -32,134 +32,39 @@ public class ProjectsController : ControllerBase
         _scopeFactory = scopeFactory;
     }
 
-    [HttpGet]
-    public async Task<IActionResult> GetAll()
+    private async Task SyncProjectKeywords(int projectId, List<int> keywordIds)
     {
-        var userId = GetUserId();
-        var projects = await _db.Projects
-            .Where(p => p.UserId == userId)
-            .Include(p => p.Keywords)
-            .Select(p => new ProjectResponseDto
-            {
-                Id = p.Id, Name = p.Name, Description = p.Description, Type = p.Type,
-                Keywords = p.Keywords.Select(k => k.Name).ToList()
-            })
-            .ToListAsync();
+        await _db.Database.ExecuteSqlRawAsync(
+            "DELETE FROM project_keywords WHERE project_id = {0}", projectId);
 
-        return Ok(new { success = true, data = projects });
-    }
-
-    [HttpPost]
-    public async Task<IActionResult> Create([FromBody] ProjectDto body)
-    {
-        var userId = GetUserId();
-        var project = new Project
+        foreach (var kwId in keywordIds)
         {
-            UserId = userId,
-            Name = body.Name,
-            Description = body.Description,
-            Type = body.Type
-        };
-        _db.Projects.Add(project);
-        await _db.SaveChangesAsync();
-
-        if (body.KeywordIds is { Count: > 0 })
-        {
-            await SyncProjectKeywords(project.Id, body.KeywordIds);
+            await _db.Database.ExecuteSqlRawAsync(
+                "INSERT INTO project_keywords (project_id, keyword_id) VALUES ({0}, {1}) ON CONFLICT DO NOTHING",
+                projectId, kwId);
         }
-
-        var keywords = body.KeywordIds is not null
-            ? await _db.Keywords.Where(k => body.KeywordIds.Contains(k.Id)).Select(k => k.Name).ToListAsync()
-            : [];
-
-        return Ok(new
-        {
-            success = true,
-            data = new ProjectResponseDto
-            {
-                Id = project.Id, Name = project.Name, Description = project.Description,
-                Type = project.Type, Keywords = keywords
-            }
-        });
     }
 
-    [HttpPut("{id:int}")]
-    public async Task<IActionResult> Update([FromRoute] int id, [FromBody] ProjectDto body)
+    private static async Task<string?> TryFetchRaw(HttpClient http, string owner, string repo, string branch, string path)
     {
-        var userId = GetUserId();
-        var project = await _db.Projects.FirstOrDefaultAsync(p => p.Id == id && p.UserId == userId);
-        if (project is null) return NotFound(new { success = false, error = "Project not found" });
-
-        project.Name = body.Name;
-        project.Description = body.Description;
-        project.Type = body.Type;
-        await _db.SaveChangesAsync();
-
-        if (body.KeywordIds is not null)
+        try
         {
-            await SyncProjectKeywords(project.Id, body.KeywordIds);
+            var url = $"https://raw.githubusercontent.com/{Uri.EscapeDataString(owner)}/{Uri.EscapeDataString(repo)}/{Uri.EscapeDataString(branch)}/{path}";
+            return await http.GetStringAsync(url);
         }
-
-        var keywords = body.KeywordIds is not null
-            ? await _db.Keywords.Where(k => body.KeywordIds.Contains(k.Id)).Select(k => k.Name).ToListAsync()
-            : await _db.Entry(project).Collection(p => p.Keywords).Query().Select(k => k.Name).ToListAsync();
-
-        return Ok(new
+        catch
         {
-            success = true,
-            data = new ProjectResponseDto
-            {
-                Id = project.Id, Name = project.Name, Description = project.Description,
-                Type = project.Type, Keywords = keywords
-            }
-        });
+            return null;
+        }
     }
 
-    [HttpDelete("{id:int}")]
-    public async Task<IActionResult> Delete([FromRoute] int id)
+    private static async Task<string> FetchReposAsync(HttpClient http, string username)
     {
-        var userId = GetUserId();
-        var project = await _db.Projects.FirstOrDefaultAsync(p => p.Id == id && p.UserId == userId);
-        if (project is null) return NotFound(new { success = false, error = "Project not found" });
-
-        _db.Projects.Remove(project);
-        await _db.SaveChangesAsync();
-
-        return Ok(new { success = true });
+        var url = $"https://api.github.com/users/{Uri.EscapeDataString(username)}/repos?per_page=30&sort=updated";
+        return await http.GetStringAsync(url);
     }
 
     private static readonly ConcurrentDictionary<Guid, ImportStatus> ImportStatuses = new();
-
-    [HttpPost("import-github")]
-    public IActionResult ImportFromGithub([FromBody] ImportGithubDto body)
-    {
-        var userId = GetUserId();
-        var username = body.Username.Trim();
-        if (string.IsNullOrEmpty(username))
-            return BadRequest(new { error = "Username is required" });
-
-        var jobId = Guid.NewGuid();
-        ImportStatuses[jobId] = new ImportStatus { Status = "queued", JobId = jobId };
-
-        var token = body.Token;
-
-        var scopeFactory = _scopeFactory;
-        var httpFactory = _httpFactory;
-        var logger = _logger;
-
-        _ = Task.Run(async () => await ProcessImportAsync(jobId, userId, username, token, scopeFactory, httpFactory, logger));
-
-        return Accepted(new { job_id = jobId, status = "queued", status_url = $"/api/projects/import-github/{jobId}" });
-    }
-
-    [HttpGet("import-github/{jobId:guid}")]
-    public IActionResult GetImportStatus(Guid jobId)
-    {
-        if (ImportStatuses.TryGetValue(jobId, out var status))
-            return Ok(status);
-
-        return NotFound(new { error = "Import job not found" });
-    }
 
     private static async Task ProcessImportAsync(
         Guid jobId, Guid userId, string username, string token,
@@ -228,7 +133,6 @@ public class ProjectsController : ControllerBase
 
             status.Message = $"Analyzing {projectTexts.Count} projects with Gemini...";
 
-            // Resolve Gemini from a new scope
             List<GithubProjectResult> projects;
             string error;
             using (var geminiScope = scopeFactory.CreateScope())
@@ -248,7 +152,6 @@ public class ProjectsController : ControllerBase
             status.Message = "Saving projects...";
             int inserted = 0;
 
-            // Resolve DbContext from a fresh scope for saving
             using (var saveScope = scopeFactory.CreateScope())
             {
                 var db = saveScope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -294,8 +197,8 @@ public class ProjectsController : ControllerBase
                             project.Id, kw.Id);
                     }
 
-                inserted++;
-            }
+                    inserted++;
+                }
             }
 
             status.Status = "completed";
@@ -312,39 +215,24 @@ public class ProjectsController : ControllerBase
         }
     }
 
-    private async Task SyncProjectKeywords(int projectId, List<int> keywordIds)
-    {
-        await _db.Database.ExecuteSqlRawAsync(
-            "DELETE FROM project_keywords WHERE project_id = {0}", projectId);
-
-        foreach (var kwId in keywordIds)
-        {
-            await _db.Database.ExecuteSqlRawAsync(
-                "INSERT INTO project_keywords (project_id, keyword_id) VALUES ({0}, {1}) ON CONFLICT DO NOTHING",
-                projectId, kwId);
-        }
-    }
-
-    private static async Task<string?> TryFetchRaw(HttpClient http, string owner, string repo, string branch, string path)
-    {
-        try
-        {
-            var url = $"https://raw.githubusercontent.com/{Uri.EscapeDataString(owner)}/{Uri.EscapeDataString(repo)}/{Uri.EscapeDataString(branch)}/{path}";
-            return await http.GetStringAsync(url);
-        }
-        catch
-        {
-            return null;
-        }
-    }
-
-    private static async Task<string> FetchReposAsync(HttpClient http, string username)
-    {
-        var url = $"https://api.github.com/users/{Uri.EscapeDataString(username)}/repos?per_page=30&sort=updated";
-        return await http.GetStringAsync(url);
-    }
-
     private Guid GetUserId() =>
         Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value
                 ?? User.FindFirst("sub")?.Value!);
+}
+
+public class ImportGithubDto
+{
+    public string Username { get; set; } = "";
+    public string? Token { get; set; }
+}
+
+public class ImportStatus
+{
+    public Guid JobId { get; set; }
+    public string Status { get; set; } = "queued";
+    public int Processed { get; set; }
+    public int Total { get; set; }
+    public int Inserted { get; set; }
+    public string? Message { get; set; }
+    public string? Error { get; set; }
 }

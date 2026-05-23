@@ -4,16 +4,8 @@ using src.Data;
 
 namespace src.Controllers;
 
-[ApiController]
-[Route("/")]
-public class HealthController : ControllerBase
+public partial class HealthController
 {
-    [HttpGet]
-    public IActionResult Root()
-    {
-        return Ok(new { app = "BimJobsNet", status = "running" });
-    }
-
     [HttpGet("db-test")]
     public async Task<IActionResult> DbTest([FromServices] AppDbContext db)
     {

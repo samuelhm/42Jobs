@@ -1,24 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using src.Data;
 using src.Models;
-using src.Services;
 
 namespace src.Controllers;
 
-[ApiController]
-[Route("api/admin")]
-public class AdminController : ControllerBase
+public partial class AdminController
 {
-    private readonly AppDbContext _db;
-    private readonly GeminiService _gemini;
-
-    public AdminController(AppDbContext db, GeminiService gemini)
-    {
-        _db = db;
-        _gemini = gemini;
-    }
-
     [HttpPost("dedup-keywords")]
     public async Task<IActionResult> DedupKeywords()
     {
@@ -40,8 +27,6 @@ public class AdminController : ControllerBase
                 var dup = allKeywords.FirstOrDefault(k => k.Name.Equals(dupName, StringComparison.OrdinalIgnoreCase));
                 if (dup is null) continue;
 
-                // Migrate all M2M references: add canonical keyword where dup exists,
-                // then remove the duplicate. ON CONFLICT handles jobs that had both.
                 await _db.Database.ExecuteSqlRawAsync(
                     @"INSERT INTO job_keywords (job_id, keyword_id)
                       SELECT job_id, {0} FROM job_keywords WHERE keyword_id = {1}
