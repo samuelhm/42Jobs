@@ -117,11 +117,30 @@ public class ResumesController : ControllerBase
                 return StatusCode(500, new { error = $"OpenAI API error: {responseBody}" });
             }
             using var doc = JsonDocument.Parse(responseBody);
-            var outputText = doc.RootElement
-                .GetProperty("output")[0]
-                .GetProperty("content")[0]
-                .GetProperty("text")
-                .GetString()!;
+            var outputArr = doc.RootElement.GetProperty("output");
+
+            string? outputText = null;
+            foreach (var item in outputArr.EnumerateArray())
+            {
+                if (item.TryGetProperty("content", out var contentArr))
+                {
+                    foreach (var c in contentArr.EnumerateArray())
+                    {
+                        if (c.TryGetProperty("text", out var t))
+                        {
+                            outputText = t.GetString();
+                            break;
+                        }
+                    }
+                }
+                if (outputText is not null) break;
+            }
+
+            if (outputText is null)
+            {
+                _logger.LogError("OpenAI response missing output text: {Body}", responseBody);
+                return StatusCode(500, new { error = "Unexpected response format from OpenAI" });
+            }
 
             using var outputDoc = JsonDocument.Parse(outputText);
             var cvData = outputDoc.RootElement;
