@@ -30,9 +30,6 @@ public class DeepSeekProvider : IAiProvider
     public static string ServiceName => "DeepSeek";
     string IAiProvider.ServiceName => ServiceName;
 
-    // Name of the env var that holds the default API key
-    private const string EnvApiKey = "LLM_DEEPSEEK_API_KEY";
-
     public DeepSeekProvider(IHttpClientFactory httpFactory, ILogger<DeepSeekProvider> logger)
     {
         _httpFactory = httpFactory;
@@ -47,11 +44,11 @@ public class DeepSeekProvider : IAiProvider
         string? apiKey,
         CancellationToken ct)
     {
-        // Use DB key if available, fall back to env var
-        var key = apiKey ?? Environment.GetEnvironmentVariable(EnvApiKey);
+        if (string.IsNullOrWhiteSpace(apiKey))
+            throw new InvalidOperationException("DeepSeek API key not configured. Set it in Admin > AI Services.");
 
         // Build the request in your provider's format.
-        // Most APIs use an OpenAI-compatible chat format.
+        // If your API is OpenAI-compatible (Chat Completions), use:
         var requestBody = new
         {
             model,
@@ -67,7 +64,7 @@ public class DeepSeekProvider : IAiProvider
                 {
                     name = "response",
                     strict = true,
-                    schema = schema  // adapt if your API uses a different format
+                    schema = schema  // JsonElement — no adaptation needed for standard JSON Schema
                 }
             },
             temperature = 0.1
@@ -78,7 +75,7 @@ public class DeepSeekProvider : IAiProvider
 
         using var http = _httpFactory.CreateClient();
         http.Timeout = TimeSpan.FromSeconds(120);
-        http.DefaultRequestHeaders.Add("Authorization", $"Bearer {key}");
+        http.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
 
         var response = await http.PostAsync("https://api.deepseek.com/v1/chat/completions", content, ct);
         response.EnsureSuccessStatusCode();
@@ -98,9 +95,26 @@ public class DeepSeekProvider : IAiProvider
 }
 ```
 
-**Important:** 
-- `ServiceName` must match exactly what you will insert into the `ai_services` table (step 2).
-- **Schema adaptation**: schemas in the database use Google's format (types like `OBJECT`, `STRING`, `ARRAY` in uppercase). If your provider expects a different format (e.g., OpenAI requires lowercase `object`, `string`, `array`), you must adapt the schema. See `OpenAiProvider.AdaptSchema` for an example — it lowercases type values and forces `additionalProperties: false` for OpenAI's strict mode.
+### Schema files
+
+Schemas are **file-based**, stored in `backend/src/Services/Ai/Schemas/`. Each functionality has one file per provider:
+
+```
+Schemas/
+  filter_jobs.openai.json     ← with "additionalProperties": false (OpenAI strict mode)
+  filter_jobs.google.json     ← without additionalProperties (Gemini rejects it)
+  extract_keywords.openai.json
+  extract_keywords.google.json
+  ...
+```
+
+The `AiService.LoadSchema(functionality, providerServiceName)` method resolves the file at runtime. The provider receives the `JsonElement` as-is — **no runtime adaptation is needed** because each provider already has its own schema variant.
+
+If your provider uses a non-standard schema format, add a new schema file for it under `Schemas/` with the naming pattern `{functionality}.{provider}.json` (provider name lowercase).
+
+### API key
+
+API keys are managed exclusively through the **Admin panel** (`ai_services.api_key` in the database). The `apiKey` parameter passed to `CallAsync` comes from the DB. There is no env var fallback.
 
 ## 2. Register the provider in DI
 
@@ -119,35 +133,26 @@ The `AiService` picks it up automatically via `IEnumerable<IAiProvider>` — no 
 
 ## 3. Add the provider and models to the database
 
-The seed file is at `database/migrations/022-seed-ai.sql` (or you can create a new migration for existing databases):
+Use the Admin panel (recommended) or insert directly via SQL:
 
 ```sql
 -- Insert the service
-INSERT INTO ai_services (name, base_url, api_key) VALUES
-    ('DeepSeek', 'https://api.deepseek.com/', NULL)
+INSERT INTO ai_services (name, is_free_tier, api_key) VALUES
+    ('DeepSeek', FALSE, 'sk-your-key-here')
 ON CONFLICT (name) DO NOTHING;
 
 -- Insert its models
-INSERT INTO ai_models (ai_service_id, name, is_default) VALUES
-    ((SELECT id FROM ai_services WHERE name = 'DeepSeek'), 'deepseek-chat', FALSE),
-    ((SELECT id FROM ai_services WHERE name = 'DeepSeek'), 'deepseek-reasoner', FALSE)
+INSERT INTO ai_models (ai_service_id, name) VALUES
+    ((SELECT id FROM ai_services WHERE name = 'DeepSeek'), 'deepseek-chat'),
+    ((SELECT id FROM ai_services WHERE name = 'DeepSeek'), 'deepseek-reasoner')
 ON CONFLICT (ai_service_id, name) DO NOTHING;
 ```
 
-- `api_key` can be `NULL` — the provider will fall back to the environment variable (`LLM_DEEPSEEK_API_KEY`).
-- If you want this provider to be the default, set `is_default = TRUE` on one of its models. Only one model across all providers should have `is_default = TRUE`.
+- `is_free_tier`: enable if this provider has rate limits (adds pre-call delay + exponential backoff on 429).
+- `api_key`: can be `NULL` and set later via the admin panel.
+- To make a model the default for a prompt, set `default_model_id` in `ai_prompts` via Admin > AI Prompts.
 
-## 4. Set the API key
-
-Add to your `.env` file:
-
-```bash
-LLM_DEEPSEEK_API_KEY=sk-xxxxxxxx
-```
-
-If you set `api_key` in the `ai_services` table, that value takes priority over the env var.
-
-## 5. Verify
+## 4. Verify
 
 Restart the backend:
 
@@ -155,7 +160,7 @@ Restart the backend:
 make dev-restart
 ```
 
-Test a prompt through the API. If the new model is the default, all AI calls will now go through your provider. If not, you can make it the default or use it programmatically via a future admin panel.
+Test through the UI or API. Assign the new model to a prompt in Admin > AI Prompts to route calls through your provider.
 
 ## What NOT to do
 
@@ -167,7 +172,9 @@ Test a prompt through the API. If the new model is the default, all AI calls wil
 
 | Problem | Solution |
 |---------|----------|
-| `No default AI model configured` | No model has `is_default = TRUE`. Run the seed INSERT or set one manually. |
+| `No active prompt for functionality X` | No prompt with `is_active = TRUE` for that functionality. Check Admin > AI Prompts. |
+| `No active model configured for this task` | The prompt has no `default_model_id`, or the model is inactive. Set it in Admin > AI Prompts. |
 | `No provider registered for service X` | The `ServiceName` in your provider doesn't match the `ai_services.name` in the DB. They must be identical. |
-| Provider not called | Check `ai_models.is_default` and `ai_models.is_active` for your model. |
-| `401 Unauthorized` | API key is missing in both the DB and the env var. |
+| Provider not called | Check `ai_models.is_active` and `ai_services.is_active` in the DB. |
+| `401 Unauthorized` | `api_key` is NULL in `ai_services`. Set it in Admin > AI Services. |
+| `Rate limit (429) but API key is not marked as free tier` | The provider is hitting rate limits but `is_free_tier = FALSE`. Enable free tier in Admin > AI Services to add retry logic. |
