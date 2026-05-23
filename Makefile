@@ -2,7 +2,7 @@ COMPOSE_DEV := docker compose
 COMPOSE_PROD := docker compose -f docker-compose.yml -f docker-compose.prod.yml
 
 # =============================================================================
-# BimbaJobs - Makefile
+# 42jobs - Makefile
 # =============================================================================
 .PHONY: help \
         dev-up dev-down dev-build dev-restart dev-logs dev-ps dev-shell \
@@ -12,7 +12,7 @@ COMPOSE_PROD := docker compose -f docker-compose.yml -f docker-compose.prod.yml
 # ─── Default ───────────────────────────────────────────────
 help:
 	@echo "════════════════════════════════════════════════════════"
-	@echo "  BimbaJobs - Comandos"
+	@echo "  42jobs - Comandos"
 	@echo "════════════════════════════════════════════════════════"
 	@echo ""
 	@echo "  DESARROLLO (base + override automático):"

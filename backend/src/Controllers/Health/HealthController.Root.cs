@@ -7,6 +7,6 @@ public partial class HealthController
     [HttpGet]
     public IActionResult Root()
     {
-        return Ok(new { app = "BimJobsNet", status = "running" });
+        return Ok(new { app = "42jobs", status = "running" });
     }
 }

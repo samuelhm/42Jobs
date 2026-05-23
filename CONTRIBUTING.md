@@ -1,4 +1,4 @@
-# Contributing to BimJobsNet
+# Contributing to 42jobs
 
 Thanks for your interest in contributing.
 
@@ -18,7 +18,7 @@ Thanks for your interest in contributing.
 - Controllers use **partial classes**: one file per endpoint inside a folder named after the controller. See `Controllers/Users/` for the pattern.
 - The constructor, fields, helpers, and `[Route]` attribute go in `{Name}Controller.cs`. Each endpoint lives in `{Name}Controller.{Verb}.cs`.
 - All responses follow `{ success: bool, data: ... }` with `snake_case` JSON.
-- Authentication uses JWT stored in a cookie named `bimbajobs_auth`.
+- Authentication uses JWT stored in a cookie named `42jobs_auth`.
 
 ### Database
 

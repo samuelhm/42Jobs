@@ -1,5 +1,5 @@
 # =============================================================================
-# BimbaJobs - Docker Compose Prod (añadidos de PRODUCCIÓN)
+# 42jobs - Docker Compose Prod (añadidos de PRODUCCIÓN)
 # Uso: docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 # Este archivo SÍ se despliega en el VPS
 # =============================================================================

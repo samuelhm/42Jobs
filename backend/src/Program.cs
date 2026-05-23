@@ -51,7 +51,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         {
             OnMessageReceived = context =>
             {
-                context.Token = context.Request.Cookies["bimbajobs_auth"];
+                context.Token = context.Request.Cookies["42jobs_auth"];
                 return Task.CompletedTask;
             }
         };

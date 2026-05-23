@@ -1,5 +1,5 @@
 # =============================================================================
-# BimbaJobs - Backend Dockerfile (Multi-stage .NET)
+# 42jobs - Backend Dockerfile (Multi-stage .NET)
 # =============================================================================
 
 # ─── Development (dotnet watch hot-reload) ─────────────────

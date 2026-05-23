@@ -1,5 +1,5 @@
 # =============================================================================
-# BimbaJobs - Docker Compose Override (DESARROLLO)
+# 42jobs - Docker Compose Override (DESARROLLO)
 # Se carga automáticamente con: docker compose up -d
 # Este archivo NO se despliega en producción
 # =============================================================================

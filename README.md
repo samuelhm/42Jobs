@@ -1,6 +1,6 @@
-# BimJobsNet
+# 42jobs
 
-BimJobsNet is a job search platform tailored for **junior software engineers**. It fetches job offers from LinkedIn, filters them with AI for relevance and junior-friendliness, extracts keywords, and generates ATS-optimized CVs.
+42jobs is a job search platform tailored for **junior software engineers**. It fetches job offers from LinkedIn, filters them with AI for relevance and junior-friendliness, extracts keywords, and generates ATS-optimized CVs.
 
 ## Features
 
@@ -49,7 +49,7 @@ make clean           # stop everything + delete volumes
 ## Architecture
 
 ```
-bimjobsnet/
+42jobs/
 ├── backend/src/
 │   ├── Controllers/     # 13 REST controllers (partial classes, one endpoint per file)
 │   ├── Models/          # 22 C# entity models + DTOs

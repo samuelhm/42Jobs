@@ -1,12 +1,12 @@
 # =============================================================================
-# BimbaJobs - Docker Compose (BASE, común a dev y prod)
+# 42jobs - Docker Compose (BASE, común a dev y prod)
 # =============================================================================
 
 services:
   # ─── PostgreSQL ──────────────────────────────────────────
   db:
     image: postgres:16-alpine
-    container_name: bimbajobs-db
+    container_name: 42jobs-db
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -29,7 +29,7 @@ services:
       context: ./backend
       dockerfile: Dockerfile
       target: production
-    container_name: bimbajobs-backend
+    container_name: 42jobs-backend
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       DATABASE_URL: ${DATABASE_URL}
@@ -51,7 +51,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       target: production
-    container_name: bimbajobs-frontend
+    container_name: 42jobs-frontend
     networks:
       - internal
     depends_on:

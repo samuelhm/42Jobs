@@ -1,4 +1,4 @@
-# AGENTS.md — BimJobsNet (bimjobsnet)
+# AGENTS.md — 42jobs
 
 ## Propósito del proyecto
 
@@ -27,7 +27,7 @@ Este es un proyecto **personal de aprendizaje**. El objetivo principal no es ent
 ## Estructura del proyecto
 
 ```
-bimjobsnet/
+42jobs/
 ├── AGENTS.md              ← Este archivo
 ├── roadmap.md             ← Punto actual del proyecto y siguientes pasos
 ├── Makefile               ← Orquestación (dev-up, prod-up, etc.)
@@ -70,7 +70,7 @@ bimjobsnet/
 ## Estado actual del proyecto
 
 1. **Base de datos:** ✅ Migraciones SQL con 17 archivos. Tablas: categorías, empresas, keywords, jobs, perfil de usuario, idiomas, certificaciones, educación, proyectos, experiencias, user_providers, user_jobs, user_categories, resumes, y tablas M2M (job_keywords, project_keywords, work_experience_keywords).
-2. **Backend:** ✅ Funcional. 11 controladores REST con autenticación JWT vía cookie (`bimbajobs_auth`). EF Core con snake_case naming convention. Servicios: LinkedIn RapidAPI, Gemini (filtro + keywords), background job queue con Channel<T> para fetch de trabajos con rate-limiting de 3h.
+2. **Backend:** ✅ Funcional. 11 controladores REST con autenticación JWT vía cookie (`42jobs_auth`). EF Core con snake_case naming convention. Servicios: LinkedIn RapidAPI, Gemini (filtro + keywords), background job queue con Channel<T> para fetch de trabajos con rate-limiting de 3h.
 3. **Frontend:** ⚠️ En construcción. React + React Router con Vite. Formato de respuesta `{ success, data }` con snake_case. Dev: Vite con HMR. Prod: nginx sirviendo build estático.
 
 ## Próximos pasos (visión general)

@@ -1,4 +1,4 @@
-# Roadmap — BimbaJobs (bimjobsnet)
+# Roadmap — 42jobs
 
 ## Checkpoint actual
 
@@ -79,7 +79,7 @@
 
 | Checkpoint | Estado |
 |------------|--------|
-| JWT + cookie auth (`bimbajobs_auth`) | ✅ |
+| JWT + cookie auth (`42jobs_auth`) | ✅ |
 | Registro (BCrypt hash) | ✅ |
 | Login (JWT generation) | ✅ |
 | Logout (cookie deletion) | ✅ |

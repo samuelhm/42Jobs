@@ -78,7 +78,7 @@ public partial class ProjectsController : ControllerBase
         try
         {
             using var http = httpFactory.CreateClient();
-            http.DefaultRequestHeaders.Add("User-Agent", "bimjobsnet");
+            http.DefaultRequestHeaders.Add("User-Agent", "42jobs");
             if (!string.IsNullOrWhiteSpace(token))
                 http.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
 

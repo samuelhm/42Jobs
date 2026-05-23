@@ -1,6 +1,6 @@
 # How to add a new AI provider
 
-BimJobsNet uses a pluggable AI architecture. The backend never calls a specific provider directly. Instead,controllers inject `IAiService`, which resolves the active provider from the database at runtime.
+42jobs uses a pluggable AI architecture. The backend never calls a specific provider directly. Instead, controllers inject `IAiService`, which resolves the active provider from the database at runtime.
 
 To add a new provider (e.g., DeepSeek, Anthropic, Mistral), follow these steps.
 

@@ -23,7 +23,7 @@ public class JwtService
 
         var jwt = configuration.GetSection("Jwt");
 
-        _cookieName = jwt["CookieName"] ?? "bimbajobs_auth";
+        _cookieName = jwt["CookieName"] ?? "42jobs_auth";
         _expirationHours = jwt.GetValue<int>("ExpirationHours", 48);
         _domain = jwt["Domain"] ?? "";
         _httpOnly = jwt.GetValue<bool>("HttpOnly", true);

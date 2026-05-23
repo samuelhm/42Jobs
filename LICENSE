@@ -629,8 +629,8 @@ to attach them to the start of each source file to most effectively
 state the exclusion of warranty; and each file should have at least
 the "copyright" line and a pointer to where the full notice is found.
 
-    BimJobsNet - AI-powered job search platform for junior software engineers
-    Copyright (C) 2025  Sergio Hurtado
+    42jobs - AI-powered job search platform for junior software engineers
+    Copyright (C) 2025  Samuel Hurtado Marin
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
@@ -645,7 +645,7 @@ the "copyright" line and a pointer to where the full notice is found.
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-    Contact: sergiohurtado@protonmail.com
+    Contact: samuel@hurtadom.dev
 
 Additional permission under GNU AGPL version 3 section 7:
 
@@ -660,8 +660,8 @@ Additional permission under GNU AGPL version 3 section 7:
 Dual Licensing Notice:
 
   This software is also available under a commercial license for
-  organizations that wish to use, modify, or distribute BimJobsNet without
+  organizations that wish to use, modify, or distribute 42jobs without
   complying with the AGPL v3 copyleft requirements (e.g., keeping their
   modifications private or integrating it into proprietary products).
 
-  For commercial licensing inquiries, contact: sergiohurtado@protonmail.com
+  For commercial licensing inquiries, contact: samuel@hurtadom.dev
