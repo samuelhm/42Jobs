@@ -8,6 +8,10 @@ const FILTERS = {
   jobType: ['', 'full-time', 'part-time', 'contract', 'temporary', 'internship', 'volunteer', 'other'],
   experienceLevel: ['', 'internship', 'entry', 'associate', 'mid-senior', 'director', 'executive'],
   remote: ['', 'on-site', 'remote', 'hybrid'],
+  industry: ['', 'technology', 'software', 'internet', 'finance', 'banking', 'healthcare', 'education', 'retail', 'manufacturing', 'consulting', 'marketing', 'media', 'telecom', 'real-estate', 'hospitality', 'automotive', 'aerospace', 'energy', 'pharma', 'legal', 'hr', 'nonprofit', 'government', 'construction', 'transportation'],
+  jobFunction: ['', 'engineering', 'it', 'sales', 'marketing', 'finance', 'hr', 'operations', 'admin', 'legal', 'design', 'product', 'consulting', 'education', 'healthcare', 'research', 'support', 'management', 'business-dev', 'accounting', 'qa'],
+  salary: ['', '40000+', '60000+', '80000+', '100000+', '120000+', '140000+', '160000+', '180000+', '200000+'],
+  companySize: ['', 'startup', 'small', 'medium', 'large', 'enterprise', 'mega', 'giant', 'massive'],
 };
 
 function useDebouncedSave(delay = 800) {

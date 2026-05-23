@@ -73,7 +73,7 @@ public class LinkedInRapidApiProvider : IJobProvider
                         queryParams["datePosted"] = val;
                     else if (key == "sortBy" && string.IsNullOrEmpty(request.SortBy))
                         queryParams["sortBy"] = val;
-                    else if (key is "jobType" or "experienceLevel" or "remote" or "companySize")
+                    else if (key is "jobType" or "experienceLevel" or "remote" or "companySize" or "industry" or "jobFunction" or "salary")
                         queryParams[key] = val;
                 }
             }
