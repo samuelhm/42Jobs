@@ -35,6 +35,8 @@ public partial class ProfileController
             Presentation = user.Presentation,
             AvatarUrl = user.AvatarUrl,
             Role = user.Role,
+            PreferredLocation = user.PreferredLocation,
+            PreferredDatePosted = user.PreferredDatePosted,
             CreatedAt = user.CreatedAt,
             Languages = user.Languages.Select(l => new LanguageDto
             {

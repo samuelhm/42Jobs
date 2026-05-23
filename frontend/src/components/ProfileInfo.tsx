@@ -16,6 +16,8 @@ interface ProfileData {
   github_url?: string;
   junior?: boolean;
   presentation?: string;
+  preferred_location?: string;
+  preferred_date_posted?: string;
 }
 
 export default function ProfileInfo({ profile, onSave }: Props) {
@@ -86,6 +88,19 @@ export default function ProfileInfo({ profile, onSave }: Props) {
       <div className="form-field full">
         <label>Presentation</label>
         <textarea value={form.presentation || ''} onChange={(e) => setForm({ ...form, presentation: e.target.value })} rows={4} />
+      </div>
+      <div className="form-grid">
+        <div className="form-field">
+          <label>Preferred Location</label>
+          <input value={form.preferred_location || ''} onChange={(e) => setForm({ ...form, preferred_location: e.target.value })} placeholder="e.g. Barcelona" />
+        </div>
+        <div className="form-field">
+          <label>Date Filter</label>
+          <select value={form.preferred_date_posted || 'past-week'} onChange={(e) => setForm({ ...form, preferred_date_posted: e.target.value })}>
+            <option value="past-week">Past Week</option>
+            <option value="past-24h">Past 24 Hours</option>
+          </select>
+        </div>
       </div>
       <button type="submit" className="btn-confirm" disabled={saving}>
         {saving ? 'Saving...' : 'Save'}

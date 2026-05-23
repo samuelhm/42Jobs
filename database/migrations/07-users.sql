@@ -16,5 +16,7 @@ CREATE TABLE IF NOT EXISTS users (
                     CHECK (role IN ('Admin', 'User')),
     created_at      TIMESTAMP DEFAULT NOW(),
     updated_at      TIMESTAMP DEFAULT NOW(),
-    last_github_import_at TIMESTAMPTZ
+    last_github_import_at TIMESTAMPTZ,
+    preferred_location      VARCHAR(200),
+    preferred_date_posted   VARCHAR(20)
 );

@@ -55,10 +55,21 @@ export default function CategoriesBar() {
   }
 
   async function triggerFetch(categoryId: number): Promise<boolean> {
+    let location = 'Barcelona';
+    let datePosted = 'past-week';
+    try {
+      const profileRes = await fetch('/api/profile');
+      const profileData = await profileRes.json();
+      if (profileData.success) {
+        location = profileData.data.preferred_location || 'Barcelona';
+        datePosted = profileData.data.preferred_date_posted || 'past-week';
+      }
+    } catch {}
+
     const res = await fetch(`/api/categories/${categoryId}/fetch`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ location: 'Barcelona', limit: 10, datePosted: 'past-week', sortBy: 'recent' }),
+      body: JSON.stringify({ location, limit: 10, datePosted, sortBy: 'recent' }),
     });
     const data = await res.json();
 

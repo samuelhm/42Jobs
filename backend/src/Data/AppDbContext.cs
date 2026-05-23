@@ -161,6 +161,8 @@ public class AppDbContext : DbContext
             entity.Property(u => u.Junior).HasDefaultValue(true);
             entity.Property(u => u.Presentation).HasColumnType("text");
             entity.Property(u => u.AvatarUrl).HasColumnType("text");
+            entity.Property(u => u.PreferredLocation).HasMaxLength(200);
+            entity.Property(u => u.PreferredDatePosted).HasMaxLength(20);
             entity.Property(u => u.Role)
                   .HasMaxLength(20)
                   .HasDefaultValue("User");
