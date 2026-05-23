@@ -34,10 +34,6 @@ services:
       ASPNETCORE_ENVIRONMENT: Production
       DATABASE_URL: ${DATABASE_URL}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
-      LINKEDIN_API_KEY: ${LINKEDIN_API_KEY}
-      LINKEDIN_API_HOST: ${LINKEDIN_API_HOST}
-      LLM_GOOGLE_API_KEY: ${LLM_GOOGLE_API_KEY}
-      LLM_OPENAI_API_KEY: ${LLM_OPENAI_API_KEY}
     networks:
       - internal
     depends_on:

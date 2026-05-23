@@ -8,7 +8,6 @@ public class GeminiProvider : IAiProvider
     private readonly IHttpClientFactory _httpFactory;
     private readonly ILogger<GeminiProvider> _logger;
     private const string BaseUrl = "https://generativelanguage.googleapis.com";
-    private const string EnvApiKey = "LLM_GOOGLE_API_KEY";
 
     public static string ServiceName => "Google";
     string IAiProvider.ServiceName => ServiceName;
@@ -23,7 +22,9 @@ public class GeminiProvider : IAiProvider
         string systemPrompt, string userPrompt, JsonElement schema, string model, string? apiKey, CancellationToken ct)
     {
         var combinedPrompt = $"{systemPrompt}\n\n{userPrompt}";
-        var key = apiKey ?? Environment.GetEnvironmentVariable(EnvApiKey);
+
+        if (string.IsNullOrWhiteSpace(apiKey))
+            throw new InvalidOperationException("Gemini API key not configured. Set it in Admin > AI Services.");
 
         var requestBody = new
         {
@@ -46,8 +47,8 @@ public class GeminiProvider : IAiProvider
         http.Timeout = TimeSpan.FromSeconds(120);
 
         var url = $"{BaseUrl}/v1beta/models/{model}:generateContent";
-        if (!string.IsNullOrEmpty(key))
-            url += $"?key={key}";
+        if (!string.IsNullOrEmpty(apiKey))
+            url += $"?key={apiKey}";
 
         var response = await http.PostAsync(url, content, ct);
         response.EnsureSuccessStatusCode();

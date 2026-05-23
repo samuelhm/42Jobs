@@ -8,7 +8,6 @@ public class OpenAiProvider : IAiProvider
     private readonly IHttpClientFactory _httpFactory;
     private readonly ILogger<OpenAiProvider> _logger;
     private const string BaseUrl = "https://api.openai.com";
-    private const string EnvApiKey = "LLM_OPENAI_API_KEY";
 
     public static string ServiceName => "OpenAI";
     string IAiProvider.ServiceName => ServiceName;
@@ -23,7 +22,9 @@ public class OpenAiProvider : IAiProvider
         string systemPrompt, string userPrompt, JsonElement schema, string model, string? apiKey, CancellationToken ct)
     {
         var combinedPrompt = $"{systemPrompt}\n\n{userPrompt}";
-        var key = apiKey ?? Environment.GetEnvironmentVariable(EnvApiKey);
+
+        if (string.IsNullOrWhiteSpace(apiKey))
+            throw new InvalidOperationException("OpenAI API key not configured. Set it in Admin > AI Services.");
 
         var requestBody = new
         {
@@ -46,7 +47,7 @@ public class OpenAiProvider : IAiProvider
 
         using var http = _httpFactory.CreateClient();
         http.Timeout = TimeSpan.FromSeconds(120);
-        http.DefaultRequestHeaders.Add("Authorization", $"Bearer {key}");
+        http.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
 
         var response = await http.PostAsync($"{BaseUrl}/v1/responses", content, ct);
         response.EnsureSuccessStatusCode();

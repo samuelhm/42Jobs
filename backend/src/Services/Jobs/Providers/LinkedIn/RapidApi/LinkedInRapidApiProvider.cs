@@ -25,8 +25,14 @@ public class LinkedInRapidApiProvider : IJobProvider
 
     private HttpClient CreateClient()
     {
-        var host = _baseUrlOverride ?? Environment.GetEnvironmentVariable("LINKEDIN_API_HOST");
-        var key = _apiKeyOverride ?? Environment.GetEnvironmentVariable("LINKEDIN_API_KEY");
+        var host = _baseUrlOverride;
+        var key = _apiKeyOverride;
+
+        if (string.IsNullOrWhiteSpace(host))
+            throw new InvalidOperationException("LinkedIn host not configured. Set it in Admin > Job Providers.");
+        if (string.IsNullOrWhiteSpace(key))
+            throw new InvalidOperationException("LinkedIn API key not configured. Set it in Admin > Job Providers.");
+
         var client = _httpFactory.CreateClient();
         client.BaseAddress = new Uri($"https://{host}/");
         client.DefaultRequestHeaders.Add("x-rapidapi-key", key);

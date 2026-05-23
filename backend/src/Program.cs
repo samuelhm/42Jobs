@@ -23,13 +23,7 @@ builder.Services.AddControllers()
 
 builder.Services.AddSingleton<JwtService>();
 
-builder.Services.AddHttpClient<LinkedInRapidApiProvider>(client =>
-{
-    client.BaseAddress = new Uri($"https://{Environment.GetEnvironmentVariable("LINKEDIN_API_HOST")}/");
-    client.DefaultRequestHeaders.Add("x-rapidapi-key", Environment.GetEnvironmentVariable("LINKEDIN_API_KEY"));
-    client.DefaultRequestHeaders.Add("x-rapidapi-host", Environment.GetEnvironmentVariable("LINKEDIN_API_HOST"));
-});
-
+builder.Services.AddHttpClient();
 builder.Services.AddSingleton<IJobProvider, LinkedInRapidApiProvider>();
 
 builder.Services.AddSingleton<IAiProvider, GeminiProvider>();
