@@ -1,78 +1,75 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { get, put } from './api';
 
-interface AiPrompt {
-  id: number; functionality: string; name: string; description: string | null;
-  system_prompt: string; user_prompt_template: string; is_active: boolean;
-  schema_id: number | null; schema_name: string | null;
+interface Prompt { id: number; functionality: string; name: string; description: string | null; system_prompt: string; user_prompt_template: string; is_active: boolean; schema_id: number | null; schema_name: string | null; }
+
+function useDebouncedSave(delay = 1000) {
+  const [timer, setTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
+  return useCallback((fn: () => void) => {
+    if (timer) clearTimeout(timer);
+    setTimer(setTimeout(fn, delay));
+  }, [delay]);
+}
+
+function PromptCard({ p }: { p: Prompt }) {
+  const [system, setSystem] = useState(p.system_prompt);
+  const [user, setUser] = useState(p.user_prompt_template);
+  const [active, setActive] = useState(p.is_active);
+  const [saved, setSaved] = useState(false);
+  const debounce = useDebouncedSave();
+
+  function save(s: string, u: string, a: boolean) {
+    setSaved(false);
+    debounce(async () => {
+      await put(`/api/admin/ai-prompts/${p.id}`, { system_prompt: s, user_prompt_template: u, is_active: a, schema_id: p.schema_id });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    });
+  }
+
+  return (
+    <div className={`service-card ${active ? '' : 'inactive'}`}>
+      <div className="service-header">
+        <div>
+          <h3>{p.functionality}</h3>
+          <span className="service-count">{p.name} {p.schema_name ? `· schema: ${p.schema_name}` : ''}</span>
+        </div>
+        <button className={`toggle-switch ${active ? 'on' : ''}`}
+          onClick={() => { const next = !active; setActive(next); save(system, user, next); }}>
+          <span className="toggle-knob" />
+        </button>
+      </div>
+      <label className="form-label">System Prompt</label>
+      <textarea className="input" rows={5} value={system}
+        onChange={e => { setSystem(e.target.value); save(e.target.value, user, active); }} />
+      <label className="form-label mt-2">User Prompt Template</label>
+      <textarea className="input" rows={8} value={user}
+        onChange={e => { setUser(e.target.value); save(system, e.target.value, active); }} />
+      {saved && <span className="apikey-saved">Saved</span>}
+    </div>
+  );
 }
 
 export default function AdminAiPrompts() {
-  const [prompts, setPrompts] = useState<AiPrompt[]>([]);
-  const [edit, setEdit] = useState<AiPrompt | null>(null);
+  const [prompts, setPrompts] = useState<Prompt[]>([]);
   const [loading, setLoading] = useState(true);
 
-  async function load() {
-    const res = await get<AiPrompt[]>('/api/admin/ai-prompts');
-    if (res.success) setPrompts(res.data);
-    setLoading(false);
-  }
-
-  useEffect(() => { load(); }, []);
-
-  async function save() {
-    if (!edit) return;
-    await put(`/api/admin/ai-prompts/${edit.id}`, {
-      system_prompt: edit.system_prompt,
-      user_prompt_template: edit.user_prompt_template,
-      is_active: edit.is_active,
-      schema_id: edit.schema_id,
+  useEffect(() => {
+    get<Prompt[]>('/api/admin/ai-prompts').then(res => {
+      if (res.success) setPrompts(res.data);
+      setLoading(false);
     });
-    setEdit(null);
-    load();
-  }
+  }, []);
 
-  if (loading) return <div className="p-4">Loading...</div>;
+  if (loading) return <div className="p-4 text-muted">Loading...</div>;
 
   return (
     <div>
       <h2>AI Prompts</h2>
-
-      {edit && (
-        <div className="card mb-4" style={{ padding: '1rem' }}>
-          <h3>Edit: {edit.functionality}</h3>
-          <label className="form-label">System Prompt</label>
-          <textarea className="input" rows={4} value={edit.system_prompt}
-            onChange={e => setEdit({ ...edit, system_prompt: e.target.value })} />
-          <label className="form-label">User Prompt Template</label>
-          <textarea className="input" rows={8} value={edit.user_prompt_template}
-            onChange={e => setEdit({ ...edit, user_prompt_template: e.target.value })} />
-          <div className="form-row mt-2">
-            <label className="checkbox-label">
-              <input type="checkbox" checked={edit.is_active} onChange={e => setEdit({ ...edit, is_active: e.target.checked })} /> Active
-            </label>
-            <button className="btn btn-primary" onClick={save}>Save</button>
-            <button className="btn" onClick={() => setEdit(null)}>Cancel</button>
-          </div>
-        </div>
-      )}
-
-      <table className="admin-table">
-        <thead>
-          <tr><th>Functionality</th><th>Name</th><th>Schema</th><th>Active</th><th>Actions</th></tr>
-        </thead>
-        <tbody>
-          {prompts.map(p => (
-            <tr key={p.id}>
-              <td><code>{p.functionality}</code></td>
-              <td>{p.name}</td>
-              <td>{p.schema_name || '—'}</td>
-              <td>{p.is_active ? '✅' : '❌'}</td>
-              <td><button className="btn btn-sm" onClick={() => setEdit(p)}>Edit</button></td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <p className="text-muted">Edit the prompt templates used for each AI operation. Placeholders like {'{{keyword}}'} are filled at runtime.</p>
+      <div className="service-grid">
+        {prompts.map(p => <PromptCard key={p.id} p={p} />)}
+      </div>
     </div>
   );
 }

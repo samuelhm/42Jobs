@@ -1,14 +1,59 @@
-import { useEffect, useState } from 'react';
-import { get, put, post, del } from './api';
+import { useEffect, useState, useCallback } from 'react';
+import { get, put, del } from './api';
 
-interface Template {
-  id: number; name: string; description: string | null;
-  html_template: string; css: string | null; is_active: boolean;
+interface Template { id: number; name: string; description: string | null; html_template: string; css: string | null; is_active: boolean; }
+
+function useDebouncedSave(delay = 1200) {
+  const [timer, setTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
+  return useCallback((fn: () => void) => {
+    if (timer) clearTimeout(timer);
+    setTimer(setTimeout(fn, delay));
+  }, [delay]);
+}
+
+function TemplateCard({ t }: { t: Template }) {
+  const [name, setName] = useState(t.name);
+  const [html, setHtml] = useState(t.html_template);
+  const [css, setCss] = useState(t.css || '');
+  const [active, setActive] = useState(t.is_active);
+  const [saved, setSaved] = useState(false);
+  const debounce = useDebouncedSave();
+
+  function doSave(n: string, h: string, c: string, a: boolean) {
+    setSaved(false);
+    debounce(async () => {
+      await put(`/api/admin/templates/${t.id}`, { name: n, description: t.description, html_template: h, css: c || null, is_active: a });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    });
+  }
+
+  return (
+    <div className={`service-card ${active ? '' : 'inactive'}`}>
+      <div className="service-header">
+        <div>
+          <input className="input name-input" value={name}
+            placeholder="Template name"
+            onChange={e => { setName(e.target.value); doSave(e.target.value, html, css, active); }} />
+        </div>
+        <button className={`toggle-switch ${active ? 'on' : ''}`}
+          onClick={() => { const n = !active; setActive(n); doSave(name, html, css, n); }}>
+          <span className="toggle-knob" />
+        </button>
+      </div>
+      <label className="form-label">HTML Template</label>
+      <textarea className="input" rows={10} value={html}
+        onChange={e => { setHtml(e.target.value); doSave(name, e.target.value, css, active); }} />
+      <label className="form-label mt-2">CSS</label>
+      <textarea className="input" rows={4} value={css}
+        onChange={e => { setCss(e.target.value); doSave(name, html, e.target.value, active); }} />
+      {saved && <span className="apikey-saved">Saved</span>}
+    </div>
+  );
 }
 
 export default function AdminTemplates() {
   const [templates, setTemplates] = useState<Template[]>([]);
-  const [edit, setEdit] = useState<Template | null>(null);
   const [loading, setLoading] = useState(true);
 
   async function load() {
@@ -16,19 +61,7 @@ export default function AdminTemplates() {
     if (res.success) setTemplates(res.data);
     setLoading(false);
   }
-
   useEffect(() => { load(); }, []);
-
-  async function save() {
-    if (!edit) return;
-    if (edit.id) {
-      await put(`/api/admin/templates/${edit.id}`, edit);
-    } else {
-      await post('/api/admin/templates', edit);
-    }
-    setEdit(null);
-    load();
-  }
 
   async function remove(id: number) {
     if (!confirm('Delete this template?')) return;
@@ -36,55 +69,20 @@ export default function AdminTemplates() {
     load();
   }
 
-  if (loading) return <div className="p-4">Loading...</div>;
+  if (loading) return <div className="p-4 text-muted">Loading...</div>;
 
   return (
     <div>
       <h2>CV Templates</h2>
-
-      <button className="btn btn-primary mb-3" onClick={() => setEdit({ id: 0, name: '', description: '', html_template: '', css: '', is_active: false })}>
-        New Template
-      </button>
-
-      {edit && (
-        <div className="card mb-4" style={{ padding: '1rem' }}>
-          <h3>{edit.id ? 'Edit' : 'New'} Template</h3>
-          <input className="input" placeholder="Name" value={edit.name} onChange={e => setEdit({ ...edit, name: e.target.value })} />
-          <textarea className="input mt-2" rows={2} placeholder="Description" value={edit.description || ''}
-            onChange={e => setEdit({ ...edit, description: e.target.value })} />
-          <label className="form-label mt-2">HTML Template</label>
-          <textarea className="input" rows={10} value={edit.html_template}
-            onChange={e => setEdit({ ...edit, html_template: e.target.value })} />
-          <label className="form-label mt-2">CSS</label>
-          <textarea className="input" rows={5} value={edit.css || ''}
-            onChange={e => setEdit({ ...edit, css: e.target.value })} />
-          <div className="form-row mt-2">
-            <label className="checkbox-label">
-              <input type="checkbox" checked={edit.is_active} onChange={e => setEdit({ ...edit, is_active: e.target.checked })} /> Active
-            </label>
-            <button className="btn btn-primary" onClick={save}>Save</button>
-            <button className="btn" onClick={() => setEdit(null)}>Cancel</button>
+      <p className="text-muted">Only one template is active at a time. Toggle to switch between them.</p>
+      <div className="service-grid">
+        {templates.map(t => (
+          <div key={t.id}>
+            <TemplateCard t={t} />
+            <button className="btn-delete mt-1" onClick={() => remove(t.id)}>Delete</button>
           </div>
-        </div>
-      )}
-
-      <table className="admin-table">
-        <thead>
-          <tr><th>Name</th><th>Active</th><th>Actions</th></tr>
-        </thead>
-        <tbody>
-          {templates.map(t => (
-            <tr key={t.id}>
-              <td>{t.name}</td>
-              <td>{t.is_active ? '★ Active' : '—'}</td>
-              <td>
-                <button className="btn btn-sm" onClick={() => setEdit(t)}>Edit</button>
-                <button className="btn btn-sm btn-danger" onClick={() => remove(t.id)}>Delete</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+        ))}
+      </div>
     </div>
   );
 }

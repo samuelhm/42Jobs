@@ -1,8 +1,7 @@
-import { useNavigate } from 'react-router';
+import { useState } from 'react';
 import { post } from './api';
 
 export default function AdminDedup() {
-  const navigate = useNavigate();
   const [msg, setMsg] = useState('');
   const [running, setRunning] = useState(false);
 
@@ -25,5 +24,3 @@ export default function AdminDedup() {
     </div>
   );
 }
-
-import { useState } from 'react';

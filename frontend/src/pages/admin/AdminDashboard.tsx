@@ -1,19 +1,29 @@
 import { Link } from 'react-router';
 
+const dash = [
+  { to: '/admin/ai-services', icon: '🔌', label: 'AI Services', desc: 'API keys & providers' },
+  { to: '/admin/ai-models', icon: '🧠', label: 'AI Models', desc: 'Default model & active' },
+  { to: '/admin/ai-prompts', icon: '💬', label: 'Prompts', desc: 'System & user templates' },
+  { to: '/admin/ai-schemas', icon: '📐', label: 'Schemas', desc: 'JSON response format' },
+  { to: '/admin/templates', icon: '📄', label: 'CV Templates', desc: 'HTML & CSS layouts' },
+  { to: '/admin/job-providers', icon: '🌐', label: 'Job Providers', desc: 'API sources & keys' },
+  { to: '/admin/dedup', icon: '🔄', label: 'Dedup Keywords', desc: 'Merge duplicates' },
+  { to: '/admin/logs', icon: '📋', label: 'Logs', desc: 'Coming soon' },
+];
+
 export default function AdminDashboard() {
   return (
     <div>
       <h2>Admin Dashboard</h2>
-      <p className="text-muted">Welcome to the 42jobs administration panel.</p>
-      <div className="admin-cards">
-        <Link to="/admin/ai-services" className="card admin-card">AI Services</Link>
-        <Link to="/admin/ai-models" className="card admin-card">AI Models</Link>
-        <Link to="/admin/ai-prompts" className="card admin-card">Prompts</Link>
-        <Link to="/admin/ai-schemas" className="card admin-card">Schemas</Link>
-        <Link to="/admin/templates" className="card admin-card">CV Templates</Link>
-        <Link to="/admin/job-providers" className="card admin-card">Job Providers</Link>
-        <Link to="/admin/dedup" className="card admin-card">Dedup Keywords</Link>
-        <Link to="/admin/logs" className="card admin-card">Logs</Link>
+      <p className="text-muted">Configure all aspects of 42jobs from here.</p>
+      <div className="admin-dash-grid">
+        {dash.map(d => (
+          <Link key={d.to} to={d.to} className="admin-dash-card">
+            <span className="icon">{d.icon}</span>
+            <span>{d.label}</span>
+            <span className="label">{d.desc}</span>
+          </Link>
+        ))}
       </div>
     </div>
   );
