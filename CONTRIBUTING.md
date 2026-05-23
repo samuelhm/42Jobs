@@ -36,7 +36,13 @@ Thanks for your interest in contributing.
 
 - Controllers **never** call AI providers directly. They inject `IAiService`.
 - Prompts and response schemas live in the database, not in code.
-- See [docs/IAProvider.md](docs/IAProvider.md) for adding a new provider.
+- See [docs/IAProvider.md](docs/IAProvider.md) for adding a new AI provider.
+
+### Job sourcing layer
+
+- Controllers **never** call job APIs directly. They inject `IJobFetchService` (for fetching) or `IJobProvider` (for refresh/details).
+- `JobFetchService` calls all enabled `IJobProvider` implementations, one per portal.
+- See [docs/JobProvider.md](docs/JobProvider.md) for adding a new job source.
 
 ## Adding a new feature
 
@@ -49,6 +55,10 @@ Thanks for your interest in contributing.
 ## Adding a new AI provider
 
 See the dedicated guide: [docs/IAProvider.md](docs/IAProvider.md).
+
+## Adding a new job provider
+
+See the dedicated guide: [docs/JobProvider.md](docs/JobProvider.md).
 
 ## Commit messages
 
