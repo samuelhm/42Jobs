@@ -26,9 +26,9 @@ public partial class CategoriesController
         }
 
         if (category.LastFetchedAt is not null
-            && DateTime.UtcNow - category.LastFetchedAt.Value < TimeSpan.FromHours(4))
+            && DateTime.UtcNow - category.LastFetchedAt.Value < TimeSpan.FromHours(24))
         {
-            return Ok(new { status = "fresh", message = "Category already fetched within the last 4 hours" });
+            return Ok(new { status = "fresh", message = "Category already fetched within the last 24 hours" });
         }
 
         var existingJobId = _fetchService.Enqueue(id, category.Name, body);
