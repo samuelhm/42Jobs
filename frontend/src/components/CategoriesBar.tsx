@@ -57,14 +57,27 @@ export default function CategoriesBar() {
   async function triggerFetch(categoryId: number): Promise<boolean> {
     let location = 'Barcelona';
     let datePosted = 'past-week';
+    let missingPrefs = false;
     try {
       const profileRes = await fetch('/api/profile');
       const profileData = await profileRes.json();
       if (profileData.success) {
-        location = profileData.data.preferred_location || 'Barcelona';
-        datePosted = profileData.data.preferred_date_posted || 'past-week';
+        if (profileData.data.preferred_location) {
+          location = profileData.data.preferred_location;
+        } else {
+          missingPrefs = true;
+        }
+        if (profileData.data.preferred_date_posted) {
+          datePosted = profileData.data.preferred_date_posted;
+        } else {
+          missingPrefs = true;
+        }
       }
     } catch {}
+
+    if (missingPrefs) {
+      toast('prefs-warning', 'Configure your preferred location and date filter in Profile > Personal for better results.', 'info');
+    }
 
     const res = await fetch(`/api/categories/${categoryId}/fetch`, {
       method: 'POST',
