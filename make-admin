@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# make-admin — Promote a 42jobs user to Admin
+# Usage: ./make-admin user@example.com
+
+set -euo pipefail
+
+EMAIL="${1:-}"
+
+if [ -z "$EMAIL" ]; then
+  echo "Usage: ./make-admin <email>"
+  exit 1
+fi
+
+CONTAINER=$(docker compose ps -q db 2>/dev/null)
+
+if [ -z "$CONTAINER" ]; then
+  echo "Error: database container is not running. Start it with: make dev-up"
+  exit 1
+fi
+
+docker compose exec -T db psql -U "${POSTGRES_USER:-42jobs}" -d "${POSTGRES_DB:-42jobs}" -c \
+  "UPDATE users SET role = 'Admin' WHERE email = '${EMAIL//\'/\'\'}';"
+
+docker compose exec -T db psql -U "${POSTGRES_USER:-42jobs}" -d "${POSTGRES_DB:-42jobs}" -c \
+  "SELECT email, role FROM users WHERE email = '${EMAIL//\'/\'\'}';"
