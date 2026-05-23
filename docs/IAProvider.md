@@ -98,7 +98,9 @@ public class DeepSeekProvider : IAiProvider
 }
 ```
 
-**Important:** `ServiceName` must match exactly what you will insert into the `ai_services` table (step 2).
+**Important:** 
+- `ServiceName` must match exactly what you will insert into the `ai_services` table (step 2).
+- **Schema adaptation**: schemas in the database use Google's format (types like `OBJECT`, `STRING`, `ARRAY` in uppercase). If your provider expects a different format (e.g., OpenAI requires lowercase `object`, `string`, `array`), you must adapt the schema. See `OpenAiProvider.AdaptSchema` for an example — it lowercases type values and forces `additionalProperties: false` for OpenAI's strict mode.
 
 ## 2. Register the provider in DI
 
