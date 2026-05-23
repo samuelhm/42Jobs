@@ -1,6 +1,6 @@
--- 22-seed-ai.sql
+-- 35-seed-ai.sql
 -- Seed data: AI services, models and prompts.
--- Schemas are now file-based: backend/src/Services/Ai/Schemas/{functionality}.{provider}.json
+-- Schemas are file-based: backend/src/Services/Ai/Schemas/{functionality}.{provider}.json
 
 -- ═══════════════════════════════════════════════════════════
 -- AI Services
