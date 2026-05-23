@@ -1,12 +1,13 @@
 {
   "type": "object",
   "required": [
+    "error",
     "projects"
   ],
   "properties": {
     "error": {
-      "type": ["string", "null"],
-      "description": "Null if successful. Error description if analysis fails."
+      "type": "string",
+      "description": "Empty string if successful. Error description if analysis fails."
     },
     "projects": {
       "type": "array",

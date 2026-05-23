@@ -1,6 +1,7 @@
 {
   "type": "object",
   "required": [
+    "error",
     "skills",
     "profile",
     "projects",
@@ -8,8 +9,8 @@
   ],
   "properties": {
     "error": {
-      "type": ["string", "null"],
-      "description": "Null if successful. Error description if generation fails."
+      "type": "string",
+      "description": "Empty string if successful. Error description if generation fails."
     },
     "skills": {
       "type": "array",
