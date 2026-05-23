@@ -1,0 +1,45 @@
+{
+  "type": "object",
+  "required": [
+    "error",
+    "experiences"
+  ],
+  "properties": {
+    "error": {
+      "type": "string",
+      "description": "Null if successful. Error description if parsing fails."
+    },
+    "experiences": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "company",
+          "end_date",
+          "position",
+          "start_date",
+          "description"
+        ],
+        "properties": {
+          "company": {
+            "type": "string"
+          },
+          "end_date": {
+            "type": "string"
+          },
+          "position": {
+            "type": "string"
+          },
+          "start_date": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

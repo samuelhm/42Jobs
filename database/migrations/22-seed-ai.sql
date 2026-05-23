@@ -1,5 +1,6 @@
 -- 22-seed-ai.sql
--- Seed data: AI services, models, schemas and prompts
+-- Seed data: AI services, models and prompts.
+-- Schemas are now file-based: backend/src/Services/Ai/Schemas/{functionality}.{provider}.json
 
 -- ═══════════════════════════════════════════════════════════
 -- AI Services
@@ -10,44 +11,35 @@ INSERT INTO ai_services (name, is_free_tier) VALUES
 ON CONFLICT (name) DO NOTHING;
 
 -- ═══════════════════════════════════════════════════════════
--- AI Models
+-- AI Models (real names confirmed from API docs, May 2026)
 -- ═══════════════════════════════════════════════════════════
 INSERT INTO ai_models (ai_service_id, name) VALUES
-    ((SELECT id FROM ai_services WHERE name = 'Google'), 'gemini-3-flash-preview'),
-    ((SELECT id FROM ai_services WHERE name = 'Google'), 'gemini-3.1-pro-preview'),
+    -- Google / Gemini
     ((SELECT id FROM ai_services WHERE name = 'Google'), 'gemini-3.5-flash'),
+    ((SELECT id FROM ai_services WHERE name = 'Google'), 'gemini-3.1-pro-preview'),
     ((SELECT id FROM ai_services WHERE name = 'Google'), 'gemini-3.1-flash-lite'),
-    ((SELECT id FROM ai_services WHERE name = 'OpenAI'), 'gpt-5.4-nano'),
-    ((SELECT id FROM ai_services WHERE name = 'OpenAI'), 'gpt-5.4-mini'),
+    ((SELECT id FROM ai_services WHERE name = 'Google'), 'gemini-3-flash-preview'),
+    ((SELECT id FROM ai_services WHERE name = 'Google'), 'gemini-2.5-flash'),
+    ((SELECT id FROM ai_services WHERE name = 'Google'), 'gemini-2.5-pro'),
+    -- OpenAI
+    ((SELECT id FROM ai_services WHERE name = 'OpenAI'), 'gpt-5.5'),
     ((SELECT id FROM ai_services WHERE name = 'OpenAI'), 'gpt-5.4'),
-    ((SELECT id FROM ai_services WHERE name = 'OpenAI'), 'gpt-4.1-nano'),
+    ((SELECT id FROM ai_services WHERE name = 'OpenAI'), 'gpt-5.4-mini'),
+    ((SELECT id FROM ai_services WHERE name = 'OpenAI'), 'gpt-5.4-nano'),
+    ((SELECT id FROM ai_services WHERE name = 'OpenAI'), 'gpt-5'),
+    ((SELECT id FROM ai_services WHERE name = 'OpenAI'), 'gpt-5-mini'),
+    ((SELECT id FROM ai_services WHERE name = 'OpenAI'), 'gpt-5-nano'),
+    ((SELECT id FROM ai_services WHERE name = 'OpenAI'), 'gpt-4.1'),
     ((SELECT id FROM ai_services WHERE name = 'OpenAI'), 'gpt-4.1-mini'),
+    ((SELECT id FROM ai_services WHERE name = 'OpenAI'), 'gpt-4.1-nano'),
+    ((SELECT id FROM ai_services WHERE name = 'OpenAI'), 'gpt-4o'),
+    ((SELECT id FROM ai_services WHERE name = 'OpenAI'), 'gpt-4o-mini')
 ON CONFLICT (ai_service_id, name) DO NOTHING;
-
--- ═══════════════════════════════════════════════════════════
--- AI Schemas
--- ═══════════════════════════════════════════════════════════
-INSERT INTO ai_schemas (name, description, json_schema) VALUES
-
-('job_filter', 'Filters job relevance and junior suitability', '{"type": "object", "required": ["error", "relevant", "junior_friendly"], "properties": {"error": {"type": "string", "description": "Null if successful. Error description if the model cannot determine the result."}, "relevant": {"type": "string", "description": "\"yes\" if the offer is clearly relevant for the profile, \"no\" if it clearly is not, \"unknown\" if uncertain."}, "junior_friendly": {"type": "string", "description": "\"no\" if the offer explicitly requires a senior profile or more than 4 years of experience. \"yes\" otherwise."}}, "additionalProperties": false}'),
-
-('keyword_extraction', 'Extracts technologies and company type from job offers', '{"type": "object", "required": ["error", "skills", "company_type"], "properties": {"error": {"type": "string", "description": "Null if successful. Error description if extraction fails."}, "skills": {"type": "array", "items": {"type": "string"}, "description": "Exhaustive list of ALL technologies, languages, frameworks, tools, and soft skills mentioned in the offer."}, "company_type": {"type": "string", "description": "Company type: Multinational, Startup, SME, Consultancy, or \"Not identified\"."}}, "additionalProperties": false}'),
-
-('github_projects', 'Extracts project info from GitHub repositories', '{"type": "object", "required": ["error", "projects"], "properties": {"error": {"type": "string", "description": "Null if successful. Error description if analysis fails."}, "projects": {"type": "array", "items": {"type": "object", "required": ["name", "type", "keywords", "description"], "properties": {"name": {"type": "string"}, "type": {"enum": ["personal", "school"], "type": "string"}, "keywords": {"type": "array", "items": {"type": "string"}}, "description": {"type": "string"}}, "additionalProperties": false}}}, "additionalProperties": false}'),
-
-('keyword_dedup', 'Groups duplicate/similar keywords', '{"type": "object", "required": ["error", "groups"], "properties": {"error": {"type": "string", "description": "Null if successful. Error description if dedup fails."}, "groups": {"type": "array", "items": {"type": "array", "items": {"type": "string"}}}}, "additionalProperties": false}'),
-
-('experience_parse', 'Parses LinkedIn experience text into structured data', '{"type": "object", "required": ["error", "experiences"], "properties": {"error": {"type": "string", "description": "Null if successful. Error description if parsing fails."}, "experiences": {"type": "array", "items": {"type": "object", "required": ["company", "end_date", "position", "start_date", "description"], "properties": {"company": {"type": "string"}, "end_date": {"type": "string"}, "position": {"type": "string"}, "start_date": {"type": "string"}, "description": {"type": "string"}}, "additionalProperties": false}}}, "additionalProperties": false}'),
-
-('education_parse', 'Parses LinkedIn education text into structured data', '{"type": "object", "required": ["error", "education"], "properties": {"error": {"type": "string", "description": "Null if successful. Error description if parsing fails."}, "education": {"type": "array", "items": {"type": "object", "required": ["degree", "end_year", "start_year", "institution"], "properties": {"degree": {"type": "string"}, "end_year": {"type": "number"}, "start_year": {"type": "number"}, "institution": {"type": "string"}}, "additionalProperties": false}}}, "additionalProperties": false}'),
-
-('cv_generation', 'Generates structured CV content from user profile and job offer', '{"type": "object", "required": ["error", "skills", "profile", "projects", "experiences"], "properties": {"error": {"type": "string", "description": "Null if successful. Error description if generation fails."}, "skills": {"type": "array", "items": {"type": "object", "required": ["items", "category"], "properties": {"items": {"type": "array", "items": {"type": "string"}}, "category": {"type": "string"}}, "additionalProperties": false}, "description": "4 skill categories, at least 8 skills each. Most relevant for this job."}, "profile": {"type": "string", "description": "3-4 line professional summary tailored to this specific job offer."}, "projects": {"type": "array", "items": {"type": "object", "required": ["name", "highlights", "description"], "properties": {"name": {"type": "string"}, "highlights": {"type": "array", "items": {"type": "string"}, "description": "2-4 key technical achievements or features."}, "description": {"type": "string"}}, "additionalProperties": false}, "description": "1 to 3 most relevant projects."}, "experiences": {"type": "array", "items": {"type": "object", "required": ["company", "end_date", "position", "highlights", "start_date"], "properties": {"company": {"type": "string"}, "end_date": {"type": "string"}, "position": {"type": "string"}, "highlights": {"type": "array", "items": {"type": "string"}, "description": "3-5 bullet points highlighting achievements relevant to this job."}, "start_date": {"type": "string"}}, "additionalProperties": false}, "description": "1 to 3 most relevant experiences, descriptions enhanced for this job."}}, "additionalProperties": false}')
-ON CONFLICT (name) DO NOTHING;
 
 -- ═══════════════════════════════════════════════════════════
 -- AI Prompts
 -- ═══════════════════════════════════════════════════════════
-INSERT INTO ai_prompts (functionality, name, description, system_prompt, user_prompt_template, schema_id, default_model_id) VALUES
+INSERT INTO ai_prompts (functionality, name, description, system_prompt, user_prompt_template, default_model_id) VALUES
 
 ('filter_jobs', 'Filter job relevance', 'Determines if a job offer is relevant and junior-friendly',
 'You are a job offer filter specialized in Software Engineering profiles.',
@@ -69,7 +61,6 @@ JUNIOR PROFILE CRITERIA (junior_friendly):
 
 Offer: "{{title}}"
 Description: "{{description}}"',
-(SELECT id FROM ai_schemas WHERE name = 'job_filter'),
 (SELECT id FROM ai_models WHERE name = 'gemini-3.1-flash-lite')),
 
 ('extract_keywords', 'Extract keywords from job offers', 'Extracts technologies, skills and company type from a job description',
@@ -77,7 +68,6 @@ Description: "{{description}}"',
 'Analyze this job offer and extract technologies, languages, tools, frameworks, technical concepts AND soft skills mentioned (communication, leadership, teamwork, etc.). Also determine the company type.
 
 Offer: "{{text}}"',
-(SELECT id FROM ai_schemas WHERE name = 'keyword_extraction'),
 (SELECT id FROM ai_models WHERE name = 'gemini-3.1-flash-lite')),
 
 ('analyze_github', 'Analyze GitHub repositories', 'Extracts structured project information from GitHub repos',
@@ -90,7 +80,6 @@ Offer: "{{text}}"',
 
 Projects to analyze:
 {{input}}',
-(SELECT id FROM ai_schemas WHERE name = 'github_projects'),
 (SELECT id FROM ai_models WHERE name = 'gemini-3.1-flash-lite')),
 
 ('dedup_keywords', 'Deduplicate keywords', 'Groups equivalent/similar keywords into clusters',
@@ -105,7 +94,6 @@ Projects to analyze:
 
 Keywords to analyze:
 {{keywords}}',
-(SELECT id FROM ai_schemas WHERE name = 'keyword_dedup'),
 (SELECT id FROM ai_models WHERE name = 'gemini-3.1-flash-lite')),
 
 ('parse_experience', 'Parse LinkedIn experience', 'Extracts structured work experience from LinkedIn raw text',
@@ -121,7 +109,6 @@ Months: ene=01 feb=02 mar=03 abr=04 may=05 jun=06 jul=07 ago=08 sept=09 oct=10 n
 Fields: company, position, start_date, end_date, description
 
 {{raw_text}}',
-(SELECT id FROM ai_schemas WHERE name = 'experience_parse'),
 (SELECT id FROM ai_models WHERE name = 'gemini-3.1-flash-lite')),
 
 ('parse_education', 'Parse LinkedIn education', 'Extracts structured education from LinkedIn raw text',
@@ -136,7 +123,6 @@ Fields: institution, degree, start_year, end_year.
 Ignore "Aptitudes:", "Actividades y grupos:".
 
 {{raw_text}}',
-(SELECT id FROM ai_schemas WHERE name = 'education_parse'),
 (SELECT id FROM ai_models WHERE name = 'gemini-3.1-flash-lite')),
 
 ('cv_generation', 'Generate CV', 'Generates structured CV content tailored to a job offer',
@@ -170,6 +156,5 @@ RULES:
 3. PROJECTS: Select the 1 to 3 most relevant projects. Enhance descriptions and highlights to emphasize technologies and skills matching the offer.
 4. SKILLS: 4 categories, at least 8 skills per category. Pick the most relevant categories for the job (e.g. Backend, Frontend, Databases, DevOps, AI, Tools, Soft Skills...). Use the user''s known skills and infer additional ones if needed. NEVER invent nonsense technologies. All lowercase except proper nouns. If the offer mentions soft skills, include a Soft Skills category.
 5. COHERENCE: Everything must be consistent. Experiences, projects, and skills should align with each other and with the profile summary.',
-(SELECT id FROM ai_schemas WHERE name = 'cv_generation'),
-(SELECT id FROM ai_models WHERE name = 'gpt-5.4'))
+(SELECT id FROM ai_models WHERE name = 'gpt-5.5'))
 ON CONFLICT (functionality) DO NOTHING;

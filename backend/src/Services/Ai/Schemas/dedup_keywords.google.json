@@ -1,0 +1,22 @@
+{
+  "type": "object",
+  "required": [
+    "error",
+    "groups"
+  ],
+  "properties": {
+    "error": {
+      "type": "string",
+      "description": "Null if successful. Error description if dedup fails."
+    },
+    "groups": {
+      "type": "array",
+      "items": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

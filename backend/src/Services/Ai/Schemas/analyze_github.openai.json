@@ -1,0 +1,48 @@
+{
+  "type": "object",
+  "required": [
+    "error",
+    "projects"
+  ],
+  "properties": {
+    "error": {
+      "type": "string",
+      "description": "Null if successful. Error description if analysis fails."
+    },
+    "projects": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "name",
+          "type",
+          "keywords",
+          "description"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "enum": [
+              "personal",
+              "school"
+            ],
+            "type": "string"
+          },
+          "keywords": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "description": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

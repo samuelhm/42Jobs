@@ -1,0 +1,23 @@
+{
+  "type": "object",
+  "required": [
+    "error",
+    "relevant",
+    "junior_friendly"
+  ],
+  "properties": {
+    "error": {
+      "type": "string",
+      "description": "Null if successful. Error description if the model cannot determine the result."
+    },
+    "relevant": {
+      "type": "string",
+      "description": "\"yes\" if the offer is clearly relevant for the profile, \"no\" if it clearly is not, \"unknown\" if uncertain."
+    },
+    "junior_friendly": {
+      "type": "string",
+      "description": "\"no\" if the offer explicitly requires a senior profile or more than 4 years of experience. \"yes\" otherwise."
+    }
+  },
+  "additionalProperties": false
+}

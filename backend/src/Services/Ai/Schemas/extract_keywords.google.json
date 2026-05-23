@@ -1,0 +1,25 @@
+{
+  "type": "object",
+  "required": [
+    "error",
+    "skills",
+    "company_type"
+  ],
+  "properties": {
+    "error": {
+      "type": "string",
+      "description": "Null if successful. Error description if extraction fails."
+    },
+    "skills": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Exhaustive list of ALL technologies, languages, frameworks, tools, and soft skills mentioned in the offer."
+    },
+    "company_type": {
+      "type": "string",
+      "description": "Company type: Multinational, Startup, SME, Consultancy, or \"Not identified\"."
+    }
+  }
+}

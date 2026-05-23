@@ -1,0 +1,107 @@
+{
+  "type": "object",
+  "required": [
+    "skills",
+    "profile",
+    "projects",
+    "experiences"
+  ],
+  "properties": {
+    "error": {
+      "type": ["string", "null"],
+      "description": "Null if successful. Error description if generation fails."
+    },
+    "skills": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "items",
+          "category"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "category": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "description": "4 skill categories, at least 8 skills each. Most relevant for this job."
+    },
+    "profile": {
+      "type": "string",
+      "description": "3-4 line professional summary tailored to this specific job offer."
+    },
+    "projects": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "name",
+          "highlights",
+          "description"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "highlights": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "2-4 key technical achievements or features."
+          },
+          "description": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "description": "1 to 3 most relevant projects."
+    },
+    "experiences": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "company",
+          "end_date",
+          "position",
+          "highlights",
+          "start_date"
+        ],
+        "properties": {
+          "company": {
+            "type": "string"
+          },
+          "end_date": {
+            "type": "string"
+          },
+          "position": {
+            "type": "string"
+          },
+          "highlights": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "3-5 bullet points highlighting achievements relevant to this job."
+          },
+          "start_date": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "description": "1 to 3 most relevant experiences, descriptions enhanced for this job."
+    }
+  },
+  "additionalProperties": false
+}
