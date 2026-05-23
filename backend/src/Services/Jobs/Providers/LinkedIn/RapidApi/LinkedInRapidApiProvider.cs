@@ -7,13 +7,15 @@ public class LinkedInRapidApiProvider : IJobProvider
 {
     private readonly IHttpClientFactory _httpFactory;
     private readonly ILogger<LinkedInRapidApiProvider> _logger;
-    private const string EnvApiHost = "LINKEDIN_API_HOST";
-    private const string EnvApiKey = "LINKEDIN_API_KEY";
+    private string? _baseUrlOverride;
+    private string? _apiKeyOverride;
 
     public static string Portal => "LinkedIn";
     public static string ProviderNameValue => "RapidAPI";
     string IJobProvider.Portal => Portal;
     string IJobProvider.ProviderName => ProviderNameValue;
+    string? IJobProvider.BaseUrl { set => _baseUrlOverride = value; }
+    string? IJobProvider.ApiKey { set => _apiKeyOverride = value; }
 
     public LinkedInRapidApiProvider(IHttpClientFactory httpFactory, ILogger<LinkedInRapidApiProvider> logger)
     {
@@ -23,8 +25,8 @@ public class LinkedInRapidApiProvider : IJobProvider
 
     private HttpClient CreateClient()
     {
-        var host = Environment.GetEnvironmentVariable(EnvApiHost);
-        var key = Environment.GetEnvironmentVariable(EnvApiKey);
+        var host = _baseUrlOverride ?? Environment.GetEnvironmentVariable("LINKEDIN_API_HOST");
+        var key = _apiKeyOverride ?? Environment.GetEnvironmentVariable("LINKEDIN_API_KEY");
         var client = _httpFactory.CreateClient();
         client.BaseAddress = new Uri($"https://{host}/");
         client.DefaultRequestHeaders.Add("x-rapidapi-key", key);

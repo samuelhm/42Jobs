@@ -4,6 +4,8 @@ public interface IJobProvider
 {
     string Portal { get; }
     string ProviderName { get; }
+    string? BaseUrl { set; }
+    string? ApiKey { set; }
     Task<JobSearchResult> SearchAsync(JobSearchRequest request, CancellationToken ct);
     Task<JobDetailResult?> GetDetailsAsync(string externalId, CancellationToken ct);
 }

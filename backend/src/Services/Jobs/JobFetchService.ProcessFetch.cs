@@ -98,7 +98,11 @@ public partial class JobFetchService
 
             var key = $"{config.Portal}:{config.ProviderName}";
             if (_providers.TryGetValue(key, out var provider))
+            {
+                provider.BaseUrl = config.BaseUrl;
+                provider.ApiKey = config.ApiKey;
                 result.Add(provider);
+            }
             else
                 _logger.LogWarning("No DI registration for provider {Key}", key);
         }
