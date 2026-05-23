@@ -4,6 +4,7 @@
 
 # ─── Development (dotnet watch hot-reload) ─────────────────
 FROM mcr.microsoft.com/dotnet/sdk:10.0-alpine AS development
+LABEL maintainer="Samuel Hurtado Marin <samuel@hurtadom.dev>"
 WORKDIR /app
 COPY src/src.csproj src/
 RUN dotnet restore src/src.csproj

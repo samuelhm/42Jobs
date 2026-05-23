@@ -3,6 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
+  "author": "Samuel Hurtado Marin <samuel@hurtadom.dev> (https://hurtadom.dev)",
+  "license": "AGPL-3.0",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "build": "tsc --noEmit && vite build",

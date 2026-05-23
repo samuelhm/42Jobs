@@ -5,6 +5,9 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <AllowMissingPrunePackageData>true</AllowMissingPrunePackageData>
+    <Authors>Samuel Hurtado Marin</Authors>
+    <Copyright>Copyright (C) 2025 Samuel Hurtado Marin</Copyright>
+    <PackageProjectUrl>https://hurtadom.dev</PackageProjectUrl>
   </PropertyGroup>
 
   <ItemGroup>
