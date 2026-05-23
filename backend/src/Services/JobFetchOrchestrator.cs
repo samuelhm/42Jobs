@@ -29,7 +29,7 @@ public class JobFetchOrchestrator : BackgroundService
 
     private static readonly Dictionary<string, string> CompanyTypeMap = new()
     {
-        ["Multinacional"] = "Multinacion",
+        ["Multinacional"] = "Multinacional",
         ["Startup"] = "Startup",
         ["Pyme"] = "Pyme",
         ["Consultora"] = "Consultora",

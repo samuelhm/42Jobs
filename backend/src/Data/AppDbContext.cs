@@ -48,7 +48,7 @@ public class AppDbContext : DbContext
             entity.Property(c => c.CompanyType).HasMaxLength(50);
             entity.ToTable(t => t.HasCheckConstraint(
                 "CK_companies_company_type",
-                "company_type IN ('Multinacion', 'Startup', 'Pyme', 'Consultora')"));
+                "company_type IN ('Multinacional', 'Startup', 'Pyme', 'Consultora')"));
         });
 
         // ── Keyword ──────────────────────────────────────────
