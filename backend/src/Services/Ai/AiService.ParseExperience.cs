@@ -18,8 +18,12 @@ public partial class AiService
 
             if (result.TryGetProperty("error", out var err) && err.ValueKind != JsonValueKind.Null)
             {
-                _logger.LogWarning("AI experience parsing error: {Error}", err.GetString());
-                return ([], err.GetString());
+                var errMsg = err.GetString();
+                if (!string.IsNullOrEmpty(errMsg) && errMsg != "null")
+                {
+                    _logger.LogWarning("AI experience parsing error: {Error}", errMsg);
+                    return ([], errMsg);
+                }
             }
 
             var items = new List<LinkedInExperienceParsed>();

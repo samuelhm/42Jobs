@@ -18,8 +18,12 @@ public partial class AiService
 
             if (result.TryGetProperty("error", out var err) && err.ValueKind != JsonValueKind.Null)
             {
-                _logger.LogWarning("AI dedup error: {Error}", err.GetString());
-                return allKeywords.Select(k => new List<string> { k }).ToList();
+                var errMsg = err.GetString();
+                if (!string.IsNullOrEmpty(errMsg) && errMsg != "null")
+                {
+                    _logger.LogWarning("AI dedup error: {Error}", errMsg);
+                    return allKeywords.Select(k => new List<string> { k }).ToList();
+                }
             }
 
             var groups = new List<List<string>>();

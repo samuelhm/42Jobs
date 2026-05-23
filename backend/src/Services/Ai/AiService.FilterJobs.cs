@@ -22,8 +22,12 @@ public partial class AiService
 
             if (result.TryGetProperty("error", out var err) && err.ValueKind != JsonValueKind.Null)
             {
-                _logger.LogWarning("AI filter error for '{Title}': {Error}", title, err.GetString());
-                return ("yes", "yes");
+                var errMsg = err.GetString();
+                if (!string.IsNullOrEmpty(errMsg) && errMsg != "null")
+                {
+                    _logger.LogWarning("AI filter error for '{Title}': {Error}", title, errMsg);
+                    return ("yes", "yes");
+                }
             }
 
             var relevant = result.GetProperty("relevant").GetString() ?? "yes";

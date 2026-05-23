@@ -17,8 +17,12 @@ public partial class AiService
 
             if (result.TryGetProperty("error", out var err) && err.ValueKind != JsonValueKind.Null)
             {
-                _logger.LogWarning("AI keyword extraction error: {Error}", err.GetString());
-                return ([], "Not identified");
+                var errMsg = err.GetString();
+                if (!string.IsNullOrEmpty(errMsg) && errMsg != "null")
+                {
+                    _logger.LogWarning("AI keyword extraction error: {Error}", errMsg);
+                    return ([], "Not identified");
+                }
             }
 
             var skills = new List<string>();

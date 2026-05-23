@@ -15,8 +15,12 @@ public partial class AiService
 
         if (result.TryGetProperty("error", out var err) && err.ValueKind != JsonValueKind.Null)
         {
-            _logger.LogWarning("AI CV generation error: {Error}", err.GetString());
-            throw new InvalidOperationException(err.GetString() ?? "CV generation failed");
+            var errMsg = err.GetString();
+            if (!string.IsNullOrEmpty(errMsg) && errMsg != "null")
+            {
+                _logger.LogWarning("AI CV generation error: {Error}", errMsg);
+                throw new InvalidOperationException(errMsg ?? "CV generation failed");
+            }
         }
 
         return result;

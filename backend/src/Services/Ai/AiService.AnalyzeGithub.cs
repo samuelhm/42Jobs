@@ -18,8 +18,12 @@ public partial class AiService
 
             if (result.TryGetProperty("error", out var err) && err.ValueKind != JsonValueKind.Null)
             {
-                _logger.LogWarning("AI GitHub analysis error: {Error}", err.GetString());
-                return ([], err.GetString() ?? "Unknown error");
+                var errMsg = err.GetString();
+                if (!string.IsNullOrEmpty(errMsg) && errMsg != "null")
+                {
+                    _logger.LogWarning("AI GitHub analysis error: {Error}", errMsg);
+                    return ([], errMsg);
+                }
             }
 
             var projects = new List<GithubProjectResult>();

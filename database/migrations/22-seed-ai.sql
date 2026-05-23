@@ -36,7 +36,7 @@ INSERT INTO ai_schemas (name, description, json_schema) VALUES
   "properties": {
     "error": {
       "type": "STRING",
-      "description": "Null if successful. Error description if the model cannot determine the result."
+      "description": "Set only if an error occurred during extraction. Omit this field entirely if successful."
     },
     "relevant": {
       "type": "STRING",
