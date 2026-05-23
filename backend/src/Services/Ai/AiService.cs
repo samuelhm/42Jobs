@@ -55,7 +55,7 @@ public partial class AiService : IAiService
         JsonElement schema, string model, string? apiKey, bool isFreeTier, CancellationToken ct)
     {
         if (isFreeTier)
-            await Task.Delay(1500 + Random.Shared.Next(500), ct);
+            await Task.Delay(4000 + Random.Shared.Next(1000), ct);
 
         for (var attempt = 1; attempt <= 5; attempt++)
         {
