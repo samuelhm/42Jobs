@@ -10,13 +10,13 @@ public partial class AdminController
     public async Task<IActionResult> GetAiModels()
     {
         var check = EnsureAdmin(); if (check is not null) return check;
-        var models = await _db.AiModels.Include(m => m.AiService).OrderBy(m => m.AiService.Name).ThenBy(m => m.Name).ToListAsync();
+        var models = await _db.AiModels.Include(m => m.AiService).AsNoTracking().OrderBy(m => m.AiService.Name).ThenBy(m => m.Name).ToListAsync();
         return Ok(new { success = true, data = models.Select(m => new
         {
             m.Id, m.Name, m.IsActive, m.IsDefault,
-            AiServiceName = m.AiService.Name,
+            ai_service_name = m.AiService.Name,
             m.AiServiceId
-        }) });
+        }).ToList() });
     }
 
     [HttpPost("ai-models")]

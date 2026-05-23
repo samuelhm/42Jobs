@@ -10,8 +10,12 @@ public partial class AdminController
     public async Task<IActionResult> GetAiServices()
     {
         var check = EnsureAdmin(); if (check is not null) return check;
-        var services = await _db.AiServices.Include(s => s.Models).OrderBy(s => s.Name).ToListAsync();
-        return Ok(new { success = true, data = services });
+        var services = await _db.AiServices.Include(s => s.Models).AsNoTracking().OrderBy(s => s.Name).ToListAsync();
+        return Ok(new { success = true, data = services.Select(s => new
+        {
+            s.Id, s.Name, s.BaseUrl, s.IsActive,
+            models = s.Models.Select(m => new { m.Id, m.Name, m.IsDefault, m.IsActive }).ToList()
+        }).ToList() });
     }
 
     [HttpPost("ai-services")]
