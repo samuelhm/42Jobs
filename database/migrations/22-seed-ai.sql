@@ -21,6 +21,7 @@ INSERT INTO ai_models (ai_service_id, name) VALUES
     ((SELECT id FROM ai_services WHERE name = 'OpenAI'), 'gpt-5.4-mini'),
     ((SELECT id FROM ai_services WHERE name = 'OpenAI'), 'gpt-5.4'),
     ((SELECT id FROM ai_services WHERE name = 'OpenAI'), 'gpt-5.4-pro'),
+    ((SELECT id FROM ai_services WHERE name = 'OpenAI'), 'gpt-5.5-mini'),
     ((SELECT id FROM ai_services WHERE name = 'OpenAI'), 'gpt-5.5'),
     ((SELECT id FROM ai_services WHERE name = 'OpenAI'), 'gpt-5.5-pro')
 ON CONFLICT (ai_service_id, name) DO NOTHING;
@@ -277,7 +278,7 @@ Offer: "{{text}}"',
 Projects to analyze:
 {{input}}',
 (SELECT id FROM ai_schemas WHERE name = 'github_projects'),
-(SELECT id FROM ai_models WHERE name = 'gpt-5.4-nano')),
+(SELECT id FROM ai_models WHERE name = 'gemini-3.1-flash-lite')),
 
 ('dedup_keywords', 'Deduplicate keywords', 'Groups equivalent/similar keywords into clusters',
 'You are a technical keyword deduplicator. Your task is to group keywords that mean the same concept or area.',
@@ -308,7 +309,7 @@ Fields: company, position, start_date, end_date, description
 
 {{raw_text}}',
 (SELECT id FROM ai_schemas WHERE name = 'experience_parse'),
-(SELECT id FROM ai_models WHERE name = 'gpt-5.4-nano')),
+(SELECT id FROM ai_models WHERE name = 'gemini-3.1-flash-lite')),
 
 ('parse_education', 'Parse LinkedIn education', 'Extracts structured education from LinkedIn raw text',
 'You are a LinkedIn data extractor. You convert education text to structured JSON.',
@@ -323,7 +324,7 @@ Ignore "Aptitudes:", "Actividades y grupos:".
 
 {{raw_text}}',
 (SELECT id FROM ai_schemas WHERE name = 'education_parse'),
-(SELECT id FROM ai_models WHERE name = 'gpt-5.4-nano')),
+(SELECT id FROM ai_models WHERE name = 'gemini-3.1-flash-lite')),
 
 ('cv_generation', 'Generate CV', 'Generates structured CV content tailored to a job offer',
 'You are a professional CV writer optimized for ATS (Applicant Tracking Systems). Generate structured CV content tailored to a specific job offer.',
@@ -357,5 +358,5 @@ RULES:
 4. SKILLS: 4 categories, at least 8 skills per category. Pick the most relevant categories for the job (e.g. Backend, Frontend, Databases, DevOps, AI, Tools, Soft Skills...). Use the user''s known skills and infer additional ones if needed. NEVER invent nonsense technologies. All lowercase except proper nouns. If the offer mentions soft skills, include a Soft Skills category.
 5. COHERENCE: Everything must be consistent. Experiences, projects, and skills should align with each other and with the profile summary.',
 (SELECT id FROM ai_schemas WHERE name = 'cv_generation'),
-(SELECT id FROM ai_models WHERE name = 'gemini-3.5-flash'))
+(SELECT id FROM ai_models WHERE name = 'gpt-5.5-mini'))
 ON CONFLICT (functionality) DO NOTHING;
