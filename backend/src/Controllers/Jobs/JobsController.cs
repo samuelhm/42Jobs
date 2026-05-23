@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using src.Data;
 using src.Services;
+using src.Services.Jobs.Providers;
 
 namespace src.Controllers;
 
@@ -12,10 +13,10 @@ namespace src.Controllers;
 public partial class JobsController : ControllerBase
 {
     private readonly AppDbContext _db;
-    private readonly LinkedInApiService _linkedIn;
+    private readonly IJobProvider _linkedIn;
     private readonly IAiService _ai;
 
-    public JobsController(AppDbContext db, LinkedInApiService linkedIn, IAiService ai)
+    public JobsController(AppDbContext db, IJobProvider linkedIn, IAiService ai)
     {
         _db = db;
         _linkedIn = linkedIn;

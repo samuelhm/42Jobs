@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using src.Data;
 using src.Services;
+using src.Services.Jobs;
 
 namespace src.Controllers;
 
@@ -13,13 +14,13 @@ public partial class CategoriesController : ControllerBase
 {
     private readonly ILogger<CategoriesController> _logger;
     private readonly AppDbContext _db;
-    private readonly JobFetchOrchestrator _fetchOrchestrator;
+    private readonly IJobFetchService _fetchService;
 
-    public CategoriesController(ILogger<CategoriesController> logger, AppDbContext db, JobFetchOrchestrator fetchOrchestrator)
+    public CategoriesController(ILogger<CategoriesController> logger, AppDbContext db, IJobFetchService fetchService)
     {
         _logger = logger;
         _db = db;
-        _fetchOrchestrator = fetchOrchestrator;
+        _fetchService = fetchService;
     }
 
     private Guid GetUserId()

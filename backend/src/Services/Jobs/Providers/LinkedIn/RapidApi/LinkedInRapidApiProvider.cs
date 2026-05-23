@@ -5,22 +5,36 @@ namespace src.Services.Jobs.Providers.LinkedIn.RapidApi;
 
 public class LinkedInRapidApiProvider : IJobProvider
 {
-    private readonly HttpClient _http;
+    private readonly IHttpClientFactory _httpFactory;
     private readonly ILogger<LinkedInRapidApiProvider> _logger;
+    private const string EnvApiHost = "LINKEDIN_API_HOST";
+    private const string EnvApiKey = "LINKEDIN_API_KEY";
 
     public static string Portal => "LinkedIn";
     public static string ProviderNameValue => "RapidAPI";
     string IJobProvider.Portal => Portal;
     string IJobProvider.ProviderName => ProviderNameValue;
 
-    public LinkedInRapidApiProvider(HttpClient http, ILogger<LinkedInRapidApiProvider> logger)
+    public LinkedInRapidApiProvider(IHttpClientFactory httpFactory, ILogger<LinkedInRapidApiProvider> logger)
     {
-        _http = http;
+        _httpFactory = httpFactory;
         _logger = logger;
+    }
+
+    private HttpClient CreateClient()
+    {
+        var host = Environment.GetEnvironmentVariable(EnvApiHost);
+        var key = Environment.GetEnvironmentVariable(EnvApiKey);
+        var client = _httpFactory.CreateClient();
+        client.BaseAddress = new Uri($"https://{host}/");
+        client.DefaultRequestHeaders.Add("x-rapidapi-key", key);
+        client.DefaultRequestHeaders.Add("x-rapidapi-host", host);
+        return client;
     }
 
     public async Task<JobSearchResult> SearchAsync(JobSearchRequest request, CancellationToken ct)
     {
+        using var http = CreateClient();
         var queryParams = new Dictionary<string, string>
         {
             ["keywords"] = request.Keywords,
@@ -35,7 +49,7 @@ public class LinkedInRapidApiProvider : IJobProvider
         var qs = string.Join("&", queryParams.Select(kv =>
             $"{Uri.EscapeDataString(kv.Key)}={Uri.EscapeDataString(kv.Value)}"));
 
-        var response = await _http.GetAsync($"/search?{qs}", ct);
+        var response = await http.GetAsync($"/search?{qs}", ct);
         response.EnsureSuccessStatusCode();
 
         var json = await response.Content.ReadAsStringAsync(ct);
@@ -74,7 +88,8 @@ public class LinkedInRapidApiProvider : IJobProvider
 
     public async Task<JobDetailResult?> GetDetailsAsync(string externalId, CancellationToken ct)
     {
-        var response = await _http.GetAsync($"/job/{Uri.EscapeDataString(externalId)}", ct);
+        using var http = CreateClient();
+        var response = await http.GetAsync($"/job/{Uri.EscapeDataString(externalId)}", ct);
         response.EnsureSuccessStatusCode();
 
         var json = await response.Content.ReadAsStringAsync(ct);

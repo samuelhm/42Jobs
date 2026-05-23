@@ -31,14 +31,14 @@ public partial class CategoriesController
             return Ok(new { status = "fresh", message = "Category already fetched within the last 4 hours" });
         }
 
-        var existingJobId = _fetchOrchestrator.Enqueue(id, category.Name, body);
+        var existingJobId = _fetchService.Enqueue(id, category.Name, body);
 
         if (existingJobId is null)
         {
             return StatusCode(503, new { error = "Fetch queue is full, try again later" });
         }
 
-        var status = _fetchOrchestrator.GetStatus(existingJobId.Value);
+        var status = _fetchService.GetStatus(existingJobId.Value);
         if (status is not null && status.Status == "queued")
         {
             category.LastFetchedAt = DateTime.UtcNow;

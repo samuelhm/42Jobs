@@ -8,6 +8,7 @@ using src.Services.Ai;
 using src.Services.Ai.Providers;
 using src.Services.Ai.Providers.Gemini;
 using src.Services.Ai.Providers.OpenAI;
+using src.Services.Jobs;
 using src.Services.Jobs.Providers;
 using src.Services.Jobs.Providers.LinkedIn.RapidApi;
 using src.Utils;
@@ -22,13 +23,6 @@ builder.Services.AddControllers()
 
 builder.Services.AddSingleton<JwtService>();
 
-builder.Services.AddHttpClient<LinkedInApiService>(client =>
-{
-    client.BaseAddress = new Uri($"https://{Environment.GetEnvironmentVariable("LINKEDIN_API_HOST")}/");
-    client.DefaultRequestHeaders.Add("x-rapidapi-key", Environment.GetEnvironmentVariable("LINKEDIN_API_KEY"));
-    client.DefaultRequestHeaders.Add("x-rapidapi-host", Environment.GetEnvironmentVariable("LINKEDIN_API_HOST"));
-});
-
 builder.Services.AddHttpClient<LinkedInRapidApiProvider>(client =>
 {
     client.BaseAddress = new Uri($"https://{Environment.GetEnvironmentVariable("LINKEDIN_API_HOST")}/");
@@ -42,8 +36,8 @@ builder.Services.AddSingleton<IAiProvider, GeminiProvider>();
 builder.Services.AddSingleton<IAiProvider, OpenAiProvider>();
 builder.Services.AddScoped<IAiService, AiService>();
 
-builder.Services.AddSingleton<JobFetchOrchestrator>();
-builder.Services.AddHostedService(sp => sp.GetRequiredService<JobFetchOrchestrator>());
+builder.Services.AddSingleton<IJobFetchService, JobFetchService>();
+builder.Services.AddHostedService(sp => (JobFetchService)sp.GetRequiredService<IJobFetchService>());
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>

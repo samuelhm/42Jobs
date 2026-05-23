@@ -32,16 +32,15 @@ public partial class JobsController
 
         try
         {
-            var details = await _linkedIn.GetJobDetailsAsync(job.ExternalId);
+            var details = await _linkedIn.GetDetailsAsync(job.ExternalId, CancellationToken.None);
             if (details is not null)
             {
-                var d = details.Value;
-                if (d.TryGetProperty("description", out var desc)) job.Description = desc.GetString();
-                if (d.TryGetProperty("jobType", out var jt)) job.JobType = jt.GetString();
-                if (d.TryGetProperty("experienceLevel", out var el)) job.ExperienceLevel = el.GetString();
-                if (d.TryGetProperty("industry", out var ind)) job.Industry = ind.GetString();
-                if (d.TryGetProperty("jobFunction", out var jf)) job.JobFunction = jf.GetString();
-                if (d.TryGetProperty("applicants", out var app)) job.Applicants = app.GetString();
+                job.Description = details.Description;
+                job.JobType = details.JobType;
+                job.ExperienceLevel = details.ExperienceLevel;
+                job.Industry = details.Industry;
+                job.JobFunction = details.JobFunction;
+                job.Applicants = details.Applicants;
             }
 
             var parts = new List<string?> { job.Title, job.Benefits, job.Description };
