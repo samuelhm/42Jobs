@@ -464,7 +464,6 @@ public class AppDbContext : DbContext
             entity.Property(m => m.Id).ValueGeneratedOnAdd();
             entity.Property(m => m.Name).IsRequired().HasMaxLength(100);
             entity.Property(m => m.IsActive).HasDefaultValue(true);
-            entity.Property(m => m.IsDefault).HasDefaultValue(false);
             entity.Property(m => m.CreatedAt)
                   .HasDefaultValueSql("NOW()")
                   .ValueGeneratedOnAdd();
@@ -516,9 +515,14 @@ public class AppDbContext : DbContext
                   .ValueGeneratedOnAddOrUpdate();
 
             entity.HasIndex(p => p.SchemaId).HasDatabaseName("idx_ai_prompts_schema");
+            entity.HasIndex(p => p.DefaultModelId).HasDatabaseName("idx_ai_prompts_model");
             entity.HasOne(p => p.Schema)
                   .WithMany(s => s.Prompts)
                   .HasForeignKey(p => p.SchemaId)
+                  .OnDelete(DeleteBehavior.SetNull);
+            entity.HasOne(p => p.DefaultModel)
+                  .WithMany()
+                  .HasForeignKey(p => p.DefaultModelId)
                   .OnDelete(DeleteBehavior.SetNull);
         });
 

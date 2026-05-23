@@ -9,11 +9,11 @@ public partial class AiService
     {
         try
         {
-            var (systemPrompt, userTemplate, schema) = await LoadPromptAsync("dedup_keywords");
+            var (systemPrompt, userTemplate, schema, defaultModelId) = await LoadPromptAsync("dedup_keywords");
             var keywordsList = string.Join("\n", allKeywords.Select(k => $"- {k}"));
             var userPrompt = FillTemplate(userTemplate, new() { ["keywords"] = keywordsList });
 
-            var (provider, model, apiKey) = await ResolveDefaultAsync();
+            var (provider, model, apiKey) = await ResolveModelAsync(defaultModelId);
             var result = await provider.CallAsync(systemPrompt, userPrompt, schema, model, apiKey, ct);
 
             if (result.TryGetProperty("error", out var err) && err.ValueKind != JsonValueKind.Null)

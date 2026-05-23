@@ -1531,18 +1531,18 @@ main {
   display: flex; justify-content: space-between; align-items: center;
   padding: 0.5rem 0.75rem; border-radius: var(--radius);
   background: var(--bg); border: 1px solid var(--border);
-  cursor: pointer; transition: all 0.15s;
 }
-.model-row:hover { border-color: var(--amber-dim); background: var(--surface-hover); }
-.model-row.default { border-color: var(--amber-dim); background: rgba(212,168,83,0.06); }
 .model-info { display: flex; align-items: center; gap: 0.5rem; }
 .model-name { font-size: 0.82rem; color: var(--text); }
-.model-default-badge {
-  font-family: 'JetBrains Mono', monospace; font-size: 0.55rem; font-weight: 700;
-  padding: 0.1rem 0.4rem; border-radius: 3px;
-  background: rgba(212,168,83,0.12); color: var(--amber);
-  border: 1px solid var(--amber-dim);
+.model-usage { display: flex; gap: 0.25rem; flex-wrap: wrap; }
+.model-usage code {
+  font-family: 'JetBrains Mono', monospace; font-size: 0.55rem;
+  padding: 0.1rem 0.35rem; border-radius: 3px;
+  background: rgba(77,184,160,0.1); color: var(--teal);
+  border: 1px solid rgba(77,184,160,0.2);
 }
+.model-selector select { max-width: 220px; font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; }
+.model-selector { flex-shrink: 0; }
 
 /* ── Form elements ── */
 .form-label { font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; color: var(--amber-dim); text-transform: uppercase; display: block; margin-bottom: 0.3rem; }

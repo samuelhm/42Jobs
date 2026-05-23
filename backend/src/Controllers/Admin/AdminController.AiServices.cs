@@ -14,7 +14,7 @@ public partial class AdminController
         return Ok(new { success = true, data = services.Select(s => new
         {
             s.Id, s.Name, s.BaseUrl, s.IsActive,
-            models = s.Models.Select(m => new { m.Id, m.Name, m.IsDefault, m.IsActive }).ToList()
+            models = s.Models.Select(m => new { m.Id, m.Name, m.IsActive }).ToList()
         }).ToList() });
     }
 

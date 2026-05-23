@@ -10,13 +10,16 @@ public partial class AdminController
     public async Task<IActionResult> GetAiPrompts()
     {
         var check = EnsureAdmin(); if (check is not null) return check;
-        var prompts = await _db.AiPrompts.Include(p => p.Schema).OrderBy(p => p.Functionality).ToListAsync();
+        var prompts = await _db.AiPrompts.Include(p => p.Schema).Include(p => p.DefaultModel).ThenInclude(m => m!.AiService).OrderBy(p => p.Functionality).ToListAsync();
         return Ok(new { success = true, data = prompts.Select(p => new
         {
             p.Id, p.Functionality, p.Name, p.Description,
             p.SystemPrompt, p.UserPromptTemplate,
             p.IsActive, p.SchemaId,
-            SchemaName = p.Schema?.Name,
+            schema_name = p.Schema?.Name,
+            p.DefaultModelId,
+            default_model_name = p.DefaultModel?.Name,
+            default_model_service = p.DefaultModel?.AiService.Name,
             p.CreatedAt, p.UpdatedAt
         }) });
     }
@@ -31,6 +34,7 @@ public partial class AdminController
         prompt.UserPromptTemplate = body.UserPromptTemplate;
         prompt.IsActive = body.IsActive;
         prompt.SchemaId = body.SchemaId;
+        prompt.DefaultModelId = body.DefaultModelId;
         prompt.UpdatedAt = DateTime.UtcNow;
         await _db.SaveChangesAsync();
         return Ok(new { success = true, data = prompt });
@@ -43,4 +47,5 @@ public class AiPromptDto
     public string UserPromptTemplate { get; set; } = "";
     public bool IsActive { get; set; } = true;
     public int? SchemaId { get; set; }
+    public int? DefaultModelId { get; set; }
 }

@@ -12,17 +12,17 @@ ON CONFLICT (name) DO NOTHING;
 -- ═══════════════════════════════════════════════════════════
 -- AI Models
 -- ═══════════════════════════════════════════════════════════
-INSERT INTO ai_models (ai_service_id, name, is_default) VALUES
-    ((SELECT id FROM ai_services WHERE name = 'Google'), 'gemini-3-flash-preview', FALSE),
-    ((SELECT id FROM ai_services WHERE name = 'Google'), 'gemini-3.1-pro-preview', FALSE),
-    ((SELECT id FROM ai_services WHERE name = 'Google'), 'gemini-3.5-flash', FALSE),
-    ((SELECT id FROM ai_services WHERE name = 'Google'), 'gemini-3.1-flash-lite', TRUE),
-    ((SELECT id FROM ai_services WHERE name = 'OpenAI'), 'gpt-5.4-nano', FALSE),
-    ((SELECT id FROM ai_services WHERE name = 'OpenAI'), 'gpt-5.4-mini', FALSE),
-    ((SELECT id FROM ai_services WHERE name = 'OpenAI'), 'gpt-5.4', FALSE),
-    ((SELECT id FROM ai_services WHERE name = 'OpenAI'), 'gpt-5.4-pro', FALSE),
-    ((SELECT id FROM ai_services WHERE name = 'OpenAI'), 'gpt-5.5', FALSE),
-    ((SELECT id FROM ai_services WHERE name = 'OpenAI'), 'gpt-5.5-pro', FALSE)
+INSERT INTO ai_models (ai_service_id, name) VALUES
+    ((SELECT id FROM ai_services WHERE name = 'Google'), 'gemini-3-flash-preview'),
+    ((SELECT id FROM ai_services WHERE name = 'Google'), 'gemini-3.1-pro-preview'),
+    ((SELECT id FROM ai_services WHERE name = 'Google'), 'gemini-3.5-flash'),
+    ((SELECT id FROM ai_services WHERE name = 'Google'), 'gemini-3.1-flash-lite'),
+    ((SELECT id FROM ai_services WHERE name = 'OpenAI'), 'gpt-5.4-nano'),
+    ((SELECT id FROM ai_services WHERE name = 'OpenAI'), 'gpt-5.4-mini'),
+    ((SELECT id FROM ai_services WHERE name = 'OpenAI'), 'gpt-5.4'),
+    ((SELECT id FROM ai_services WHERE name = 'OpenAI'), 'gpt-5.4-pro'),
+    ((SELECT id FROM ai_services WHERE name = 'OpenAI'), 'gpt-5.5'),
+    ((SELECT id FROM ai_services WHERE name = 'OpenAI'), 'gpt-5.5-pro')
 ON CONFLICT (ai_service_id, name) DO NOTHING;
 
 -- ═══════════════════════════════════════════════════════════
@@ -257,7 +257,7 @@ ON CONFLICT (name) DO NOTHING;
 -- ═══════════════════════════════════════════════════════════
 -- AI Prompts
 -- ═══════════════════════════════════════════════════════════
-INSERT INTO ai_prompts (functionality, name, description, system_prompt, user_prompt_template, schema_id) VALUES
+INSERT INTO ai_prompts (functionality, name, description, system_prompt, user_prompt_template, schema_id, default_model_id) VALUES
 
 ('filter_jobs', 'Filter job relevance', 'Determines if a job offer is relevant and junior-friendly',
 'You are a job offer filter specialized in Software Engineering profiles.',
@@ -279,14 +279,16 @@ JUNIOR PROFILE CRITERIA (junior_friendly):
 
 Offer: "{{title}}"
 Description: "{{description}}"',
-(SELECT id FROM ai_schemas WHERE name = 'job_filter')),
+(SELECT id FROM ai_schemas WHERE name = 'job_filter'),
+(SELECT id FROM ai_models WHERE name = 'gemini-3.1-flash-lite')),
 
 ('extract_keywords', 'Extract keywords from job offers', 'Extracts technologies, skills and company type from a job description',
 'You are a job offer analyzer. You extract technologies, skills, and company type.',
 'Analyze this job offer and extract technologies, languages, tools, frameworks, technical concepts AND soft skills mentioned (communication, leadership, teamwork, etc.). Also determine the company type.
 
 Offer: "{{text}}"',
-(SELECT id FROM ai_schemas WHERE name = 'keyword_extraction')),
+(SELECT id FROM ai_schemas WHERE name = 'keyword_extraction'),
+(SELECT id FROM ai_models WHERE name = 'gemini-3.1-flash-lite')),
 
 ('analyze_github', 'Analyze GitHub repositories', 'Extracts structured project information from GitHub repos',
 'You are a GitHub project analyzer. Your task is to analyze a user''s repositories and extract structured information from each one.',
@@ -298,7 +300,8 @@ Offer: "{{text}}"',
 
 Projects to analyze:
 {{input}}',
-(SELECT id FROM ai_schemas WHERE name = 'github_projects')),
+(SELECT id FROM ai_schemas WHERE name = 'github_projects'),
+(SELECT id FROM ai_models WHERE name = 'gpt-5.4-nano')),
 
 ('dedup_keywords', 'Deduplicate keywords', 'Groups equivalent/similar keywords into clusters',
 'You are a technical keyword deduplicator. Your task is to group keywords that mean the same concept or area.',
@@ -312,7 +315,8 @@ Projects to analyze:
 
 Keywords to analyze:
 {{keywords}}',
-(SELECT id FROM ai_schemas WHERE name = 'keyword_dedup')),
+(SELECT id FROM ai_schemas WHERE name = 'keyword_dedup'),
+(SELECT id FROM ai_models WHERE name = 'gemini-3.1-flash-lite')),
 
 ('parse_experience', 'Parse LinkedIn experience', 'Extracts structured work experience from LinkedIn raw text',
 'You are a LinkedIn data extractor. You convert work experience text to structured JSON.',
@@ -327,7 +331,8 @@ Months: ene=01 feb=02 mar=03 abr=04 may=05 jun=06 jul=07 ago=08 sept=09 oct=10 n
 Fields: company, position, start_date, end_date, description
 
 {{raw_text}}',
-(SELECT id FROM ai_schemas WHERE name = 'experience_parse')),
+(SELECT id FROM ai_schemas WHERE name = 'experience_parse'),
+(SELECT id FROM ai_models WHERE name = 'gpt-5.4-nano')),
 
 ('parse_education', 'Parse LinkedIn education', 'Extracts structured education from LinkedIn raw text',
 'You are a LinkedIn data extractor. You convert education text to structured JSON.',
@@ -341,7 +346,8 @@ Fields: institution, degree, start_year, end_year.
 Ignore "Aptitudes:", "Actividades y grupos:".
 
 {{raw_text}}',
-(SELECT id FROM ai_schemas WHERE name = 'education_parse')),
+(SELECT id FROM ai_schemas WHERE name = 'education_parse'),
+(SELECT id FROM ai_models WHERE name = 'gpt-5.4-nano')),
 
 ('cv_generation', 'Generate CV', 'Generates a structured CV from user profile and job offer',
 'You are a professional CV generator optimized for ATS (Applicant Tracking Systems). Generate structured CV data AND a fully rendered HTML version.',
@@ -394,5 +400,6 @@ HTML REQUIREMENTS:
 - Minimal CSS, no flashy colors
 
 FINAL REVIEW: Check the CV against the offer. Add missing keywords. Improve any descriptions for ATS compatibility.',
-(SELECT id FROM ai_schemas WHERE name = 'cv_generation'))
+(SELECT id FROM ai_schemas WHERE name = 'cv_generation'),
+(SELECT id FROM ai_models WHERE name = 'gemini-3.5-flash'))
 ON CONFLICT (functionality) DO NOTHING;

@@ -19,7 +19,7 @@ public partial class AiService : IAiService
         _logger = logger;
     }
 
-    private async Task<(string systemPrompt, string userPromptTemplate, JsonElement schema)> LoadPromptAsync(
+    private async Task<(string systemPrompt, string userPromptTemplate, JsonElement schema, int? defaultModelId)> LoadPromptAsync(
         string functionality)
     {
         using var scope = _scopeFactory.CreateScope();
@@ -31,23 +31,23 @@ public partial class AiService : IAiService
             ?? throw new InvalidOperationException($"No active prompt for functionality '{functionality}'");
 
         var schema = JsonDocument.Parse(prompt.Schema!.JsonSchema).RootElement;
-        return (prompt.SystemPrompt, prompt.UserPromptTemplate, schema);
+        return (prompt.SystemPrompt, prompt.UserPromptTemplate, schema, prompt.DefaultModelId);
     }
 
-    private async Task<(IAiProvider provider, string model, string? apiKey)> ResolveDefaultAsync()
+    private async Task<(IAiProvider provider, string model, string? apiKey)> ResolveModelAsync(int? defaultModelId)
     {
         using var scope = _scopeFactory.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-        var defaultModel = await db.AiModels
+        var model = await db.AiModels
             .Include(m => m.AiService)
-            .FirstOrDefaultAsync(m => m.IsDefault && m.IsActive && m.AiService.IsActive)
-            ?? throw new InvalidOperationException("No default AI model configured");
+            .FirstOrDefaultAsync(m => m.Id == defaultModelId && m.IsActive && m.AiService.IsActive)
+            ?? throw new InvalidOperationException($"No active model configured for this task. Set it in Admin > AI Prompts.");
 
-        var provider = _providers.GetValueOrDefault(defaultModel.AiService.Name)
-            ?? throw new InvalidOperationException($"No provider registered for service '{defaultModel.AiService.Name}'");
+        var provider = _providers.GetValueOrDefault(model.AiService.Name)
+            ?? throw new InvalidOperationException($"No provider registered for service '{model.AiService.Name}'");
 
-        return (provider, defaultModel.Name, defaultModel.AiService.ApiKey);
+        return (provider, model.Name, model.AiService.ApiKey);
     }
 
     private static string FillTemplate(string template, Dictionary<string, string> values)
