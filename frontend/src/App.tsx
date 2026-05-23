@@ -13,7 +13,6 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminAiServices from './pages/admin/AiServices';
 import AdminAiModels from './pages/admin/AiModels';
 import AdminAiPrompts from './pages/admin/AiPrompts';
-import AdminAiSchemas from './pages/admin/AiSchemas';
 import AdminTemplates from './pages/admin/Templates';
 import AdminJobProviders from './pages/admin/JobProviders';
 import AdminDedup from './pages/admin/Dedup';
@@ -35,7 +34,6 @@ export default function App() {
           <Route path="/admin/ai-services" element={<AdminAiServices />} />
           <Route path="/admin/ai-models" element={<AdminAiModels />} />
           <Route path="/admin/ai-prompts" element={<AdminAiPrompts />} />
-          <Route path="/admin/ai-schemas" element={<AdminAiSchemas />} />
           <Route path="/admin/templates" element={<AdminTemplates />} />
           <Route path="/admin/job-providers" element={<AdminJobProviders />} />
           <Route path="/admin/dedup" element={<AdminDedup />} />

@@ -4,7 +4,6 @@ const dash = [
   { to: '/admin/ai-services', icon: '🔌', label: 'AI Services', desc: 'API keys & providers' },
   { to: '/admin/ai-models', icon: '🧠', label: 'AI Models', desc: 'Default model & active' },
   { to: '/admin/ai-prompts', icon: '💬', label: 'Prompts', desc: 'System & user templates' },
-  { to: '/admin/ai-schemas', icon: '📐', label: 'Schemas', desc: 'JSON response format' },
   { to: '/admin/templates', icon: '📄', label: 'CV Templates', desc: 'HTML & CSS layouts' },
   { to: '/admin/job-providers', icon: '🌐', label: 'Job Providers', desc: 'API sources & keys' },
   { to: '/admin/dedup', icon: '🔄', label: 'Dedup Keywords', desc: 'Merge duplicates' },

@@ -3,6 +3,7 @@ import { get, put } from './api';
 
 interface Prompt { id: number; functionality: string; name: string; description: string | null; system_prompt: string; user_prompt_template: string; is_active: boolean; schema_id: number | null; schema_name: string | null; default_model_id: number | null; default_model_name: string | null; default_model_service: string | null; }
 interface AiModel { id: number; name: string; ai_service_name: string; }
+interface Schema { id: number; name: string; description: string | null; json_schema: any; }
 
 function useDebouncedSave(delay = 1000) {
   const [timer, setTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
@@ -12,7 +13,7 @@ function useDebouncedSave(delay = 1000) {
   }, [delay]);
 }
 
-function PromptCard({ p, models }: { p: Prompt; models: AiModel[] }) {
+function PromptCard({ p, models, schema }: { p: Prompt; models: AiModel[]; schema?: Schema }) {
   const [system, setSystem] = useState(p.system_prompt);
   const [user, setUser] = useState(p.user_prompt_template);
   const [modelId, setModelId] = useState(p.default_model_id);
@@ -55,6 +56,17 @@ function PromptCard({ p, models }: { p: Prompt; models: AiModel[] }) {
       <textarea className="input" rows={8} value={user}
         onChange={e => { setUser(e.target.value); doSave(system, e.target.value, modelId); }} />
       {saved && <span className="apikey-saved">Saved</span>}
+      {schema && (
+        <details className="schema-accordion">
+          <summary className="schema-summary">
+            <span className="schema-icon">&#9660;</span>
+            View Schema: {schema.name} {schema.description ? ` — ${schema.description}` : ''}
+          </summary>
+          <pre className="schema-body">
+            {JSON.stringify(schema.json_schema, null, 2)}
+          </pre>
+        </details>
+      )}
     </div>
   );
 }
@@ -62,15 +74,18 @@ function PromptCard({ p, models }: { p: Prompt; models: AiModel[] }) {
 export default function AdminAiPrompts() {
   const [prompts, setPrompts] = useState<Prompt[]>([]);
   const [models, setModels] = useState<AiModel[]>([]);
+  const [schemas, setSchemas] = useState<Schema[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     Promise.all([
       get<Prompt[]>('/api/admin/ai-prompts'),
-      get<AiModel[]>('/api/admin/ai-models')
-    ]).then(([pRes, mRes]) => {
+      get<AiModel[]>('/api/admin/ai-models'),
+      get<Schema[]>('/api/admin/ai-schemas')
+    ]).then(([pRes, mRes, sRes]) => {
       if (pRes.success) setPrompts(pRes.data);
       if (mRes.success) setModels(mRes.data);
+      if (sRes.success) setSchemas(sRes.data);
       setLoading(false);
     });
   }, []);
@@ -82,7 +97,7 @@ export default function AdminAiPrompts() {
       <h2>AI Prompts</h2>
       <p className="text-muted">Assign a model to each operation and edit the prompt templates.</p>
       <div className="service-grid">
-        {prompts.map(p => <PromptCard key={p.id} p={p} models={models} />)}
+        {prompts.map(p => <PromptCard key={p.id} p={p} models={models} schema={schemas.find(s => s.id === p.schema_id)} />)}
       </div>
     </div>
   );
