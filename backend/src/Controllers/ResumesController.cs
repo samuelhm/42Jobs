@@ -253,7 +253,7 @@ ESTRUCTURA DEL CV (HTML):
 3. EXPERIENCIA (sección separada): MÍNIMO 1, MÁXIMO 3. Las más relevantes primero. NO agregues más de 3 bajo ningún concepto.
 4. PROYECTOS (sección separada): MÍNIMO 1, MÁXIMO 3. Los más relevantes primero. NO agregues más de 3 bajo ningún concepto. NO menciones si es school o personal.
 5. EDUCACIÓN: máximo 3, las más recientes primero.
-6. SKILLS: Agrupadas por categorías (Backend, Frontend, Databases, DevOps, AI, Tools...). MÍNIMO 8 skills por categoría. Usa las keywords del usuario. Si no llega a 8, INFIERE las que faltan basándote en experiencia y proyectos. NUNCA inventes tecnologías sin sentido. Todo en minúsculas excepto nombres propios.
+6. SKILLS: Agrupadas por categorías (Backend, Frontend, Databases, DevOps, AI, Tools, Soft Skills...). MÍNIMO 8 skills por categoría. Si la oferta menciona soft skills (comunicación, liderazgo, trabajo en equipo, etc.), incluye una categoría Soft Skills con al menos 8 habilidades blandas relevantes. Para las categorías técnicas, usa las keywords del usuario. Si no llega a 8, INFIERE las que faltan. NUNCA inventes tecnologías sin sentido. Todo en minúsculas excepto nombres propios.
 7. IDIOMAS: solo nombres (sin nivel): Inglés, Español, Catalán...
 
 CSS: mínimo imprescindible, legible (Arial/Helvetica), A4-friendly, márgenes normales, sin colores estridentes. Los títulos de sección (h2) DEBEN ser visiblemente más grandes que el texto del contenido. Las secciones separadas con <hr> sutil. SIN fuentes externas. SIN emojis.
