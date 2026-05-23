@@ -6,6 +6,7 @@ public interface IJobProvider
     string ProviderName { get; }
     string? BaseUrl { set; }
     string? ApiKey { set; }
+    string? Config { set; }
     Task<JobSearchResult> SearchAsync(JobSearchRequest request, CancellationToken ct);
     Task<JobDetailResult?> GetDetailsAsync(string externalId, CancellationToken ct);
 }

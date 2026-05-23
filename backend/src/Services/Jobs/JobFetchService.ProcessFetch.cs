@@ -112,6 +112,7 @@ public partial class JobFetchService
             {
                 provider.BaseUrl = config.BaseUrl;
                 provider.ApiKey = config.ApiKey;
+                provider.Config = config.Config;
                 result.Add(provider);
             }
             else

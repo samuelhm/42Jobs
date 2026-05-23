@@ -9,6 +9,7 @@ public class LinkedInRapidApiProvider : IJobProvider
     private readonly ILogger<LinkedInRapidApiProvider> _logger;
     private string? _baseUrlOverride;
     private string? _apiKeyOverride;
+    private string? _configJson;
 
     public static string Portal => "LinkedIn";
     public static string ProviderNameValue => "RapidAPI";
@@ -16,6 +17,7 @@ public class LinkedInRapidApiProvider : IJobProvider
     string IJobProvider.ProviderName => ProviderNameValue;
     string? IJobProvider.BaseUrl { set => _baseUrlOverride = value; }
     string? IJobProvider.ApiKey { set => _apiKeyOverride = value; }
+    string? IJobProvider.Config { set => _configJson = value; }
 
     public LinkedInRapidApiProvider(IHttpClientFactory httpFactory, ILogger<LinkedInRapidApiProvider> logger)
     {
@@ -53,6 +55,30 @@ public class LinkedInRapidApiProvider : IJobProvider
         if (!string.IsNullOrEmpty(request.Location)) queryParams["location"] = request.Location;
         if (!string.IsNullOrEmpty(request.DatePosted)) queryParams["datePosted"] = request.DatePosted;
         if (!string.IsNullOrEmpty(request.SortBy)) queryParams["sortBy"] = request.SortBy;
+
+        if (!string.IsNullOrEmpty(_configJson))
+        {
+            try
+            {
+                using var cfg = JsonDocument.Parse(_configJson);
+                foreach (var prop in cfg.RootElement.EnumerateObject())
+                {
+                    var key = prop.Name;
+                    var val = prop.Value.GetString();
+                    if (string.IsNullOrEmpty(val)) continue;
+
+                    if (key == "location" && string.IsNullOrEmpty(request.Location))
+                        queryParams["location"] = val;
+                    else if (key == "datePosted" && string.IsNullOrEmpty(request.DatePosted))
+                        queryParams["datePosted"] = val;
+                    else if (key == "sortBy" && string.IsNullOrEmpty(request.SortBy))
+                        queryParams["sortBy"] = val;
+                    else if (key is "jobType" or "experienceLevel" or "remote" or "companySize")
+                        queryParams[key] = val;
+                }
+            }
+            catch (JsonException) { }
+        }
 
         var qs = string.Join("&", queryParams.Select(kv =>
             $"{Uri.EscapeDataString(kv.Key)}={Uri.EscapeDataString(kv.Value)}"));
