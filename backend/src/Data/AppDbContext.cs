@@ -22,7 +22,6 @@ public class AppDbContext : DbContext
     public DbSet<UserKeyword> UserKeywords => Set<UserKeyword>();
     public DbSet<AiService> AiServices => Set<AiService>();
     public DbSet<AiModel> AiModels => Set<AiModel>();
-    public DbSet<AiSchema> AiSchemas => Set<AiSchema>();
     public DbSet<AiPrompt> AiPrompts => Set<AiPrompt>();
     public DbSet<CvTemplate> CvTemplates => Set<CvTemplate>();
     public DbSet<JobProvider> JobProviders => Set<JobProvider>();
@@ -478,24 +477,6 @@ public class AppDbContext : DbContext
                   .OnDelete(DeleteBehavior.Cascade);
         });
 
-        // ── AiSchema ──────────────────────────────────────────
-        modelBuilder.Entity<AiSchema>(entity =>
-        {
-            entity.ToTable("ai_schemas");
-            entity.HasKey(s => s.Id);
-            entity.Property(s => s.Id).ValueGeneratedOnAdd();
-            entity.Property(s => s.Name).IsRequired().HasMaxLength(100);
-            entity.HasIndex(s => s.Name).IsUnique();
-            entity.Property(s => s.Description).HasColumnType("text");
-            entity.Property(s => s.JsonSchema).IsRequired().HasColumnType("jsonb");
-            entity.Property(s => s.CreatedAt)
-                  .HasDefaultValueSql("NOW()")
-                  .ValueGeneratedOnAdd();
-            entity.Property(s => s.UpdatedAt)
-                  .HasDefaultValueSql("NOW()")
-                  .ValueGeneratedOnAddOrUpdate();
-        });
-
         // ── AiPrompt ──────────────────────────────────────────
         modelBuilder.Entity<AiPrompt>(entity =>
         {
@@ -516,12 +497,7 @@ public class AppDbContext : DbContext
                   .HasDefaultValueSql("NOW()")
                   .ValueGeneratedOnAddOrUpdate();
 
-            entity.HasIndex(p => p.SchemaId).HasDatabaseName("idx_ai_prompts_schema");
             entity.HasIndex(p => p.DefaultModelId).HasDatabaseName("idx_ai_prompts_model");
-            entity.HasOne(p => p.Schema)
-                  .WithMany(s => s.Prompts)
-                  .HasForeignKey(p => p.SchemaId)
-                  .OnDelete(DeleteBehavior.SetNull);
             entity.HasOne(p => p.DefaultModel)
                   .WithMany()
                   .HasForeignKey(p => p.DefaultModelId)

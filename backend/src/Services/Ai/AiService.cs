@@ -11,27 +11,27 @@ public partial class AiService : IAiService
     private readonly Dictionary<string, IAiProvider> _providers;
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<AiService> _logger;
+    private readonly IWebHostEnvironment _env;
 
-    public AiService(IEnumerable<IAiProvider> providers, IServiceScopeFactory scopeFactory, ILogger<AiService> logger)
+    public AiService(IEnumerable<IAiProvider> providers, IServiceScopeFactory scopeFactory, ILogger<AiService> logger, IWebHostEnvironment env)
     {
         _providers = providers.ToDictionary(p => p.ServiceName);
         _scopeFactory = scopeFactory;
         _logger = logger;
+        _env = env;
     }
 
-    private async Task<(string systemPrompt, string userPromptTemplate, JsonElement schema, int? defaultModelId)> LoadPromptAsync(
+    private async Task<(string systemPrompt, string userPromptTemplate, int? defaultModelId)> LoadPromptAsync(
         string functionality)
     {
         using var scope = _scopeFactory.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
         var prompt = await db.AiPrompts
-            .Include(p => p.Schema)
             .FirstOrDefaultAsync(p => p.Functionality == functionality && p.IsActive)
             ?? throw new InvalidOperationException($"No active prompt for functionality '{functionality}'");
 
-        var schema = JsonDocument.Parse(prompt.Schema!.JsonSchema).RootElement;
-        return (prompt.SystemPrompt, prompt.UserPromptTemplate, schema, prompt.DefaultModelId);
+        return (prompt.SystemPrompt, prompt.UserPromptTemplate, prompt.DefaultModelId);
     }
 
     private async Task<(IAiProvider provider, string model, string? apiKey, bool isFreeTier)> ResolveModelAsync(int? defaultModelId)
@@ -48,6 +48,17 @@ public partial class AiService : IAiService
             ?? throw new InvalidOperationException($"No provider registered for service '{model.AiService.Name}'");
 
         return (provider, model.Name, model.AiService.ApiKey, model.AiService.IsFreeTier);
+    }
+
+    private JsonElement LoadSchema(string functionality, string serviceName)
+    {
+        var providerKey = serviceName.ToLowerInvariant();
+        var path = Path.Combine(_env.ContentRootPath, "Services", "Ai", "Schemas", $"{functionality}.{providerKey}.json");
+        if (!File.Exists(path))
+            throw new InvalidOperationException(
+                $"Schema file not found: {path}. Expected schema per provider at Services/Ai/Schemas/{{functionality}}.{{provider}}.json");
+        var json = File.ReadAllText(path);
+        return JsonDocument.Parse(json).RootElement;
     }
 
     private async Task<JsonElement> CallWithRetryAsync(

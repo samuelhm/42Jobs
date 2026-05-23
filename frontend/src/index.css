@@ -1603,30 +1603,3 @@ textarea.input { resize: vertical; font-family: 'JetBrains Mono', monospace; fon
 .av-name { font-weight: 500; }
 .av-meta { font-family: "JetBrains Mono", monospace; font-size: 0.62rem; color: var(--text-dim); }
 .hint-text { font-size: 0.75rem; color: var(--text-dim); margin-bottom: 0.4rem; }
-
-/* ── Schema accordion ── */
-.schema-accordion {
-  margin-top: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius);
-  overflow: hidden; transition: border-color 0.2s;
-}
-.schema-accordion:hover { border-color: var(--amber-dim); }
-.schema-accordion[open] { border-color: var(--amber-dim); }
-.schema-summary {
-  cursor: pointer; padding: 0.5rem 0.75rem;
-  background: var(--bg); color: var(--amber-dim);
-  font-family: "JetBrains Mono", monospace; font-size: 0.65rem;
-  user-select: none; list-style: none;
-}
-.schema-summary::-webkit-details-marker { display: none; }
-.schema-summary:hover { background: rgba(212,168,83,0.06); }
-.schema-icon {
-  display: inline-block; font-size: 0.55rem; margin-right: 0.4rem;
-  transition: transform 0.2s;
-}
-.schema-accordion[open] .schema-icon { transform: rotate(-180deg); }
-.schema-body {
-  background: #0d1117; color: #58a6ff; padding: 0.75rem; margin: 0;
-  border-top: 1px solid var(--border);
-  overflow: auto; max-height: 300px; font-size: 0.7rem;
-  font-family: "JetBrains Mono", monospace; line-height: 1.4;
-}
