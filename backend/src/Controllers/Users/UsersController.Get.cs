@@ -29,6 +29,7 @@ public partial class UsersController
             Junior = user.Junior,
             Presentation = user.Presentation,
             AvatarUrl = user.AvatarUrl,
+            Role = user.Role,
             CreatedAt = user.CreatedAt,
             UpdatedAt = user.UpdatedAt,
         };

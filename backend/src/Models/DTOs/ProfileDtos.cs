@@ -153,30 +153,13 @@ public class CategoryKeywordDto
 }
 
 // ─── GitHub import ─────────────────────────────────────────
-
-public class ImportGithubDto
-{
-    public string Username { get; set; } = string.Empty;
-    public string Token { get; set; } = string.Empty;
-}
-
 public class GithubProjectResult
+
 {
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public string Type { get; set; } = "personal";
     public List<string> Keywords { get; set; } = [];
-}
-
-public class ImportStatus
-{
-    public Guid JobId { get; set; }
-    public string Status { get; set; } = "queued";
-    public string Message { get; set; } = string.Empty;
-    public int Total { get; set; }
-    public int Processed { get; set; }
-    public int Inserted { get; set; }
-    public string? Error { get; set; }
 }
 
 // ─── LinkedIn import ───────────────────────────────────────
