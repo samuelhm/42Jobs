@@ -17,7 +17,7 @@ export default function AdminDedup() {
     <div>
       <h2>Deduplicate Keywords</h2>
       <p className="text-muted">Uses AI to find and merge duplicate/similar keywords across all tables.</p>
-      <button className="btn btn-primary" onClick={runDedup} disabled={running}>
+      <button className="admin-btn" onClick={runDedup} disabled={running}>
         {running ? 'Running...' : 'Run Dedup'}
       </button>
       {msg && <div className="card mt-3" style={{ padding: '1rem' }}>{msg}</div>}

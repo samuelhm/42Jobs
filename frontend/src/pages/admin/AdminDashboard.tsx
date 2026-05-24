@@ -2,12 +2,12 @@ import { Link } from 'react-router';
 
 const dash = [
   { to: '/admin/ai-services', icon: '🔌', label: 'AI Services', desc: 'API keys & providers' },
-  { to: '/admin/ai-models', icon: '🧠', label: 'AI Models', desc: 'Default model & active' },
+  { to: '/admin/ai-models', icon: '🧠', label: 'AI Models', desc: 'Manage & assign models' },
   { to: '/admin/ai-prompts', icon: '💬', label: 'Prompts', desc: 'System & user templates' },
   { to: '/admin/templates', icon: '📄', label: 'CV Templates', desc: 'HTML & CSS layouts' },
   { to: '/admin/job-providers', icon: '🌐', label: 'Job Providers', desc: 'API sources & keys' },
   { to: '/admin/dedup', icon: '🔄', label: 'Dedup Keywords', desc: 'Merge duplicates' },
-  { to: '/admin/logs', icon: '📋', label: 'Logs', desc: 'Coming soon' },
+  { to: '/admin/logs', icon: '📋', label: 'Logs', desc: 'Request & response logs' },
 ];
 
 export default function AdminDashboard() {

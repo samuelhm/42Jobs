@@ -1,27 +1,24 @@
 import { useEffect, useState } from 'react';
 import { get, put } from '../../utils';
-import { useDebounce } from '../../hooks';
 
 interface Prompt { id: number; functionality: string; name: string; description: string | null; system_prompt: string; user_prompt_template: string; is_active: boolean; default_model_id: number | null; default_model_name: string | null; default_model_service: string | null; }
-interface AiModel { id: number; name: string; ai_service_name: string; }
 
-function PromptCard({ p, models }: { p: Prompt; models: AiModel[] }) {
+function PromptCard({ p }: { p: Prompt }) {
   const [system, setSystem] = useState(p.system_prompt);
   const [user, setUser] = useState(p.user_prompt_template);
-  const [modelId, setModelId] = useState(p.default_model_id);
+  const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-  const debounce = useDebounce(1000);
 
-  function doSave(s: string, u: string, m: number | null) {
+  async function handleSave() {
+    setSaving(true);
     setSaved(false);
-    debounce(async () => {
-      await put(`/api/admin/ai-prompts/${p.id}`, {
-        system_prompt: s, user_prompt_template: u, is_active: p.is_active,
-        default_model_id: m
-      });
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
+    await put(`/api/admin/ai-prompts/${p.id}`, {
+      system_prompt: system, user_prompt_template: user, is_active: p.is_active,
+      default_model_id: p.default_model_id,
     });
+    setSaving(false);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
   }
 
   return (
@@ -31,39 +28,35 @@ function PromptCard({ p, models }: { p: Prompt; models: AiModel[] }) {
           <h3>{p.functionality}</h3>
           <span className="service-count">{p.name}</span>
         </div>
-        <div className="model-selector">
-          <select className="input" value={modelId ?? ''}
-            onChange={e => { const id = e.target.value ? +e.target.value : null; setModelId(id); doSave(system, user, id); }}>
-            <option value="">— select model —</option>
-            {models.map(m => (
-              <option key={m.id} value={m.id}>{m.name} ({m.ai_service_name})</option>
-            ))}
-          </select>
-        </div>
+        {p.default_model_name && (
+          <span style={{ fontSize: '0.65rem', color: 'var(--teal)', fontFamily: "'JetBrains Mono', monospace", border: '1px solid rgba(77,184,160,0.25)', borderRadius: 'var(--radius)', padding: '0.15rem 0.5rem', background: 'rgba(77,184,160,0.08)' }}>
+            {p.default_model_name}
+          </span>
+        )}
       </div>
       <label className="form-label">System Prompt</label>
       <textarea className="input" rows={5} value={system}
-        onChange={e => { setSystem(e.target.value); doSave(e.target.value, user, modelId); }} />
+        onChange={e => setSystem(e.target.value)} />
       <label className="form-label mt-2">User Prompt Template</label>
       <textarea className="input" rows={8} value={user}
-        onChange={e => { setUser(e.target.value); doSave(system, e.target.value, modelId); }} />
-      {saved && <span className="apikey-saved">Saved</span>}
+        onChange={e => setUser(e.target.value)} />
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.75rem' }}>
+        <button className="admin-btn" onClick={handleSave} disabled={saving}>
+          {saving ? 'Saving...' : 'Save'}
+        </button>
+        {saved && <span className="apikey-saved">Saved</span>}
+      </div>
     </div>
   );
 }
 
 export default function AdminAiPrompts() {
   const [prompts, setPrompts] = useState<Prompt[]>([]);
-  const [models, setModels] = useState<AiModel[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    Promise.all([
-      get<Prompt[]>('/api/admin/ai-prompts'),
-      get<AiModel[]>('/api/admin/ai-models')
-    ]).then(([pRes, mRes]) => {
-      if (pRes.success) setPrompts(pRes.data);
-      if (mRes.success) setModels(mRes.data);
+    get<Prompt[]>('/api/admin/ai-prompts').then(res => {
+      if (res.success) setPrompts(res.data);
       setLoading(false);
     });
   }, []);
@@ -73,9 +66,9 @@ export default function AdminAiPrompts() {
   return (
     <div>
       <h2>AI Prompts</h2>
-      <p className="text-muted">Assign a model to each operation and edit the prompt templates. Schemas are loaded from <code>backend/src/Services/Ai/Schemas/</code> per provider.</p>
+      <p className="text-muted">Edit the system prompt and user prompt template for each operation. Assign models in <b>AI Models</b> via drag & drop.</p>
       <div className="service-grid">
-        {prompts.map(p => <PromptCard key={p.id} p={p} models={models} />)}
+        {prompts.map(p => <PromptCard key={p.id} p={p} />)}
       </div>
     </div>
   );

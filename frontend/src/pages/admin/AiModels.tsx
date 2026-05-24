@@ -3,40 +3,38 @@ import { get, post, put, del } from '../../utils';
 
 interface AiModel { id: number; name: string; ai_service_name: string; ai_service_id: number; is_active: boolean; used_by: string[]; }
 interface AiService { id: number; name: string; }
+interface PromptOp { id: number; functionality: string; default_model_id: number | null; }
 
 export default function AdminAiModels() {
   const [models, setModels] = useState<AiModel[]>([]);
   const [services, setServices] = useState<AiService[]>([]);
+  const [prompts, setPrompts] = useState<PromptOp[]>([]);
   const [loading, setLoading] = useState(true);
-  const [editing, setEditing] = useState<number | null>(null);
-  const [editName, setEditName] = useState('');
   const [newName, setNewName] = useState('');
   const [newServiceId, setNewServiceId] = useState<number | null>(null);
+  const [dragOver, setDragOver] = useState<number | null>(null);
 
   async function load() {
-    const [mRes, sRes] = await Promise.all([
+    const [mRes, sRes, pRes] = await Promise.all([
       get<AiModel[]>('/api/admin/ai-models'),
-      get<AiService[]>('/api/admin/ai-services')
+      get<AiService[]>('/api/admin/ai-services'),
+      get<PromptOp[]>('/api/admin/ai-prompts'),
     ]);
     if (mRes.success) setModels(mRes.data);
     if (sRes.success) setServices(sRes.data);
+    if (pRes.success) setPrompts(pRes.data);
     setLoading(false);
   }
 
   useEffect(() => { load(); }, []);
 
+  const assigned = (modelId: number) => prompts.filter(p => p.default_model_id === modelId);
+  const unassigned = prompts.filter(p => !p.default_model_id);
+
   async function addModel() {
     if (!newName.trim() || !newServiceId) return;
-    const res = await post('/api/admin/ai-models', { name: newName.trim(), ai_service_id: newServiceId, is_active: true });
-    if (res.success) { setNewName(''); load(); }
-  }
-
-  async function renameModel(id: number) {
-    if (!editName.trim()) return;
-    const m = models.find(x => x.id === id);
-    if (!m) return;
-    await put(`/api/admin/ai-models/${id}`, { name: editName.trim(), ai_service_id: m.ai_service_id, is_active: m.is_active });
-    setEditing(null);
+    await post('/api/admin/ai-models', { name: newName.trim(), ai_service_id: newServiceId, is_active: true });
+    setNewName('');
     load();
   }
 
@@ -46,9 +44,33 @@ export default function AdminAiModels() {
     load();
   }
 
-  async function toggleModel(m: AiModel) {
-    await put(`/api/admin/ai-models/${m.id}`, { name: m.name, ai_service_id: m.ai_service_id, is_active: !m.is_active });
-    load();
+  function handleDragStart(e: React.DragEvent, id: number) {
+    e.dataTransfer.setData('text/plain', String(id));
+    e.dataTransfer.effectAllowed = 'move';
+  }
+
+  function handleDragOver(e: React.DragEvent, modelId: number) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    setDragOver(modelId);
+  }
+
+  function handleDragLeave() {
+    setDragOver(null);
+  }
+
+  async function handleDrop(e: React.DragEvent, modelId: number | null) {
+    e.preventDefault();
+    setDragOver(null);
+    const promptId = Number(e.dataTransfer.getData('text/plain'));
+    if (!promptId) return;
+    setPrompts(prev => prev.map(p => p.id === promptId ? { ...p, default_model_id: modelId } : p));
+    await put(`/api/admin/ai-prompts/${promptId}`, { default_model_id: modelId });
+  }
+
+  async function removeAssignment(promptId: number) {
+    setPrompts(prev => prev.map(p => p.id === promptId ? { ...p, default_model_id: null } : p));
+    await put(`/api/admin/ai-prompts/${promptId}`, { default_model_id: null });
   }
 
   const grouped = models.reduce((acc: Record<string, AiModel[]>, m) => {
@@ -61,7 +83,7 @@ export default function AdminAiModels() {
   return (
     <div>
       <h2>AI Models</h2>
-      <p className="text-muted">Manage available model strings. Add or remove models here, then assign them to operations in <b>Prompts</b>.</p>
+      <p className="text-muted">Add or remove models. Drag operation tags into a model to assign them.</p>
 
       <div className="service-card" style={{ marginBottom: '1rem' }}>
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
@@ -78,44 +100,64 @@ export default function AdminAiModels() {
         </div>
       </div>
 
-      <div className="service-grid">
+      {unassigned.length > 0 && (
+        <div
+          className="model-drop-zone unassigned-zone"
+          onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; setDragOver(-1); }}
+          onDragLeave={() => setDragOver(null)}
+          onDrop={(e) => handleDrop(e, null)}
+        >
+          <span className="drop-label">Unassigned — drag here to detach</span>
+          <div className="drop-tags">
+            {unassigned.map(p => (
+              <span
+                key={p.id}
+                className="op-tag draggable"
+                draggable
+                onDragStart={(e) => handleDragStart(e, p.id)}
+                title="Drag to a model to assign"
+              >
+                <span className="drag-handle">⠿</span>
+                {p.functionality}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="service-grid" style={{ marginTop: '0.75rem' }}>
         {Object.entries(grouped).map(([service, items]) => (
           <div key={service} className="service-card">
             <h3>{service}</h3>
             <div className="model-list">
               {items.map(m => (
-                <div key={m.id} className="model-row">
-                  {editing === m.id ? (
-                    <div style={{ display: 'flex', gap: '0.5rem', flex: 1 }}>
-                      <input className="input" value={editName}
-                        onChange={e => setEditName(e.target.value)}
-                        onKeyDown={e => { if (e.key === 'Enter') renameModel(m.id); if (e.key === 'Escape') setEditing(null); }} />
-                      <button className="admin-btn" onClick={() => renameModel(m.id)}>Save</button>
-                      <button className="admin-btn" style={{ borderColor: 'var(--border)', color: 'var(--text-dim)' }}
-                        onClick={() => setEditing(null)}>Cancel</button>
+                <div key={m.id} className={`model-row${dragOver === m.id ? ' drag-over' : ''}`}
+                  onDragOver={(e) => handleDragOver(e, m.id)}
+                  onDragLeave={handleDragLeave}
+                  onDrop={(e) => handleDrop(e, m.id)}
+                >
+                  <div className="model-info">
+                    <span className="model-name">{m.name}</span>
+                    {!m.is_active && <span style={{ fontSize: '0.6rem', color: 'var(--red)', marginLeft: '0.5rem' }}>inactive</span>}
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flex: 1, justifyContent: 'flex-end' }}>
+                    <div className="model-usage">
+                      {assigned(m.id).length > 0
+                        ? assigned(m.id).map(p => (
+                            <span key={p.id} className="op-tag assigned draggable"
+                              draggable
+                              onDragStart={(e) => handleDragStart(e, p.id)}
+                              onClick={(e) => { e.stopPropagation(); removeAssignment(p.id); }}
+                              title="Click to detach, drag to reassign"
+                            >
+                              <span className="drag-handle">⠿</span>
+                              {p.functionality}
+                            </span>
+                          ))
+                        : <span className="text-dim" style={{ fontSize: '0.7rem' }}>drop operations here</span>}
                     </div>
-                  ) : (
-                    <>
-                      <div className="model-info">
-                        <span className="model-name">{m.name}</span>
-                        {!m.is_active && <span style={{ fontSize: '0.6rem', color: 'var(--red)', marginLeft: '0.5rem' }}>inactive</span>}
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                        <span className="model-usage">
-                          {m.used_by.length > 0
-                            ? m.used_by.map(f => <code key={f}>{f}</code>)
-                            : <span className="text-dim" style={{ fontSize: '0.7rem' }}>unused</span>}
-                        </span>
-                        <button className={`toggle-switch small${m.is_active ? ' on' : ''}`} onClick={() => toggleModel(m)}
-                          title={m.is_active ? 'Deactivate' : 'Activate'}>
-                          <span className="toggle-knob" />
-                        </button>
-                        <button className="admin-btn" style={{ fontSize: '0.6rem', padding: '0.15rem 0.5rem' }}
-                          onClick={() => { setEditing(m.id); setEditName(m.name); }}>Edit</button>
-                        <button className="btn-delete" onClick={() => deleteModel(m.id)}>Delete</button>
-                      </div>
-                    </>
-                  )}
+                    <button className="btn-delete" onClick={() => deleteModel(m.id)}>Delete</button>
+                  </div>
                 </div>
               ))}
             </div>

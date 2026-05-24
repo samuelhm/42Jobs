@@ -67,7 +67,7 @@ function ProviderCard({ p }: { p: Provider }) {
       </div>
       <div className="apikey-row mt-1">
         <input type="password" className="input apikey-input" value={key}
-          placeholder="API key"
+          placeholder={p.api_key ? "API key configured" : "API key not set — configure here"}
           onChange={e => { setKey(e.target.value); doSave(host, e.target.value, enabled, config); }} />
         {saved && <span className="apikey-saved">Saved</span>}
       </div>

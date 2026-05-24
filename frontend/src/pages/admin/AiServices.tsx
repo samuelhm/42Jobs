@@ -5,20 +5,9 @@ import { useDebounce } from '../../hooks';
 interface AiService { id: number; name: string; api_key: string | null; is_active: boolean; is_free_tier: boolean; models: { id: number; name: string; is_active: boolean }[]; }
 
 function ApiKeyInput({ service }: { service: AiService }) {
-  const [key, setKey] = useState('');
-  const [loaded, setLoaded] = useState(false);
+  const [key, setKey] = useState(service.api_key || '');
   const [saved, setSaved] = useState(false);
   const debounce = useDebounce();
-
-  useEffect(() => {
-    get<any[]>('/api/admin/ai-services').then((r: any) => {
-      if (r.success) {
-        const s = r.data.find((x: any) => x.id === service.id);
-        if (s) setKey(s.api_key || '');
-      }
-      setLoaded(true);
-    });
-  }, [service.id]);
 
   function handleChange(val: string) {
     setKey(val);
@@ -30,12 +19,10 @@ function ApiKeyInput({ service }: { service: AiService }) {
     });
   }
 
-  if (!loaded) return null;
-
   return (
     <div className="apikey-row">
       <input type="password" className="input apikey-input" value={key}
-        placeholder="API key not set — configure here"
+        placeholder={service.api_key ? "API key configured" : "API key not set — configure here"}
         onChange={e => handleChange(e.target.value)} />
       {saved && <span className="apikey-saved">Saved</span>}
     </div>

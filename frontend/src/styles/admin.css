@@ -105,6 +105,76 @@
 .model-selector select { max-width: 220px; font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; }
 .model-selector { flex-shrink: 0; }
 
+/* ── Drag & drop ── */
+.model-drop-zone {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 0.75rem 1rem;
+  background: var(--bg);
+  min-height: 3rem;
+  transition: border-color 0.2s, background 0.2s;
+}
+.model-drop-zone.drag-over {
+  border-color: var(--amber);
+  background: rgba(212,168,83,0.08);
+}
+.unassigned-zone { margin-bottom: 0.75rem; }
+.model-row.drag-over {
+  border-color: var(--amber);
+  background: rgba(212,168,83,0.06);
+}
+.drop-label {
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  font-family: 'JetBrains Mono', monospace;
+  margin-bottom: 0.4rem;
+  display: block;
+}
+.drop-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; }
+
+.op-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.62rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  background: var(--surface);
+  cursor: pointer;
+  user-select: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  transition: all 0.15s;
+}
+.op-tag.draggable {
+  cursor: grab;
+  border-style: dashed;
+}
+.op-tag.draggable:active {
+  cursor: grabbing;
+  opacity: 0.7;
+}
+.op-tag.assigned {
+  background: rgba(77,184,160,0.1);
+  border-color: rgba(77,184,160,0.25);
+  color: var(--teal);
+  border-style: solid;
+}
+.op-tag:hover {
+  border-color: var(--amber-dim);
+  color: var(--text);
+}
+.op-tag.assigned:hover {
+  border-color: var(--teal);
+  background: rgba(77,184,160,0.2);
+}
+.drag-handle {
+  font-size: 0.7rem;
+  opacity: 0.5;
+  letter-spacing: -0.1em;
+}
+
 /* ── Dashboard cards ── */
 .admin-dash-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 0.75rem; margin-top: 1.5rem; }
 .admin-dash-card {
@@ -161,6 +231,15 @@
 tr.log-sent { border-left: 3px solid var(--info, #4a9eff); }
 tr.log-received { border-left: 3px solid var(--success, #4ecf7d); }
 tr.log-error { border-left: 3px solid var(--danger, #e05252); }
+
+tr.log-response { opacity: 0.85; background: var(--bg); }
+tr.log-response td { padding-top: 0.2rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--border); }
+tr.log-clickable:hover { background: var(--surface-hover); }
+.log-expand {
+  display: inline-block; width: 1rem; font-size: 0.55rem;
+  color: var(--amber-dim); margin-right: 0.2rem;
+  transition: transform 0.15s;
+}
 
 .log-payload3 {
   font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; white-space: nowrap;

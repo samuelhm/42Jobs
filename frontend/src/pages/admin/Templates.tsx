@@ -1,24 +1,29 @@
 import { useEffect, useState } from 'react';
 import { get, put, del } from '../../utils';
-import { useDebounce } from '../../hooks';
 
 interface Template { id: number; name: string; description: string | null; html_template: string; css: string | null; is_active: boolean; }
 
-function TemplateCard({ t }: { t: Template }) {
+function TemplateCard({ t, onToggleActive }: { t: Template; onToggleActive: (id: number, active: boolean) => void }) {
   const [name, setName] = useState(t.name);
   const [html, setHtml] = useState(t.html_template);
   const [css, setCss] = useState(t.css || '');
   const [active, setActive] = useState(t.is_active);
+  const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-  const debounce = useDebounce(1200);
 
-  function doSave(n: string, h: string, c: string, a: boolean) {
+  async function handleSave() {
+    setSaving(true);
     setSaved(false);
-    debounce(async () => {
-      await put(`/api/admin/templates/${t.id}`, { name: n, description: t.description, html_template: h, css: c || null, is_active: a });
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
-    });
+    await put(`/api/admin/templates/${t.id}`, { name, description: t.description, html_template: html, css: css || null, is_active: active });
+    setSaving(false);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  }
+
+  function handleToggle() {
+    const next = !active;
+    setActive(next);
+    onToggleActive(t.id, next);
   }
 
   return (
@@ -27,20 +32,24 @@ function TemplateCard({ t }: { t: Template }) {
         <div>
           <input className="input name-input" value={name}
             placeholder="Template name"
-            onChange={e => { setName(e.target.value); doSave(e.target.value, html, css, active); }} />
+            onChange={e => setName(e.target.value)} />
         </div>
-        <button className={`toggle-switch ${active ? 'on' : ''}`}
-          onClick={() => { const n = !active; setActive(n); doSave(name, html, css, n); }}>
+        <button className={`toggle-switch ${active ? 'on' : ''}`} onClick={handleToggle}>
           <span className="toggle-knob" />
         </button>
       </div>
       <label className="form-label">HTML Template</label>
       <textarea className="input" rows={10} value={html}
-        onChange={e => { setHtml(e.target.value); doSave(name, e.target.value, css, active); }} />
+        onChange={e => setHtml(e.target.value)} />
       <label className="form-label mt-2">CSS</label>
       <textarea className="input" rows={4} value={css}
-        onChange={e => { setCss(e.target.value); doSave(name, html, e.target.value, active); }} />
-      {saved && <span className="apikey-saved">Saved</span>}
+        onChange={e => setCss(e.target.value)} />
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.75rem' }}>
+        <button className="admin-btn" onClick={handleSave} disabled={saving}>
+          {saving ? 'Saving...' : 'Save'}
+        </button>
+        {saved && <span className="apikey-saved">Saved</span>}
+      </div>
     </div>
   );
 }
@@ -62,16 +71,24 @@ export default function AdminTemplates() {
     load();
   }
 
+  function handleToggleActive(id: number, active: boolean) {
+    setTemplates(prev => prev.map(t => {
+      if (t.id === id) return { ...t, is_active: active };
+      if (active) return { ...t, is_active: false };
+      return t;
+    }));
+  }
+
   if (loading) return <div className="p-4 text-muted">Loading...</div>;
 
   return (
     <div>
       <h2>CV Templates</h2>
-      <p className="text-muted">Only one template is active at a time. Toggle to switch between them.</p>
+      <p className="text-muted">Only one template is active at a time. Toggle to switch. Changes require manual save — click <b>Save</b> to persist.</p>
       <div className="service-grid">
         {templates.map(t => (
           <div key={t.id}>
-            <TemplateCard t={t} />
+            <TemplateCard t={t} onToggleActive={handleToggleActive} />
             <button className="btn-delete mt-1" onClick={() => remove(t.id)}>Delete</button>
           </div>
         ))}
