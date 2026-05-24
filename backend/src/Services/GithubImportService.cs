@@ -14,12 +14,14 @@ public class GithubImportService : BackgroundService
     private readonly ConcurrentDictionary<Guid, ImportStatus> _statuses = new();
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly IHttpClientFactory _httpFactory;
+    private readonly AdminLogService _log;
     private readonly ILogger<GithubImportService> _logger;
 
-    public GithubImportService(IServiceScopeFactory scopeFactory, IHttpClientFactory httpFactory, ILogger<GithubImportService> logger)
+    public GithubImportService(IServiceScopeFactory scopeFactory, IHttpClientFactory httpFactory, AdminLogService log, ILogger<GithubImportService> logger)
     {
         _scopeFactory = scopeFactory;
         _httpFactory = httpFactory;
+        _log = log;
         _logger = logger;
     }
 
@@ -56,6 +58,7 @@ public class GithubImportService : BackgroundService
     private async Task ProcessImportAsync(GithubImportRequest request, CancellationToken ct)
     {
         var (jobId, userId, username, token) = request;
+        var correlationId = Guid.NewGuid().ToString("N");
         var status = _statuses[jobId];
         status.Status = "running";
         _logger.LogInformation("GitHub import {JobId} started for user {Username}", jobId, username);
@@ -70,9 +73,18 @@ public class GithubImportService : BackgroundService
             var reposUrl = !string.IsNullOrWhiteSpace(token)
                 ? $"https://api.github.com/user/repos?per_page=100&sort=updated&type=all"
                 : $"https://api.github.com/users/{Uri.EscapeDataString(username)}/repos?per_page=100&sort=updated";
+
+            await _log.LogAsync("GitHub", "list_repos",
+                new { url = reposUrl, username },
+                reposUrl, "sent", correlationId);
+
             var reposJson = await http.GetStringAsync(reposUrl, ct);
             using var reposDoc = JsonDocument.Parse(reposJson);
             var repos = reposDoc.RootElement.EnumerateArray().ToList();
+
+            await _log.LogAsync("GitHub", "list_repos",
+                new { repo_count = repos.Count },
+                username, $"received:200, {repos.Count} repos", correlationId);
 
             status.Total = repos.Count;
             status.Message = "Fetching repositories...";
@@ -109,6 +121,10 @@ public class GithubImportService : BackgroundService
                 status.Processed++;
                 status.Message = $"Fetched {status.Processed}/{status.Total} repos...";
             }
+
+            await _log.LogAsync("GitHub", "fetch_files",
+                new { repos_scanned = status.Total, repos_with_readme = projectTexts.Count },
+                username, $"scanned {projectTexts.Count}/{status.Total} repos with READMEs", correlationId);
 
             if (projectTexts.Count == 0)
             {
@@ -211,16 +227,26 @@ public class GithubImportService : BackgroundService
             status.Status = "completed";
             status.Message = $"{status.Inserted} projects imported";
 
+            await _log.LogAsync("GitHub", "import_completed",
+                new { username, repo_count = repos.Count, projects_imported = status.Inserted },
+                username, $"completed: {status.Inserted} projects", correlationId);
+
             _logger.LogInformation("GitHub import {JobId}: {Inserted} projects from {Username}", jobId, status.Inserted, username);
         }
         catch (OperationCanceledException)
         {
+            await _log.LogAsync("GitHub", "import_cancelled",
+                new { username },
+                username, $"error: cancelled", correlationId);
             _logger.LogInformation("GitHub import {JobId} cancelled", jobId);
             status.Status = "failed";
             status.Error = "Import was cancelled";
         }
         catch (Exception ex)
         {
+            await _log.LogAsync("GitHub", "import_failed",
+                new { username, error = ex.Message },
+                username, $"error: {ex.GetBaseException().Message}", correlationId);
             _logger.LogError(ex, "GitHub import {JobId} failed", jobId);
             status.Status = "failed";
             status.Error = ex.Message;
