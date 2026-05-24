@@ -24,8 +24,13 @@ const STATUS_OPTIONS = [
 ];
 
 export default function Tracking() {
-  const { jobs, userKeywords: initialKeywords } = useLoaderData() as TrackingData;
+  const { jobs: rawJobs, userKeywords: initialKeywords } = useLoaderData() as TrackingData;
+  const [jobs, setJobs] = useState(rawJobs);
   const [userKeywords, setUserKeywords] = useState<Record<string, UserKeyword>>(initialKeywords);
+
+  function handleJobStatusChange(jobId: number, newStatus: string) {
+    setJobs(prev => prev.map(j => j.job_id === jobId ? { ...j, status: newStatus as TrackingJob['status'] } : j));
+  }
 
   function handleKwStatusChange(keywordId: number, newStatus: string) {
     setUserKeywords((prev) => {
@@ -60,17 +65,18 @@ export default function Tracking() {
       )}
 
       {nonEmpty.map(s => (
-        <TrackingSection key={s.status} section={s} jobs={grouped[s.status]} userKeywords={userKeywords} onKwStatusChange={handleKwStatusChange} />
+        <TrackingSection key={s.status} section={s} jobs={grouped[s.status]} userKeywords={userKeywords} onKwStatusChange={handleKwStatusChange} onJobStatusChange={handleJobStatusChange} />
       ))}
     </div>
   );
 }
 
-function TrackingSection({ section, jobs, userKeywords, onKwStatusChange }: {
+function TrackingSection({ section, jobs, userKeywords, onKwStatusChange, onJobStatusChange }: {
   section: typeof SECTIONS[0];
   jobs: TrackingJob[];
   userKeywords: Record<string, UserKeyword>;
   onKwStatusChange: (kwId: number, status: string) => void;
+  onJobStatusChange: (jobId: number, status: string) => void;
 }) {
   return (
     <div style={{ marginBottom: '2rem' }}>
@@ -90,27 +96,27 @@ function TrackingSection({ section, jobs, userKeywords, onKwStatusChange }: {
       </p>
       <div id="ofertas-list">
         {jobs.map(job => (
-          <JobCard key={job.job_id} job={job} userKeywords={userKeywords} onKwStatusChange={onKwStatusChange} />
+          <JobCard key={job.job_id} job={job} userKeywords={userKeywords} onKwStatusChange={onKwStatusChange} onJobStatusChange={onJobStatusChange} />
         ))}
       </div>
     </div>
   );
 }
 
-function JobCard({ job, userKeywords, onKwStatusChange }: {
+function JobCard({ job, userKeywords, onKwStatusChange, onJobStatusChange }: {
   job: TrackingJob;
   userKeywords: Record<string, UserKeyword>;
   onKwStatusChange: (kwId: number, status: string) => void;
+  onJobStatusChange: (jobId: number, status: string) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
-  const [status, setStatus] = useState(job.status);
   const [editingTitle, setEditingTitle] = useState<string | null>(null);
   const [notesOpen, setNotesOpen] = useState(false);
   const [cvOpen, setCvOpen] = useState(false);
   const { toast } = useToast();
 
   async function handleStatusChange(newStatus: string) {
-    setStatus(newStatus as TrackingJob['status']);
+    onJobStatusChange(job.job_id, newStatus);
     try {
       await fetchWithAuth(`/api/tracking/${job.job_id}/status`, {
         method: 'PATCH',
@@ -118,7 +124,7 @@ function JobCard({ job, userKeywords, onKwStatusChange }: {
         body: JSON.stringify({ status: newStatus }),
       });
     } catch {
-      setStatus(job.status);
+      onJobStatusChange(job.job_id, job.status);
       toast('tracking-error', 'Failed to update status', 'error');
     }
   }
@@ -155,7 +161,7 @@ function JobCard({ job, userKeywords, onKwStatusChange }: {
     window.location.reload();
   }
 
-  const statusDot = STATUS_OPTIONS.find(o => o.value === status);
+  const statusDot = STATUS_OPTIONS.find(o => o.value === job.status);
 
   return (
     <>
@@ -202,7 +208,7 @@ function JobCard({ job, userKeywords, onKwStatusChange }: {
         <div className="card-controls">
           <select
             className="tracking-status-select"
-            value={status}
+            value={job.status}
             onClick={e => e.stopPropagation()}
             onChange={e => handleStatusChange(e.target.value)}
           >
