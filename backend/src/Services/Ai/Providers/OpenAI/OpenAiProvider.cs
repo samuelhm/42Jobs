@@ -6,15 +6,17 @@ namespace src.Services.Ai.Providers.OpenAI;
 public class OpenAiProvider : IAiProvider
 {
     private readonly IHttpClientFactory _httpFactory;
+    private readonly AdminLogService _log;
     private readonly ILogger<OpenAiProvider> _logger;
     private const string BaseUrl = "https://api.openai.com";
 
     public static string ServiceName => "OpenAI";
     string IAiProvider.ServiceName => ServiceName;
 
-    public OpenAiProvider(IHttpClientFactory httpFactory, ILogger<OpenAiProvider> logger)
+    public OpenAiProvider(IHttpClientFactory httpFactory, AdminLogService log, ILogger<OpenAiProvider> logger)
     {
         _httpFactory = httpFactory;
+        _log = log;
         _logger = logger;
     }
 
@@ -49,11 +51,19 @@ public class OpenAiProvider : IAiProvider
         }
 
         var content = new StringContent(Encoding.UTF8.GetString(bodyStream.ToArray()), Encoding.UTF8, "application/json");
+
+        await _log.LogAsync("OpenAI", "llm:call",
+            new { system_prompt = systemPrompt, user_prompt = userPrompt, model },
+            model, "sent");
+
         var response = await http.PostAsync($"{BaseUrl}/v1/responses", content, ct);
         var responseBody = await response.Content.ReadAsStringAsync(ct);
 
         if (!response.IsSuccessStatusCode)
         {
+            await _log.LogAsync("OpenAI", "llm:call",
+                new { error = responseBody, status_code = (int)response.StatusCode },
+                model, $"error:{(int)response.StatusCode}");
             _logger.LogError("OpenAI error (HTTP {Status}): {Body}", (int)response.StatusCode,
                 responseBody.Length > 800 ? responseBody[..800] : responseBody);
             response.EnsureSuccessStatusCode();
@@ -68,6 +78,11 @@ public class OpenAiProvider : IAiProvider
             .GetProperty("text")
             .GetString()!;
 
-        return JsonDocument.Parse(text).RootElement;
+        var result = JsonDocument.Parse(text).RootElement;
+        await _log.LogAsync("OpenAI", "llm:call",
+            new { response = text },
+            model, "received:200");
+
+        return result;
     }
 }

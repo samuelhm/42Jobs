@@ -8,6 +8,7 @@ import { offersLoader } from './pages/dashboard/offers.loader';
 import { trackingLoader } from './pages/dashboard/tracking.loader';
 import { keywordsPageLoader } from './pages/dashboard/keywordsPage.loader';
 import { profileLoader } from './pages/profile/profile.loader';
+import { adminLogsLoader } from './pages/admin/admin.loaders';
 import { loginAction } from './pages/auth/login.action';
 import { registerAction } from './pages/auth/register.action';
 
@@ -33,7 +34,7 @@ const routes = createRoutesFromElements(
         <Route path="admin/templates" element={<Templates />} />
         <Route path="admin/job-providers" element={<JobProviders />} />
         <Route path="admin/dedup" element={<Dedup />} />
-        <Route path="admin/logs" element={<Logs />} />
+        <Route path="admin/logs" element={<Logs />} loader={adminLogsLoader} />
       </Route>
     </Route>
   </>

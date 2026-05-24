@@ -24,6 +24,7 @@ builder.Services.AddDataProtection()
     .SetApplicationName("42jobs");
 
 builder.Services.AddSingleton<EncryptionService>();
+builder.Services.AddSingleton<AdminLogService>();
 
 builder.Services.AddRateLimiter(options =>
 {

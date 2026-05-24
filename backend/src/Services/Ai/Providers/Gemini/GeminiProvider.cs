@@ -6,15 +6,17 @@ namespace src.Services.Ai.Providers.Gemini;
 public class GeminiProvider : IAiProvider
 {
     private readonly IHttpClientFactory _httpFactory;
+    private readonly AdminLogService _log;
     private readonly ILogger<GeminiProvider> _logger;
     private const string BaseUrl = "https://generativelanguage.googleapis.com";
 
     public static string ServiceName => "Google";
     string IAiProvider.ServiceName => ServiceName;
 
-    public GeminiProvider(IHttpClientFactory httpFactory, ILogger<GeminiProvider> logger)
+    public GeminiProvider(IHttpClientFactory httpFactory, AdminLogService log, ILogger<GeminiProvider> logger)
     {
         _httpFactory = httpFactory;
+        _log = log;
         _logger = logger;
     }
 
@@ -50,16 +52,25 @@ public class GeminiProvider : IAiProvider
         if (!string.IsNullOrEmpty(apiKey))
             url += $"?key={apiKey}";
 
+        await _log.LogAsync("Gemini", "llm:call",
+            new { system_prompt = systemPrompt, user_prompt = userPrompt, model },
+            model, "sent");
+
         var response = await http.PostAsync(url, content, ct);
 
-        if (!response.IsSuccessStatusCode)
+        var responseBody = string.Empty;
+        if (response.IsSuccessStatusCode)
+            responseBody = await response.Content.ReadAsStringAsync(ct);
+        else
         {
             var errorBody = await response.Content.ReadAsStringAsync(ct);
+            await _log.LogAsync("Gemini", "llm:call",
+                new { error = errorBody, status_code = (int)response.StatusCode },
+                model, $"error:{(int)response.StatusCode}");
             _logger.LogError("Gemini HTTP {Status}: {Error}", (int)response.StatusCode, errorBody);
             response.EnsureSuccessStatusCode();
         }
 
-        var responseBody = await response.Content.ReadAsStringAsync(ct);
         using var doc = JsonDocument.Parse(responseBody);
         var root = doc.RootElement;
 
@@ -70,6 +81,11 @@ public class GeminiProvider : IAiProvider
             .GetProperty("text")
             .GetString()!;
 
-        return JsonDocument.Parse(text).RootElement;
+        var result = JsonDocument.Parse(text).RootElement;
+        await _log.LogAsync("Gemini", "llm:call",
+            new { response = text },
+            model, "received:200");
+
+        return result;
     }
 }

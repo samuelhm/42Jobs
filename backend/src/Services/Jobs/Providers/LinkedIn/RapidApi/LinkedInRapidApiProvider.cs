@@ -1,4 +1,5 @@
 using System.Text.Json;
+using src.Services;
 using src.Services.Jobs.Providers;
 
 namespace src.Services.Jobs.Providers.LinkedIn.RapidApi;
@@ -6,6 +7,7 @@ namespace src.Services.Jobs.Providers.LinkedIn.RapidApi;
 public class LinkedInRapidApiProvider : IJobProvider
 {
     private readonly IHttpClientFactory _httpFactory;
+    private readonly AdminLogService _log;
     private readonly ILogger<LinkedInRapidApiProvider> _logger;
     private string? _baseUrlOverride;
     private string? _apiKeyOverride;
@@ -19,9 +21,10 @@ public class LinkedInRapidApiProvider : IJobProvider
     string? IJobProvider.ApiKey { set => _apiKeyOverride = value; }
     string? IJobProvider.Config { set => _configJson = value; }
 
-    public LinkedInRapidApiProvider(IHttpClientFactory httpFactory, ILogger<LinkedInRapidApiProvider> logger)
+    public LinkedInRapidApiProvider(IHttpClientFactory httpFactory, AdminLogService log, ILogger<LinkedInRapidApiProvider> logger)
     {
         _httpFactory = httpFactory;
+        _log = log;
         _logger = logger;
     }
 
@@ -78,7 +81,15 @@ public class LinkedInRapidApiProvider : IJobProvider
             $"{Uri.EscapeDataString(kv.Key)}={Uri.EscapeDataString(kv.Value)}"));
 
         var response = await http.GetAsync($"/search?{qs}", ct);
-        response.EnsureSuccessStatusCode();
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var err = await response.Content.ReadAsStringAsync(ct);
+            await _log.LogAsync("LinkedInRapidAPI", "search",
+                new { error = err, status_code = (int)response.StatusCode },
+                $"search?{qs}", $"error:{(int)response.StatusCode}");
+            response.EnsureSuccessStatusCode();
+        }
 
         var json = await response.Content.ReadAsStringAsync(ct);
         using var doc = JsonDocument.Parse(json);
@@ -111,14 +122,27 @@ public class LinkedInRapidApiProvider : IJobProvider
         _logger.LogDebug("LinkedIn RapidAPI search: start={Start}, count={Count}",
             request.Start, result.Jobs.Count);
 
+        await _log.LogAsync("LinkedInRapidAPI", "search",
+            new { keywords = request.Keywords, location = request.Location, count = result.Jobs.Count },
+            $"search?keywords={Uri.EscapeDataString(request.Keywords)}", $"received:200, {result.Jobs.Count} jobs");
+
         return result;
     }
 
     public async Task<JobDetailResult?> GetDetailsAsync(string externalId, CancellationToken ct)
     {
         using var http = CreateClient();
-        var response = await http.GetAsync($"/job/{Uri.EscapeDataString(externalId)}", ct);
-        response.EnsureSuccessStatusCode();
+        var url = $"/job/{Uri.EscapeDataString(externalId)}";
+        var response = await http.GetAsync(url, ct);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var err = await response.Content.ReadAsStringAsync(ct);
+            await _log.LogAsync("LinkedInRapidAPI", "getDetails",
+                new { error = err, status_code = (int)response.StatusCode },
+                url, $"error:{(int)response.StatusCode}");
+            response.EnsureSuccessStatusCode();
+        }
 
         var json = await response.Content.ReadAsStringAsync(ct);
         using var doc = JsonDocument.Parse(json);
@@ -128,6 +152,10 @@ public class LinkedInRapidApiProvider : IJobProvider
             && root.TryGetProperty("job", out var jobData))
         {
             var d = jobData;
+            await _log.LogAsync("LinkedInRapidAPI", "getDetails",
+                null,
+                $"/job/{Uri.EscapeDataString(externalId)}", "received:200");
+
             return new JobDetailResult
             {
                 Description = d.TryGetProperty("description", out var desc) ? desc.GetString() : null,
@@ -138,6 +166,10 @@ public class LinkedInRapidApiProvider : IJobProvider
                 Applicants = d.TryGetProperty("applicants", out var app) ? app.GetString() : null,
             };
         }
+
+        await _log.LogAsync("LinkedInRapidAPI", "getDetails",
+            null,
+            $"/job/{Uri.EscapeDataString(externalId)}", "received:200, no job data");
 
         return null;
     }
