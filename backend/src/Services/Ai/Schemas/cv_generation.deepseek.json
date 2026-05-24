@@ -2,68 +2,38 @@
   "type": "object",
   "required": [
     "error",
-    "skills",
+    "target_role",
+    "target_company",
+    "language",
     "profile",
+    "experiences",
     "projects",
-    "experiences"
+    "education",
+    "skills",
+    "languages",
+    "ats_keywords_used",
+    "missing_or_weak_keywords"
   ],
   "properties": {
     "error": {
       "type": "string",
       "description": "Empty string if successful. Error description if generation fails."
     },
-    "skills": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "required": [
-          "items",
-          "category"
-        ],
-        "properties": {
-          "items": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "category": {
-            "type": "string"
-          }
-        }
-      },
-      "description": "4 skill categories, at least 8 skills each. Most relevant for this job."
+    "target_role": {
+      "type": "string",
+      "description": "The target job title from the offer."
+    },
+    "target_company": {
+      "type": "string",
+      "description": "The company name from the offer."
+    },
+    "language": {
+      "type": "string",
+      "description": "The language used in the generated CV (same as the job offer)."
     },
     "profile": {
       "type": "string",
       "description": "3-4 line professional summary tailored to this specific job offer."
-    },
-    "projects": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "required": [
-          "name",
-          "highlights",
-          "description"
-        ],
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "highlights": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "description": "2-4 key technical achievements or features."
-          },
-          "description": {
-            "type": "string"
-          }
-        }
-      },
-      "description": "1 to 3 most relevant projects."
     },
     "experiences": {
       "type": "array",
@@ -71,34 +41,166 @@
         "type": "object",
         "required": [
           "company",
-          "end_date",
           "position",
-          "highlights",
-          "start_date"
+          "start_date",
+          "end_date",
+          "description",
+          "highlights"
         ],
         "properties": {
           "company": {
             "type": "string"
           },
-          "end_date": {
-            "type": "string"
-          },
           "position": {
             "type": "string"
           },
+          "start_date": {
+            "type": "string"
+          },
+          "end_date": {
+            "type": "string"
+          },
+          "location": {
+            "type": "string",
+            "description": "City or country where the position was held."
+          },
+          "description": {
+            "type": "string",
+            "description": "1-2 line summary of the role aligned with the target position."
+          },
           "highlights": {
             "type": "array",
-            "items": {
-              "type": "string"
-            },
+            "items": { "type": "string" },
             "description": "3-5 bullet points highlighting achievements relevant to this job."
           },
+          "matched_keywords": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Offer keywords matched by this experience."
+          }
+        }
+      },
+      "description": "1 to 4 most relevant experiences, descriptions enhanced for this job."
+    },
+    "projects": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "name",
+          "description",
+          "highlights",
+          "technologies"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "description": "Purpose and relevance of the project."
+          },
+          "highlights": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "2-4 key technical achievements or features."
+          },
+          "technologies": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Technologies, tools and methodologies used in the project."
+          },
+          "matched_keywords": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Offer keywords matched by this project."
+          }
+        }
+      },
+      "description": "1 to 3 most relevant projects."
+    },
+    "education": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "degree",
+          "institution",
+          "start_date",
+          "end_date"
+        ],
+        "properties": {
+          "degree": {
+            "type": "string"
+          },
+          "institution": {
+            "type": "string"
+          },
+          "location": {
+            "type": "string"
+          },
           "start_date": {
+            "type": "string"
+          },
+          "end_date": {
+            "type": "string"
+          },
+          "details": {
             "type": "string"
           }
         }
       },
-      "description": "1 to 3 most relevant experiences, descriptions enhanced for this job."
+      "description": "Relevant education entries from the candidate background."
+    },
+    "skills": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "category",
+          "items"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "category": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "3-5 skill categories, 5-10 skills each. Most relevant for this job."
+    },
+    "languages": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "language",
+          "level"
+        ],
+        "properties": {
+          "language": {
+            "type": "string"
+          },
+          "level": {
+            "type": "string",
+            "description": "Proficiency level: native, C2, C1, B2, B1, A2, A1, fluent, intermediate, basic."
+          }
+        }
+      },
+      "description": "Languages with proficiency levels from the candidate background."
+    },
+    "ats_keywords_used": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Most important offer keywords truthfully included in the generated CV."
+    },
+    "missing_or_weak_keywords": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Important job-offer requirements not clearly supported by the candidate background."
     }
   }
 }

@@ -25,6 +25,7 @@ INSERT INTO cv_templates (name, description, html_template, css, is_active) VALU
   .entry-header { font-size:.84rem;font-weight:600;color:#1a1a1a }
   .entry-dates { color:#7f8c8d;font-size:.76rem;margin-bottom:.1rem }
   .entry-desc { font-size:.8rem;color:#555;margin-bottom:.1rem;line-height:1.45 }
+  .entry-tech { font-size:.76rem;color:#7f8c8d;margin-bottom:.15rem }
   ul { padding-left:1.2rem;margin-top:.1rem }
   li { font-size:.77rem;color:#444;margin-bottom:.06rem;line-height:1.45 }
   .skill-group { margin-bottom:.22rem }

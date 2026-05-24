@@ -149,6 +149,11 @@ public partial class ResumesController
             var position = exp.TryGetProperty("position", out var pos) ? pos.GetString() ?? "" : "";
             var start = exp.TryGetProperty("start_date", out var sd) ? sd.GetString() ?? "" : "";
             var end = exp.TryGetProperty("end_date", out var ed) ? ed.GetString() ?? "" : "";
+            var description = exp.TryGetProperty("description", out var desc) ? desc.GetString() ?? "" : "";
+
+            var descHtml = !string.IsNullOrEmpty(description)
+                ? $"<div class=\"entry-desc\">{description}</div>"
+                : "";
 
             var highlights = "";
             if (exp.TryGetProperty("highlights", out var hl))
@@ -160,6 +165,7 @@ public partial class ResumesController
             parts.Add($@"<div class=""entry"">
   <div class=""entry-header"">{position} — {company}</div>
   <div class=""entry-dates"">{start} — {end}</div>
+  {descHtml}
   {highlights}
 </div>");
         }
@@ -179,6 +185,16 @@ public partial class ResumesController
             var proj = projects[i];
             var name = proj.TryGetProperty("name", out var n) ? n.GetString() ?? "" : "";
             var desc = proj.TryGetProperty("description", out var d) ? d.GetString() ?? "" : "";
+
+            var techs = "";
+            if (proj.TryGetProperty("technologies", out var techArr))
+            {
+                var techList = techArr.EnumerateArray().Select(t => t.GetString()).Where(t => !string.IsNullOrEmpty(t));
+                var joined = string.Join(", ", techList);
+                if (!string.IsNullOrEmpty(joined))
+                    techs = $"<div class=\"entry-tech\">{joined}</div>";
+            }
+
             var year = i < currentYearCount ? currentYear : currentYear - 1;
 
             var highlights = "";
@@ -192,6 +208,7 @@ public partial class ResumesController
   <div class=""entry-header"">{name}</div>
   <div class=""entry-dates"">{year} — Present</div>
   <div class=""entry-desc"">{desc}</div>
+  {techs}
   {highlights}
 </div>");
         }
