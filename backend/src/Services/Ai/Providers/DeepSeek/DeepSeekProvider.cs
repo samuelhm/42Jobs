@@ -69,7 +69,7 @@ public class DeepSeekProvider : IAiProvider
         var content = new StringContent(Encoding.UTF8.GetString(bodyStream.ToArray()), Encoding.UTF8, "application/json");
 
         await _log.LogAsync("DeepSeek", functionality,
-            new { system_prompt = systemPrompt, user_prompt = userPrompt, schema = schemaJson, model, use_thinking = useThinking },
+            new { system_prompt = systemPrompt, user_prompt = userPrompt, schema, model, use_thinking = useThinking },
             model, "sent");
 
         var response = await http.PostAsync($"{BaseUrl}/chat/completions", content, ct);
