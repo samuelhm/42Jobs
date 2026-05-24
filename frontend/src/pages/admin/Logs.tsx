@@ -26,14 +26,6 @@ function statusClass(payload3: string | null): string {
   return '';
 }
 
-function statusLabel(payload3: string | null): string {
-  if (!payload3) return '';
-  if (payload3.startsWith('sent')) return 'sent';
-  if (payload3.startsWith('received')) return 'received';
-  if (payload3.startsWith('error')) return 'error';
-  return '';
-}
-
 function formatJson(raw: string | null): string {
   if (!raw) return '';
   try {
@@ -103,7 +95,7 @@ export default function AdminLogs() {
               <th>Action</th>
               <th>Payload 1</th>
               <th>Payload 2</th>
-              <th>Status</th>
+              <th>Payload 3</th>
             </tr>
           </thead>
           <tbody>
@@ -125,14 +117,7 @@ export default function AdminLogs() {
                   )}
                 </td>
                 <td className="log-payload2">{log.payload2 || '—'}</td>
-                <td>
-                  <span className={`log-status-badge ${statusClass(log.payload3)}`}>
-                    {statusLabel(log.payload3)}
-                    {log.payload3 && !log.payload3.startsWith('sent') && !log.payload3.startsWith('received') && !log.payload3.startsWith('error')
-                      ? log.payload3
-                      : ''}
-                  </span>
-                </td>
+                <td className={`log-payload3 ${statusClass(log.payload3)}`}>{log.payload3 || '—'}</td>
               </tr>
             ))}
             {logs.length === 0 && (

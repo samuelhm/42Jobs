@@ -162,13 +162,12 @@ tr.log-sent { border-left: 3px solid var(--info, #4a9eff); }
 tr.log-received { border-left: 3px solid var(--success, #4ecf7d); }
 tr.log-error { border-left: 3px solid var(--danger, #e05252); }
 
-.log-status-badge {
-  font-size: 0.65rem; font-weight: 600; padding: 0.15rem 0.45rem; border-radius: 3px;
-  text-transform: uppercase; white-space: nowrap;
+.log-payload3 {
+  font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; white-space: nowrap;
 }
-.log-status-badge.log-sent { background: rgba(74,158,255,0.12); color: var(--info, #4a9eff); }
-.log-status-badge.log-received { background: rgba(78,207,125,0.12); color: var(--success, #4ecf7d); }
-.log-status-badge.log-error { background: rgba(224,82,82,0.12); color: var(--danger, #e05252); }
+.log-payload3.log-sent { color: var(--info, #4a9eff); }
+.log-payload3.log-received { color: var(--success, #4ecf7d); }
+.log-payload3.log-error { color: var(--danger, #e05252); }
 
 .log-modal { max-width: 700px; width: 90%; }
 .log-modal h3 { margin-bottom: 0.75rem; }
