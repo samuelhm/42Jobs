@@ -279,3 +279,43 @@
 .cv-btn { border-color: rgba(180,150,100,0.15); }
 .cv-btn:hover { border-color: #c9a84c; color: #c9a84c; background: rgba(180,150,100,0.1); }
 .cv-btn:disabled { opacity: 0.4; cursor: wait; }
+
+/* ── Tracking ── */
+.tracking-status-select {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  padding: 0.2rem 0.4rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  max-width: 110px;
+}
+.tracking-status-select:hover { border-color: var(--amber-dim); }
+
+.status-dot {
+  font-size: 0.62rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 3px;
+  font-family: 'JetBrains Mono', monospace;
+}
+.status-dot.saved { background: rgba(74,158,255,0.1); color: var(--info, #4a9eff); border: 1px solid rgba(74,158,255,0.2); }
+.status-dot.cv_sent { background: rgba(77,184,160,0.1); color: var(--teal); border: 1px solid rgba(77,184,160,0.2); }
+.status-dot.interview { background: rgba(212,168,83,0.1); color: var(--amber); border: 1px solid rgba(212,168,83,0.2); }
+.status-dot.hired { background: rgba(78,207,125,0.1); color: var(--success, #4ecf7d); border: 1px solid rgba(78,207,125,0.2); }
+.status-dot.rejected { background: rgba(224,82,82,0.1); color: var(--danger, #e05252); border: 1px solid rgba(224,82,82,0.2); }
+
+.track-btn {
+  font-size: 0.65rem;
+  padding: 0.15rem 0.45rem;
+  border: 1px solid var(--teal-dim);
+  border-radius: var(--radius);
+  background: rgba(77,184,160,0.06);
+  color: var(--teal);
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.15s;
+}
+.track-btn:hover { background: rgba(77,184,160,0.15); border-color: var(--teal); }
+.track-btn.tracked { background: rgba(77,184,160,0.1); color: var(--teal-dim); }

@@ -81,6 +81,16 @@ function OffersContent() {
     setEditingTitle(null);
   }
 
+  async function handleTrack(job: Job) {
+    await fetchWithAuth(`/api/tracking/${job.id}/status`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'saved' }),
+    });
+    setJobs((prev) => prev.filter((j) => j.id !== job.id));
+    toast(`track-${job.id}`, 'Added to tracking', 'success');
+  }
+
   if (!categoryId) {
     return (
       <div className="empty-state">
@@ -147,7 +157,7 @@ function OffersContent() {
 
                 <div className="card-controls">
                   <span className={`match-badge ${matchClass}`}>{pct}%</span>
-                  <JobCardButtons job={job} onCvClick={setCvJob} onNotesClick={setNotesJob} onDelete={handleDelete} onRefresh={handleRefresh} />
+                  <JobCardButtons job={job} onCvClick={setCvJob} onNotesClick={setNotesJob} onDelete={handleDelete} onRefresh={handleRefresh} onTrack={handleTrack} />
                 </div>
 
                 <JobAccordion job={job} userKeywords={userKeywords} onStatusChange={handleKwStatusChange} />
@@ -180,15 +190,19 @@ function OffersContent() {
   );
 }
 
-function JobCardButtons({ job, onCvClick, onNotesClick, onDelete, onRefresh }: {
+function JobCardButtons({ job, onCvClick, onNotesClick, onDelete, onRefresh, onTrack }: {
   job: Job;
   onCvClick: (j: Job) => void;
   onNotesClick: (j: Job) => void;
   onDelete: (j: Job) => void;
   onRefresh: (j: Job) => void;
+  onTrack: (j: Job) => void;
 }) {
   return (
     <>
+      <button className="track-btn" onClick={e => { e.stopPropagation(); onTrack(job); }} title="Track this job">
+        +
+      </button>
       <button className="notes-btn cv-btn" title="Generate CV" onClick={(e) => { e.stopPropagation(); onCvClick(job); }}>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="12" height="12">
           <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" />

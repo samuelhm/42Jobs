@@ -1,13 +1,28 @@
 import { useState } from 'react';
 import { useLoaderData } from 'react-router';
 import { CategoriesBar, KeywordsChart } from '../../components';
-import { formatDescription, getMatchPct, getMatchClass, isRecent } from '../../utils';
+import { fetchWithAuth, formatDescription, getMatchPct, getMatchClass, isRecent } from '../../utils';
+import { useToast } from '../../context';
 import type { DashboardData } from './dashboard.types';
 
 export default function Dashboard() {
   const { userKeywords, jobs, categoryId } = useLoaderData() as DashboardData;
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [highlightKw, setHighlightKw] = useState<string | null>(null);
+  const { toast } = useToast();
+
+  async function handleTrack(jobId: number) {
+    try {
+      await fetchWithAuth(`/api/tracking/${jobId}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'saved' }),
+      });
+      toast(`track-${jobId}`, 'Added to tracking', 'success');
+    } catch {
+      toast(`track-${jobId}`, 'Failed', 'error');
+    }
+  }
 
   if (!categoryId) {
     return (
@@ -51,6 +66,7 @@ export default function Dashboard() {
                   </div>
                   <div className="card-controls">
                     <span className={`match-badge ${matchClass}`}>{pct}%</span>
+                    <button className="track-btn" onClick={e => { e.stopPropagation(); handleTrack(job.id); }} title="Track this job">+</button>
                   </div>
                   <div className="oferta-accordion">
                     <div className="accordion-grid">

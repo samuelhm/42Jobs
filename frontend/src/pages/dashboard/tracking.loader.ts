@@ -1,7 +1,8 @@
 import { fetchWithAuth } from '../../utils/fetchWithAuth';
+import type { TrackingJob } from './tracking.types';
 
 export interface TrackingData {
-  jobs: Array<{ id: number; title: string; company_name: string; job_url: string }>;
+  jobs: TrackingJob[];
 }
 
 export async function trackingLoader(): Promise<TrackingData> {
