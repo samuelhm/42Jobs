@@ -28,18 +28,22 @@ public class GeminiProvider : IAiProvider
         if (string.IsNullOrWhiteSpace(apiKey))
             throw new InvalidOperationException("Gemini API key not configured. Set it in Admin > AI Services.");
 
+        var generationConfig = new Dictionary<string, object>
+        {
+            ["response_mime_type"] = "application/json",
+            ["response_schema"] = schema,
+            ["temperature"] = 0.1
+        };
+        if (useThinking)
+            generationConfig["thinkingConfig"] = new { thinkingLevel = "HIGH" };
+
         var requestBody = new
         {
             contents = new[]
             {
                 new { parts = new[] { new { text = combinedPrompt } } }
             },
-            generationConfig = new
-            {
-                response_mime_type = "application/json",
-                response_schema = schema,
-                temperature = 0.1
-            }
+            generationConfig
         };
 
         var json = JsonSerializer.Serialize(requestBody);
@@ -53,7 +57,7 @@ public class GeminiProvider : IAiProvider
             url += $"?key={apiKey}";
 
         await _log.LogAsync("Gemini", "llm:call",
-            new { system_prompt = systemPrompt, user_prompt = userPrompt, model },
+            new { system_prompt = systemPrompt, user_prompt = userPrompt, model, use_thinking = useThinking },
             model, "sent");
 
         var response = await http.PostAsync(url, content, ct);

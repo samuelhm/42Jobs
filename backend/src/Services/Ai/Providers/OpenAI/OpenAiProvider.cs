@@ -47,13 +47,19 @@ public class OpenAiProvider : IAiProvider
             schema.WriteTo(writer);
             writer.WriteEndObject();
             writer.WriteEndObject();
+            if (useThinking)
+            {
+                writer.WriteStartObject("reasoning");
+                writer.WriteString("effort", "high");
+                writer.WriteEndObject();
+            }
             writer.WriteEndObject();
         }
 
         var content = new StringContent(Encoding.UTF8.GetString(bodyStream.ToArray()), Encoding.UTF8, "application/json");
 
         await _log.LogAsync("OpenAI", "llm:call",
-            new { system_prompt = systemPrompt, user_prompt = userPrompt, model },
+            new { system_prompt = systemPrompt, user_prompt = userPrompt, model, use_thinking = useThinking },
             model, "sent");
 
         var response = await http.PostAsync($"{BaseUrl}/v1/responses", content, ct);
