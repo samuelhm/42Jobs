@@ -257,3 +257,14 @@ tr.log-clickable:hover { background: var(--surface-hover); }
   color: var(--text); white-space: pre-wrap; word-break: break-all;
   max-height: 60vh; overflow: auto;
 }
+
+/* ── Utils ── */
+.util-list { display: flex; flex-direction: column; gap: 0.3rem; }
+.util-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 0.5rem 0.75rem; border-radius: var(--radius);
+  background: var(--bg); border: 1px solid var(--border);
+}
+.util-row:hover { border-color: var(--border-active); }
+.util-name { font-size: 0.82rem; color: var(--text); font-weight: 500; }
+.util-meta { font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; color: var(--text-dim); margin-left: 0.75rem; }

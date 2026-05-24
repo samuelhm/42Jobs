@@ -7,7 +7,7 @@ const adminNav = [
   { to: '/admin/ai-prompts', label: 'Prompts' },
   { to: '/admin/templates', label: 'CV Templates' },
   { to: '/admin/job-providers', label: 'Job Providers' },
-  { to: '/admin/dedup', label: 'Dedup Keywords' },
+  { to: '/admin/utils', label: 'Utils' },
   { to: '/admin/logs', label: 'Logs' },
 ];
 

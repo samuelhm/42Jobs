@@ -1,7 +1,7 @@
 import { createBrowserRouter, createRoutesFromElements, Route, useRouteError } from 'react-router';
 import { RequireAuth, RequireAdmin, AuthLayout, AdminLayout } from './components';
 import { Login, Register, Dashboard, OffersRoute, Profile, Tracking, KeywordsPage } from './pages';
-import { AdminDashboard, AiServices, AiModels, AiPrompts, Templates, JobProviders, Dedup, Logs } from './pages/admin';
+import { AdminDashboard, AiServices, AiModels, AiPrompts, Templates, JobProviders, Utils, Logs } from './pages/admin';
 
 import { dashboardLoader } from './pages/dashboard/dashboard.loader';
 import { offersLoader } from './pages/dashboard/offers.loader';
@@ -46,7 +46,7 @@ const routes = createRoutesFromElements(
           <Route path="admin/ai-prompts" element={<AiPrompts />} />
           <Route path="admin/templates" element={<Templates />} />
           <Route path="admin/job-providers" element={<JobProviders />} />
-          <Route path="admin/dedup" element={<Dedup />} />
+          <Route path="admin/utils" element={<Utils />} />
           <Route path="admin/logs" element={<Logs />} loader={adminLogsLoader} />
         </Route>
       </Route>
