@@ -35,12 +35,6 @@ public partial class CategoriesController
             _logger.LogInformation("User {UserId} auto-followed category {CategoryId}", userId, id);
         }
 
-        if (category.LastFetchedAt is not null
-            && DateTime.UtcNow - category.LastFetchedAt.Value < TimeSpan.FromHours(24))
-        {
-            return Ok(new { status = "fresh", message = "Category already fetched within the last 24 hours" });
-        }
-
         var existingJobId = _fetchService.Enqueue(id, category.Name, body);
 
         if (existingJobId is null)

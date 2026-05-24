@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Text.Json;
 using src.Services;
 using src.Services.Jobs.Providers;
@@ -13,6 +14,11 @@ public class LinkedInRapidApiProvider : IJobProvider
     private string? _apiKeyOverride;
     private string? _configJson;
 
+    private static readonly TimeSpan RateWindow = TimeSpan.FromMinutes(1);
+    private static readonly int MaxRequestsPerWindow = 50;
+    private readonly ConcurrentQueue<DateTime> _requestTimestamps = new();
+    private readonly Lock _rateLock = new();
+
     public static string Portal => "LinkedIn";
     public static string ProviderNameValue => "RapidAPI";
     string IJobProvider.Portal => Portal;
@@ -26,6 +32,42 @@ public class LinkedInRapidApiProvider : IJobProvider
         _httpFactory = httpFactory;
         _log = log;
         _logger = logger;
+    }
+
+    private async Task WaitForRateLimitAsync(CancellationToken ct)
+    {
+        while (true)
+        {
+            ct.ThrowIfCancellationRequested();
+
+            lock (_rateLock)
+            {
+                var now = DateTime.UtcNow;
+                var cutoff = now - RateWindow;
+
+                while (_requestTimestamps.TryPeek(out var ts) && ts < cutoff)
+                    _requestTimestamps.TryDequeue(out _);
+
+                if (_requestTimestamps.Count < MaxRequestsPerWindow)
+                {
+                    _requestTimestamps.Enqueue(now);
+                    return;
+                }
+
+                var oldest = _requestTimestamps.TryPeek(out var first) ? first : now;
+                var waitMs = (int)(oldest + RateWindow - now).TotalMilliseconds;
+                if (waitMs <= 0)
+                {
+                    while (_requestTimestamps.TryPeek(out var ts2) && ts2 < cutoff)
+                        _requestTimestamps.TryDequeue(out _);
+                    _requestTimestamps.Enqueue(now);
+                    return;
+                }
+
+                var delayMs = Math.Min(waitMs + 50, (int)RateWindow.TotalMilliseconds);
+                Task.Delay(delayMs, ct).GetAwaiter().GetResult();
+            }
+        }
     }
 
     private HttpClient CreateClient()
@@ -47,6 +89,7 @@ public class LinkedInRapidApiProvider : IJobProvider
 
     public async Task<JobSearchResult> SearchAsync(JobSearchRequest request, CancellationToken ct)
     {
+        await WaitForRateLimitAsync(ct);
         using var http = CreateClient();
         var queryParams = new Dictionary<string, string>
         {
@@ -141,6 +184,7 @@ public class LinkedInRapidApiProvider : IJobProvider
 
     public async Task<JobDetailResult?> GetDetailsAsync(string externalId, CancellationToken ct)
     {
+        await WaitForRateLimitAsync(ct);
         using var http = CreateClient();
         var url = $"/job/{Uri.EscapeDataString(externalId)}";
 
