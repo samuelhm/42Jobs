@@ -127,15 +127,16 @@ Las releases usan **versionado semántico** con tags `v{major}.{minor}.{patch}-a
 Para crear una nueva release:
 
 ```bash
-# 1. Asegurarse de que todos los cambios están commiteados y pusheados a master
+# Automático: detecta el último tag, incrementa el patch y hace push
+make release
+
+# O manualmente:
 git push origin master
-
-# 2. Crear el tag con la siguiente versión
 git tag v0.1.4-alpha
-
-# 3. Pushear el tag — esto dispara el pipeline de deploy
 git push origin v0.1.4-alpha
 ```
+
+El script `scripts/release.sh` se encarga de detectar el último tag `v*`, parsearlo (`vX.Y.Z-alpha`) e incrementar en +1 el patch automáticamente.
 
 ### Qué sucede al pushear un tag
 

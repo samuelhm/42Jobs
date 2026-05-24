@@ -7,7 +7,7 @@ COMPOSE_PROD := docker compose -f docker-compose.yml -f docker-compose.prod.yml
 .PHONY: help \
         dev-up dev-down dev-build dev-restart dev-logs dev-ps dev-shell \
         prod-up prod-down prod-build prod-restart prod-logs prod-ps \
-        switch-prod switch-dev install clean logs-clean users
+        switch-prod switch-dev install clean logs-clean users release
 
 # ─── Default ───────────────────────────────────────────────
 help:
@@ -39,6 +39,7 @@ help:
 	@echo "    make clean          Down + eliminar volúmenes"
 	@echo "    make logs-clean     Truncar tabla admin_logs"
 	@echo "    make users          Contar usuarios registrados"
+	@echo "    make release        Crear nuevo tag y disparar deploy"
 
 # ═══════════════════════════════════════════════════════════
 #  DESARROLLO
@@ -116,3 +117,6 @@ logs-clean:
 
 users:
 	@docker exec -i 42jobs-db psql -U 42jobs -d 42jobs -c "SELECT COUNT(*) AS total_users FROM users;"
+
+release:
+	@bash scripts/release.sh
