@@ -87,9 +87,44 @@ public class LinkedInRapidApiProvider : IJobProvider
         return client;
     }
 
+    private async Task<HttpResponseMessage> GetWithRetryAsync(HttpClient http, string relativeUrl, string action, object? logData, string logInfo, CancellationToken ct)
+    {
+        while (true)
+        {
+            ct.ThrowIfCancellationRequested();
+            await WaitForRateLimitAsync(ct);
+
+            await _log.LogAsync("LinkedInRapidAPI", action, logData, logInfo, "sent");
+
+            var response = await http.GetAsync(relativeUrl, ct);
+
+            if (response.IsSuccessStatusCode)
+                return response;
+
+            var err = await response.Content.ReadAsStringAsync(ct);
+
+            if ((int)response.StatusCode == 429)
+            {
+                var retryAfter = response.Headers.RetryAfter?.Delta ?? TimeSpan.FromSeconds(5);
+                response.Dispose();
+                _logger.LogWarning("LinkedIn RapidAPI rate limited (429). Retrying after {DelayMs}ms...", retryAfter.TotalMilliseconds);
+                await _log.LogAsync("LinkedInRapidAPI", action,
+                    new { error = "429 rate limited", retry_after = retryAfter.ToString() },
+                    logInfo, "error:429, retrying");
+                await Task.Delay(retryAfter, ct);
+                continue;
+            }
+
+            await _log.LogAsync("LinkedInRapidAPI", action,
+                new { error = err, status_code = (int)response.StatusCode },
+                logInfo, $"error:{(int)response.StatusCode}");
+            response.EnsureSuccessStatusCode();
+            return response;
+        }
+    }
+
     public async Task<JobSearchResult> SearchAsync(JobSearchRequest request, CancellationToken ct)
     {
-        await WaitForRateLimitAsync(ct);
         using var http = CreateClient();
         var queryParams = new Dictionary<string, string>
         {
@@ -129,20 +164,9 @@ public class LinkedInRapidApiProvider : IJobProvider
         if (!string.IsNullOrEmpty(request.DatePosted))
             searchInfo += $"&datePosted={Uri.EscapeDataString(request.DatePosted)}";
 
-        await _log.LogAsync("LinkedInRapidAPI", "search",
+        var response = await GetWithRetryAsync(http, $"/search?{qs}", "search",
             new { keywords = request.Keywords, location = request.Location, limit = request.Limit, start = request.Start },
-            searchInfo, "sent");
-
-        var response = await http.GetAsync($"/search?{qs}", ct);
-
-        if (!response.IsSuccessStatusCode)
-        {
-            var err = await response.Content.ReadAsStringAsync(ct);
-            await _log.LogAsync("LinkedInRapidAPI", "search",
-                new { error = err, status_code = (int)response.StatusCode },
-                $"search?{qs}", $"error:{(int)response.StatusCode}");
-            response.EnsureSuccessStatusCode();
-        }
+            searchInfo, ct);
 
         var json = await response.Content.ReadAsStringAsync(ct);
         using var doc = JsonDocument.Parse(json);
@@ -184,24 +208,12 @@ public class LinkedInRapidApiProvider : IJobProvider
 
     public async Task<JobDetailResult?> GetDetailsAsync(string externalId, CancellationToken ct)
     {
-        await WaitForRateLimitAsync(ct);
         using var http = CreateClient();
         var url = $"/job/{Uri.EscapeDataString(externalId)}";
 
-        await _log.LogAsync("LinkedInRapidAPI", "getDetails",
+        var response = await GetWithRetryAsync(http, url, "getDetails",
             new { external_id = externalId },
-            url, "sent");
-
-        var response = await http.GetAsync(url, ct);
-
-        if (!response.IsSuccessStatusCode)
-        {
-            var err = await response.Content.ReadAsStringAsync(ct);
-            await _log.LogAsync("LinkedInRapidAPI", "getDetails",
-                new { error = err, status_code = (int)response.StatusCode },
-                url, $"error:{(int)response.StatusCode}");
-            response.EnsureSuccessStatusCode();
-        }
+            url, ct);
 
         var json = await response.Content.ReadAsStringAsync(ct);
         using var doc = JsonDocument.Parse(json);
