@@ -17,7 +17,8 @@ public partial class CategoriesController
 
         var jobs = await _db.Jobs
             .Where(j => j.Categories.Any(c => c.Id == id)
-                && !j.Resumes.Any(r => r.UserId == userId))
+                && !j.Resumes.Any(r => r.UserId == userId)
+                && !j.UserJobs.Any(uj => uj.UserId == userId))
             .Include(j => j.Company)
             .Include(j => j.Keywords)
             .OrderByDescending(j => j.PostedDate)
