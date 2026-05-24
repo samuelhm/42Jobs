@@ -24,12 +24,34 @@ function ErrorPage() {
   );
 }
 
+function HydrateFallback() {
+  return (
+    <div style={{
+      minHeight: '100vh',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      background: 'var(--bg)',
+    }}>
+      <h1 style={{
+        fontFamily: "'Outfit', sans-serif",
+        fontWeight: 800,
+        fontSize: '1.8rem',
+        color: 'var(--text-bright)',
+        animation: 'ledPulse 2s ease-in-out infinite',
+      }}>
+        42<span style={{ color: 'var(--amber)' }}>jobs</span>
+      </h1>
+    </div>
+  );
+}
+
 const routes = createRoutesFromElements(
   <>
     <Route path="/login" element={<Login />} />
     <Route path="/register" element={<Register />} />
 
-    <Route element={<RequireAuth />} errorElement={<ErrorPage />}>
+    <Route element={<RequireAuth />} errorElement={<ErrorPage />} hydrateFallbackElement={<HydrateFallback />}>
       <Route element={<AuthLayout />} errorElement={<ErrorPage />}>
         <Route index element={<Dashboard />} loader={dashboardLoader} />
         <Route path="offers" element={<OffersRoute />} loader={offersLoader} />

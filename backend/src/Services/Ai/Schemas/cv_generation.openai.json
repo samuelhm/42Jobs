@@ -44,8 +44,10 @@
           "position",
           "start_date",
           "end_date",
+          "location",
           "description",
-          "highlights"
+          "highlights",
+          "matched_keywords"
         ],
         "properties": {
           "company": {
@@ -91,7 +93,8 @@
           "name",
           "description",
           "highlights",
-          "technologies"
+          "technologies",
+          "matched_keywords"
         ],
         "properties": {
           "name": {
@@ -128,8 +131,10 @@
         "required": [
           "degree",
           "institution",
+          "location",
           "start_date",
-          "end_date"
+          "end_date",
+          "details"
         ],
         "properties": {
           "degree": {
