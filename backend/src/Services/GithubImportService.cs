@@ -118,83 +118,91 @@ public class GithubImportService : BackgroundService
                 return;
             }
 
-            status.Message = $"Analyzing {projectTexts.Count} projects with AI...";
+            const int batchSize = 5;
+            var totalBatches = (int)Math.Ceiling(projectTexts.Count / (double)batchSize);
+            status.Inserted = 0;
 
-            List<GithubProjectResult> projects;
-            string error;
-            using (var aiScope = _scopeFactory.CreateScope())
+            for (var batch = 0; batch < totalBatches; batch++)
             {
-                var ai = aiScope.ServiceProvider.GetRequiredService<IAiService>();
-                var allText = string.Join("\n\n---\n\n", projectTexts.Select((t, i) => $"PROJECT {i}: {t.name}\n{t.text}"));
-                (projects, error) = await ai.AnalyzeGithubProjectsAsync(allText, ct);
-            }
+                ct.ThrowIfCancellationRequested();
 
-            if (!string.IsNullOrEmpty(error))
-            {
-                status.Status = "failed";
-                status.Error = error;
-                return;
-            }
+                var batchItems = projectTexts.Skip(batch * batchSize).Take(batchSize).ToList();
+                status.Message = $"Analyzing batch {batch + 1}/{totalBatches} ({batchItems.Count} projects) with AI...";
 
-            status.Message = "Saving projects...";
-            int inserted = 0;
-
-            using (var saveScope = _scopeFactory.CreateScope())
-            {
-                var db = saveScope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-                foreach (var proj in projects)
+                List<GithubProjectResult> batchProjects;
+                string error;
+                using (var aiScope = _scopeFactory.CreateScope())
                 {
-                    ct.ThrowIfCancellationRequested();
+                    var ai = aiScope.ServiceProvider.GetRequiredService<IAiService>();
+                    var batchText = string.Join("\n\n---\n\n", batchItems.Select((t, i) => $"PROJECT {i}: {t.name}\n{t.text}"));
+                    (batchProjects, error) = await ai.AnalyzeGithubProjectsAsync(batchText, ct);
+                }
 
-                    if (string.IsNullOrWhiteSpace(proj.Name)) continue;
+                if (!string.IsNullOrEmpty(error))
+                {
+                    status.Status = "failed";
+                    status.Error = $"Batch {batch + 1}/{totalBatches}: {error}";
+                    return;
+                }
 
-                    var project = new Project
+                status.Message = $"Saving batch {batch + 1}/{totalBatches}...";
+
+                using (var saveScope = _scopeFactory.CreateScope())
+                {
+                    var db = saveScope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+                    foreach (var proj in batchProjects)
                     {
-                        UserId = userId,
-                        Name = proj.Name,
-                        Description = proj.Description,
-                        Type = proj.Type == "school" ? "school" : "personal"
-                    };
-                    db.Projects.Add(project);
+                        ct.ThrowIfCancellationRequested();
 
-                    try
-                    {
-                        await db.SaveChangesAsync(ct);
-                    }
-                    catch (DbUpdateException)
-                    {
-                        db.ChangeTracker.Clear();
-                        continue;
-                    }
+                        if (string.IsNullOrWhiteSpace(proj.Name)) continue;
 
-                    foreach (var kwName in proj.Keywords)
-                    {
-                        var name = kwName.Trim().ToLowerInvariant();
-                        if (string.IsNullOrEmpty(name)) continue;
-
-                        var kw = await db.Keywords.FirstOrDefaultAsync(k => k.Name == name, ct);
-                        if (kw is null)
+                        var project = new Project
                         {
-                            kw = new Keyword { Name = name };
-                            db.Keywords.Add(kw);
+                            UserId = userId,
+                            Name = proj.Name,
+                            Description = proj.Description,
+                            Type = proj.Type == "school" ? "school" : "personal"
+                        };
+                        db.Projects.Add(project);
+
+                        try
+                        {
                             await db.SaveChangesAsync(ct);
                         }
+                        catch (DbUpdateException)
+                        {
+                            db.ChangeTracker.Clear();
+                            continue;
+                        }
 
-                        await db.Database.ExecuteSqlRawAsync(
-                            "INSERT INTO project_keywords (project_id, keyword_id) VALUES ({0}, {1}) ON CONFLICT DO NOTHING",
-                            ct, project.Id, kw.Id);
+                        foreach (var kwName in proj.Keywords)
+                        {
+                            var name = kwName.Trim().ToLowerInvariant();
+                            if (string.IsNullOrEmpty(name)) continue;
+
+                            var kw = await db.Keywords.FirstOrDefaultAsync(k => k.Name == name, ct);
+                            if (kw is null)
+                            {
+                                kw = new Keyword { Name = name };
+                                db.Keywords.Add(kw);
+                                await db.SaveChangesAsync(ct);
+                            }
+
+                            await db.Database.ExecuteSqlRawAsync(
+                                "INSERT INTO project_keywords (project_id, keyword_id) VALUES ({0}, {1}) ON CONFLICT DO NOTHING",
+                                ct, project.Id, kw.Id);
+                        }
+
+                        status.Inserted++;
                     }
-
-                    inserted++;
                 }
             }
 
             status.Status = "completed";
-            status.Inserted = inserted;
-            status.Message = $"{inserted} projects imported";
+            status.Message = $"{status.Inserted} projects imported";
 
-            _logger.LogInformation("GitHub import {JobId}: {Inserted} projects from {Username}", jobId, inserted, username);
+            _logger.LogInformation("GitHub import {JobId}: {Inserted} projects from {Username}", jobId, status.Inserted, username);
         }
         catch (OperationCanceledException)
         {
