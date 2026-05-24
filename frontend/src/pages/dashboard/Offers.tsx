@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useLoaderData } from 'react-router';
+import { useLoaderData, useSearchParams } from 'react-router';
 import { CategoriesBar, NotesModal, KeywordTag, CvModal } from '../../components';
 import { formatDescription, getMatchPct, getMatchClass, isRecent } from '../../utils';
 import { useToast } from '../../context';
@@ -243,4 +243,9 @@ function JobAccordion({ job, userKeywords, onStatusChange }: {
       </div>
     </div>
   );
+}
+
+export function OffersRoute() {
+  const [searchParams] = useSearchParams();
+  return <Offers key={searchParams.toString()} />;
 }
