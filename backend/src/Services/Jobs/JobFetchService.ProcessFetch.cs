@@ -111,7 +111,7 @@ public partial class JobFetchService
             if (_providers.TryGetValue(key, out var provider))
             {
                 provider.BaseUrl = config.BaseUrl;
-                provider.ApiKey = config.ApiKey;
+                provider.ApiKey = _encryption.Decrypt(config.ApiKey);
                 provider.Config = config.Config;
                 result.Add(provider);
             }

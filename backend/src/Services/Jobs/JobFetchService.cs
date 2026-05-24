@@ -3,6 +3,7 @@ using System.Threading.Channels;
 using Microsoft.EntityFrameworkCore;
 using src.Data;
 using src.Models.DTOs;
+using src.Services;
 using src.Services.Jobs.Providers;
 
 namespace src.Services.Jobs;
@@ -14,6 +15,7 @@ public partial class JobFetchService : BackgroundService, IJobFetchService
     private readonly ConcurrentDictionary<int, Guid> _categoryInProgress = new();
     private readonly Dictionary<string, IJobProvider> _providers;
     private readonly IServiceScopeFactory _scopeFactory;
+    private readonly EncryptionService _encryption;
     private readonly ILogger<JobFetchService> _logger;
 
     private static readonly Dictionary<string, string> CompanyTypeMap = new()
@@ -24,10 +26,11 @@ public partial class JobFetchService : BackgroundService, IJobFetchService
         ["Consultancy"] = "Consultora",
     };
 
-    public JobFetchService(IEnumerable<IJobProvider> providers, IServiceScopeFactory scopeFactory, ILogger<JobFetchService> logger)
+    public JobFetchService(IEnumerable<IJobProvider> providers, IServiceScopeFactory scopeFactory, EncryptionService encryption, ILogger<JobFetchService> logger)
     {
         _providers = providers.ToDictionary(p => $"{p.Portal}:{p.ProviderName}");
         _scopeFactory = scopeFactory;
+        _encryption = encryption;
         _logger = logger;
     }
 

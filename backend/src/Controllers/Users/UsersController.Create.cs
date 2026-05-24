@@ -1,4 +1,6 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using src.Models;
 using src.Models.DTOs;
@@ -8,6 +10,8 @@ namespace src.Controllers;
 public partial class UsersController
 {
     [HttpPost]
+    [AllowAnonymous]
+    [EnableRateLimiting("auth")]
     public async Task<IActionResult> Create([FromBody] CreateUserDto body)
     {
         _logger.LogInformation("Registration attempt for email {Email}", body.Email);

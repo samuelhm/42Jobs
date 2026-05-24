@@ -9,7 +9,6 @@ public partial class AdminController
     [HttpGet("ai-models")]
     public async Task<IActionResult> GetAiModels()
     {
-        var check = EnsureAdmin(); if (check is not null) return check;
         var models = await _db.AiModels.Include(m => m.AiService).AsNoTracking().OrderBy(m => m.AiService.Name).ThenBy(m => m.Name).ToListAsync();
         var prompts = await _db.AiPrompts.Include(p => p.DefaultModel).AsNoTracking().ToListAsync();
         return Ok(new { success = true, data = models.Select(m => new
@@ -24,7 +23,6 @@ public partial class AdminController
     [HttpPost("ai-models")]
     public async Task<IActionResult> CreateAiModel([FromBody] AiModelDto body)
     {
-        var check = EnsureAdmin(); if (check is not null) return check;
         var model = new AiModel { AiServiceId = body.AiServiceId, Name = body.Name, IsActive = body.IsActive };
         _db.AiModels.Add(model);
         await _db.SaveChangesAsync();
@@ -34,7 +32,6 @@ public partial class AdminController
     [HttpPut("ai-models/{id:int}")]
     public async Task<IActionResult> UpdateAiModel([FromRoute] int id, [FromBody] AiModelDto body)
     {
-        var check = EnsureAdmin(); if (check is not null) return check;
         var model = await _db.AiModels.FindAsync(id);
         if (model is null) return NotFound(new { error = "Model not found" });
         model.Name = body.Name;
@@ -47,7 +44,6 @@ public partial class AdminController
     [HttpDelete("ai-models/{id:int}")]
     public async Task<IActionResult> DeleteAiModel([FromRoute] int id)
     {
-        var check = EnsureAdmin(); if (check is not null) return check;
         var model = await _db.AiModels.FindAsync(id);
         if (model is null) return NotFound(new { error = "Model not found" });
         _db.AiModels.Remove(model);

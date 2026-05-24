@@ -10,13 +10,15 @@ public partial class AiService : IAiService
 {
     private readonly Dictionary<string, IAiProvider> _providers;
     private readonly IServiceScopeFactory _scopeFactory;
+    private readonly EncryptionService _encryption;
     private readonly ILogger<AiService> _logger;
     private readonly IWebHostEnvironment _env;
 
-    public AiService(IEnumerable<IAiProvider> providers, IServiceScopeFactory scopeFactory, ILogger<AiService> logger, IWebHostEnvironment env)
+    public AiService(IEnumerable<IAiProvider> providers, IServiceScopeFactory scopeFactory, EncryptionService encryption, ILogger<AiService> logger, IWebHostEnvironment env)
     {
         _providers = providers.ToDictionary(p => p.ServiceName);
         _scopeFactory = scopeFactory;
+        _encryption = encryption;
         _logger = logger;
         _env = env;
     }
@@ -47,7 +49,7 @@ public partial class AiService : IAiService
         var provider = _providers.GetValueOrDefault(model.AiService.Name)
             ?? throw new InvalidOperationException($"No provider registered for service '{model.AiService.Name}'");
 
-        return (provider, model.Name, model.AiService.ApiKey, model.AiService.IsFreeTier);
+        return (provider, model.Name, _encryption.Decrypt(model.AiService.ApiKey), model.AiService.IsFreeTier);
     }
 
     private JsonElement LoadSchema(string functionality, string serviceName)

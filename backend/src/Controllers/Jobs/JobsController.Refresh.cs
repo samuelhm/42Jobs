@@ -79,9 +79,9 @@ public partial class JobsController
 
             return Ok(new { success = true, data = new { job.Id, job.Title, job.Description, keywords } });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { error = ex.Message });
+            return StatusCode(500, new { error = "Job refresh failed" });
         }
     }
 }

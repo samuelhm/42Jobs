@@ -16,9 +16,9 @@ public partial class HealthController
                 .FirstOrDefaultAsync();
             return Ok(new { status = "ok", server_time = now });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return Problem(detail: ex.Message, statusCode: 500);
+            return Problem(detail: "Database connection failed", statusCode: 500);
         }
     }
 }

@@ -9,7 +9,6 @@ public partial class AdminController
     [HttpGet("ai-prompts")]
     public async Task<IActionResult> GetAiPrompts()
     {
-        var check = EnsureAdmin(); if (check is not null) return check;
         var prompts = await _db.AiPrompts.Include(p => p.DefaultModel).ThenInclude(m => m!.AiService).OrderBy(p => p.Functionality).ToListAsync();
         return Ok(new { success = true, data = prompts.Select(p => new
         {
@@ -26,7 +25,6 @@ public partial class AdminController
     [HttpPut("ai-prompts/{id:int}")]
     public async Task<IActionResult> UpdateAiPrompt([FromRoute] int id, [FromBody] AiPromptDto body)
     {
-        var check = EnsureAdmin(); if (check is not null) return check;
         var prompt = await _db.AiPrompts.FindAsync(id);
         if (prompt is null) return NotFound(new { error = "Prompt not found" });
         prompt.SystemPrompt = body.SystemPrompt;

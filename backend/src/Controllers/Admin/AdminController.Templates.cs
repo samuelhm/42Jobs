@@ -9,7 +9,6 @@ public partial class AdminController
     [HttpGet("templates")]
     public async Task<IActionResult> GetTemplates()
     {
-        var check = EnsureAdmin(); if (check is not null) return check;
         var templates = await _db.CvTemplates.OrderByDescending(t => t.UpdatedAt).ToListAsync();
         return Ok(new { success = true, data = templates });
     }
@@ -17,7 +16,6 @@ public partial class AdminController
     [HttpPost("templates")]
     public async Task<IActionResult> CreateTemplate([FromBody] CvTemplateDto body)
     {
-        var check = EnsureAdmin(); if (check is not null) return check;
         var template = new CvTemplate
         {
             Name = body.Name, Description = body.Description,
@@ -35,7 +33,6 @@ public partial class AdminController
     [HttpPut("templates/{id:int}")]
     public async Task<IActionResult> UpdateTemplate([FromRoute] int id, [FromBody] CvTemplateDto body)
     {
-        var check = EnsureAdmin(); if (check is not null) return check;
         var template = await _db.CvTemplates.FindAsync(id);
         if (template is null) return NotFound(new { error = "Template not found" });
         template.Name = body.Name;
@@ -55,7 +52,6 @@ public partial class AdminController
     [HttpDelete("templates/{id:int}")]
     public async Task<IActionResult> DeleteTemplate([FromRoute] int id)
     {
-        var check = EnsureAdmin(); if (check is not null) return check;
         var template = await _db.CvTemplates.FindAsync(id);
         if (template is null) return NotFound(new { error = "Template not found" });
         _db.CvTemplates.Remove(template);

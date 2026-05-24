@@ -1,4 +1,6 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using src.Models.DTOs;
 
@@ -7,6 +9,8 @@ namespace src.Controllers;
 public partial class UsersController
 {
     [HttpPost("login")]
+    [AllowAnonymous]
+    [EnableRateLimiting("auth")]
     public async Task<IActionResult> Login([FromBody] LoginDto body)
     {
         var normalizedEmail = body.Email.Trim().ToLowerInvariant();

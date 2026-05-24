@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using src.Data;
 using src.Services;
@@ -6,6 +7,7 @@ namespace src.Controllers;
 
 [ApiController]
 [Route("api/users")]
+[Authorize]
 public partial class UsersController : ControllerBase
 {
     private readonly ILogger<UsersController> _logger;

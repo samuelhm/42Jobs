@@ -40,6 +40,8 @@ services:
       db:
         condition: service_healthy
     restart: unless-stopped
+    volumes:
+      - dpkeys:/app/keys
 
   # ─── Frontend (Nginx) ────────────────────────────────────
   frontend:
@@ -62,3 +64,4 @@ networks:
 # ─── Volumes ───────────────────────────────────────────────
 volumes:
   pgdata:
+  dpkeys:

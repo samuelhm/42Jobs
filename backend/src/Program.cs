@@ -1,6 +1,9 @@
 using System.Text;
+using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using src.Data;
@@ -15,6 +18,24 @@ using src.Services.Jobs.Providers.LinkedIn.RapidApi;
 using src.Utils;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddDataProtection()
+    .PersistKeysToFileSystem(new DirectoryInfo("/app/keys"))
+    .SetApplicationName("42jobs");
+
+builder.Services.AddSingleton<EncryptionService>();
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddPolicy("auth", context =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 10,
+                Window = TimeSpan.FromMinutes(1)
+            }));
+});
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
@@ -37,7 +58,8 @@ builder.Services.AddHostedService(sp => (JobFetchService)sp.GetRequiredService<I
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
-        var secret = Environment.GetEnvironmentVariable("JWT_SECRET_KEY")!;
+        var secret = Environment.GetEnvironmentVariable("JWT_SECRET_KEY")
+            ?? throw new InvalidOperationException("JWT_SECRET_KEY environment variable is not set");
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuerSigningKey = true,
@@ -71,6 +93,19 @@ app.UseForwardedHeaders(new ForwardedHeadersOptions
 {
     ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
 });
+
+app.UseMiddleware<ExceptionMiddleware>();
+
+app.Use(async (context, next) =>
+{
+    context.Response.Headers["X-Content-Type-Options"] = "nosniff";
+    context.Response.Headers["X-Frame-Options"] = "DENY";
+    context.Response.Headers["X-XSS-Protection"] = "1; mode=block";
+    context.Response.Headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
+    await next();
+});
+
+app.UseRateLimiter();
 
 app.UseAuthentication();
 app.UseAuthorization();

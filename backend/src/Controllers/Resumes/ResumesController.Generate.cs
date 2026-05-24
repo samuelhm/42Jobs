@@ -107,7 +107,7 @@ public partial class ResumesController
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to generate CV for job {JobId}", jobId);
-            return StatusCode(500, new { error = ex.Message });
+            return StatusCode(500, new { error = "CV generation failed" });
         }
     }
 
