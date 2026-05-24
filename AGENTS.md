@@ -59,11 +59,48 @@ Este es un proyecto **personal de aprendizaje**. El objetivo principal no es ent
 │   ├── public/
 │   │   └── resources/          ← Imágenes y estáticos
 │   └── src/
-│       ├── main.tsx
-│       ├── App.tsx             ← React Router (/ y /profile)
-│       ├── pages/              ← Dashboard, Profile
-│       ├── components/         ← JobCard, KeywordsChart, dialogs, etc.
-│       └── index.css
+│       ├── main.tsx            ← Entry point (RouterProvider)
+│       ├── router.tsx           ← createBrowserRouter con loaders/actions
+│       ├── index.css            ← Importa los 13 módulos CSS de styles/
+│       ├── types/               ← Tipos compartidos (User, Job, ProfileData...)
+│       │   └── index.ts
+│       ├── utils/               ← Funciones utilitarias (api, format, match)
+│       │   ├── index.ts         ← Barrel
+│       │   ├── api.ts
+│       │   ├── format.ts
+│       │   └── match.ts
+│       ├── hooks/               ← Custom hooks compartidos
+│       │   ├── index.ts         ← Barrel
+│       │   └── useDebounce.ts   ← useDebounce, usePolling
+│       ├── context/             ← React contexts (Auth, Toast)
+│       │   ├── index.ts         ← Barrel
+│       │   ├── AuthContext.tsx
+│       │   └── ToastContext.tsx
+│       ├── styles/              ← 13 módulos CSS por responsabilidad
+│       │   ├── variables.css, base.css, layout.css, cards.css
+│       │   ├── modals.css, forms.css, chart.css
+│       │   ├── profile.css, cv.css, toast.css
+│       │   ├── auth.css, admin.css, utilities.css
+│       ├── components/          ← Componentes con barrel por dominio
+│       │   ├── index.ts         ← Barrel raíz
+│       │   ├── auth/            ← RequireAuth
+│       │   ├── categories/      ← CategoriesBar, AddCategoryDialog
+│       │   ├── jobs/            ← NotesModal, CvModal
+│       │   ├── keywords/        ← KeywordsChart, KeywordTag, KeywordModal
+│       │   ├── layout/          ← AuthLayout, AdminLayout, FreeTierBanner
+│       │   ├── profile/         ← ProfileInfo, ProfileList, ProfileProjects, LinkedInImport
+│       │   └── ui/              ← ToastContainer
+│       └── pages/               ← Páginas organizadas por dominio con barrels
+│           ├── index.ts         ← Barrel raíz
+│           ├── auth/            ← Login, Register (+ login.action.ts, register.action.ts)
+│           ├── dashboard/       ← Dashboard, Offers, Tracking, KeywordsPage
+│           │   ├── index.ts
+│           │   ├── Dashboard.tsx + dashboard.loader.ts + dashboard.types.ts
+│           │   ├── Offers.tsx + offers.loader.ts
+│           │   ├── Tracking.tsx + tracking.loader.ts + tracking.types.ts
+│           │   └── KeywordsPage.tsx + keywordsPage.loader.ts
+│           ├── profile/         ← Profile.tsx + profile.loader.ts
+│           └── admin/           ← 8 páginas admin + barrel
 └── examples/                  ← Ejemplos de respuestas de API de LinkedIn
 ```
 
@@ -71,7 +108,7 @@ Este es un proyecto **personal de aprendizaje**. El objetivo principal no es ent
 
 1. **Base de datos:** ✅ Migraciones SQL con 17 archivos. Tablas: categorías, empresas, keywords, jobs, perfil de usuario, idiomas, certificaciones, educación, proyectos, experiencias, user_providers, user_jobs, user_categories, resumes, y tablas M2M (job_keywords, project_keywords, work_experience_keywords).
 2. **Backend:** ✅ Funcional. 11 controladores REST con autenticación JWT vía cookie (`42jobs_auth`). EF Core con snake_case naming convention. Servicios: LinkedIn RapidAPI, Gemini (filtro + keywords), background job queue con Channel<T> para fetch de trabajos con rate-limiting de 3h.
-3. **Frontend:** ⚠️ En construcción. React + React Router con Vite. Formato de respuesta `{ success, data }` con snake_case. Dev: Vite con HMR. Prod: nginx sirviendo build estático.
+3. **Frontend:** ✅ Funcional. React 19 + React Router 7 con Vite. Data router (`createBrowserRouter`) con loaders y actions. Barrel pattern en todas las carpetas. CSS modular (13 archivos). Hooks y utils compartidos. Tipos centralizados.
 
 ## Próximos pasos (visión general)
 
@@ -81,6 +118,7 @@ Este es un proyecto **personal de aprendizaje**. El objetivo principal no es ent
 4. ✅ Endpoints del frontend (17/19 implementados).
 5. ✅ React + React Router + Vite elegido. En construcción.
 6. ✅ APIs externas (LinkedIn RapidAPI + Gemini filtro/keywords).
+7. ✅ Frontend refactorizado (barrel pattern, CSS modules, data router, loaders/actions).
 
 ## Cómo trabajar
 

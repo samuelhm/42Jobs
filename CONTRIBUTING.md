@@ -29,7 +29,26 @@ Thanks for your interest in contributing.
 ### Frontend
 
 - Use `pnpm` for package management (not npm).
-- Components are in `frontend/src/components/`, pages in `frontend/src/pages/`.
+- **Barrel pattern**: every folder has an `index.ts` that re-exports its contents. Import from the folder, never from internal files directly.
+  ```ts
+  // ✅ good — barrel import
+  import { CategoriesBar, NotesModal } from '../../components';
+
+  // ❌ bad — direct import
+  import CategoriesBar from '../../components/categories/CategoriesBar';
+  ```
+- **Data router**: routes are defined in `router.tsx` using `createBrowserRouter` with loaders and actions. The main entry point uses `<RouterProvider>`.
+- **Loaders per page**: data fetching goes in `pageName.loader.ts`, not in `useEffect` inside the component. Use `useLoaderData()` in the component.
+- **Actions for mutations**: form submissions use action files (`login.action.ts`, `register.action.ts`). For programmatic mutations, use `useRevalidator()` to refresh loader data.
+- **File splitting**: each page is a folder with:
+  - `PageName.tsx` — pure component (JSX)
+  - `pageName.loader.ts` — data fetching (keywords, jobs, etc.)
+  - `pageName.types.ts` — local interfaces (optional, when needed)
+  - `pageName.action.ts` — form actions (optional, for POST/PUT/DELETE)
+- **No file over ~150 lines.** If a file grows too long, extract sub-components or utility functions.
+- **Custom hooks** go in `hooks/` (with barrel). Shared utils go in `utils/`.
+- **Shared types** go in `types/index.ts`. Page-local types go in the page's `*.types.ts`.
+- **CSS** is split by responsibility in `styles/` (13 modules). `index.css` only imports them. Do not write new styles in `index.css`. Place them in the appropriate module or create a new one.
 - API calls use the Vite proxy (`/api` → backend) in development.
 
 ### AI layer
@@ -68,12 +87,14 @@ Keep them concise and follow this format:
 type(scope): short description
 ```
 
+Types: `feat`, `fix`, `refactor`, `chore`, `docs`, `style`.
+
 Examples:
 - `feat(db): add resumes table`
 - `fix(cv): handle empty description`
 - `refactor(ai): extract Gemini provider`
-
-Types: `feat`, `fix`, `refactor`, `chore`, `docs`, `style`.
+- `refactor(frontend): split CSS into modules`
+- `feat(frontend): add loader for Dashboard`
 
 ## Questions?
 

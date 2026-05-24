@@ -62,7 +62,15 @@ make clean           # stop everything + delete volumes
 │   │   ├── LinkedInApiService.cs
 │   │   └── JobFetchOrchestrator.cs       # background job queue
 │   └── Utils/
-├── frontend/src/       # React SPA (Vite)
+├── frontend/src/       # React 19 + React Router 7 (Vite + TypeScript)
+│   ├── router.tsx       # createBrowserRouter with loaders/actions
+│   ├── types/           # Shared TypeScript interfaces
+│   ├── utils/           # api, format, match (barrel)
+│   ├── hooks/           # useDebounce, usePolling (barrel)
+│   ├── context/         # AuthContext, ToastContext (barrel)
+│   ├── styles/          # 13 CSS modules by responsibility
+│   ├── components/      # Reusable components (7 domain folders + barrel)
+│   └── pages/           # Route pages with loaders (4 domain folders + barrel)
 ├── database/migrations/ # 22 SQL migration + seed files
 └── docs/               # Documentation
 ```
