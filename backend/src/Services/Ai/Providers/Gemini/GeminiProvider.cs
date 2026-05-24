@@ -83,7 +83,7 @@ public class GeminiProvider : IAiProvider
 
         var result = JsonDocument.Parse(text).RootElement;
         await _log.LogAsync("Gemini", "llm:call",
-            new { response = text },
+            result,
             model, "received:200");
 
         return result;

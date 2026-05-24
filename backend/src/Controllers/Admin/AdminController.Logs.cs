@@ -10,7 +10,7 @@ public partial class AdminController
         [FromQuery] string? actor,
         [FromQuery] string? action,
         [FromQuery] string? payload2,
-        [FromQuery] int limit = 200)
+        [FromQuery] int limit = 500)
     {
         var query = _db.AdminLogs.AsQueryable();
 

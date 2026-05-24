@@ -80,7 +80,7 @@ public class OpenAiProvider : IAiProvider
 
         var result = JsonDocument.Parse(text).RootElement;
         await _log.LogAsync("OpenAI", "llm:call",
-            new { response = text },
+            result,
             model, "received:200");
 
         return result;
