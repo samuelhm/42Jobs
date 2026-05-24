@@ -42,7 +42,7 @@ services:
         condition: service_healthy
     restart: unless-stopped
     volumes:
-      - dpkeys:/app/keys
+      - dpkeys:/dpkeys
 
   # ─── Frontend (Nginx) ────────────────────────────────────
   frontend:

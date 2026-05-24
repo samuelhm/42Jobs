@@ -27,7 +27,7 @@ A prefix `enc:` is prepended so the system can distinguish encrypted from legacy
 
 ### Key storage
 
-Data Protection keys are stored on disk at `/app/keys/`, backed by a named Docker volume (`dpkeys`). The volume is defined in `docker-compose.yml` so keys persist between container rebuilds.
+Data Protection keys are stored on disk at `/dpkeys/`, backed by a named Docker volume (`dpkeys`). The volume is defined in `docker-compose.yml` so keys persist between container rebuilds.
 
 ```
 docker-compose.yml
@@ -35,7 +35,7 @@ docker-compose.yml
 services:
   backend:
     volumes:
-      - dpkeys:/app/keys
+      - dpkeys:/dpkeys
 
 volumes:
   dpkeys:

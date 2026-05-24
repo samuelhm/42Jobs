@@ -20,7 +20,7 @@ using src.Utils;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDataProtection()
-    .PersistKeysToFileSystem(new DirectoryInfo("/app/keys"))
+    .PersistKeysToFileSystem(new DirectoryInfo("/dpkeys"))
     .SetApplicationName("42jobs");
 
 builder.Services.AddSingleton<EncryptionService>();
