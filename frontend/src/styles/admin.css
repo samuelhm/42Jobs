@@ -31,7 +31,7 @@
 }
 .admin-nav-link:hover { color: var(--text); background: var(--surface-hover); }
 .admin-nav-link.active { color: var(--amber); background: rgba(212,168,83,0.08); border-left-color: var(--amber); }
-.admin-content { flex: 1; padding: 2rem; overflow-y: auto; }
+.admin-content { flex: 1; padding: 2rem; overflow-y: auto; min-width: 0; }
 .admin-content h2 { font-size: 1.15rem; color: var(--text-bright); margin-bottom: 0.5rem; }
 .admin-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem; }
 .admin-card { padding: 1.2rem 1rem; text-align: center; text-decoration: none; color: var(--text-bright); font-weight: 600; transition: all 0.2s; }
@@ -135,7 +135,7 @@
 .log-filters select { min-width: 150px; }
 .log-filters input { min-width: 180px; }
 
-.log-table-wrap { overflow-x: auto; max-height: 70vh; overflow-y: auto; }
+.log-table-wrap { overflow-x: auto; }
 .log-table {
   width: 100%; border-collapse: collapse; font-size: 0.72rem;
 }
@@ -156,7 +156,7 @@
 .log-time { white-space: nowrap; color: var(--text-dim) !important; font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; }
 .log-actor { font-weight: 600; }
 .log-action { color: var(--amber-dim) !important; font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; }
-.log-payload2 { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; color: var(--text-dim) !important; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.log-payload2 { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; color: var(--text-dim) !important; word-break: break-all; }
 
 tr.log-sent { border-left: 3px solid var(--info, #4a9eff); }
 tr.log-received { border-left: 3px solid var(--success, #4ecf7d); }
