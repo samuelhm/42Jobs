@@ -49,8 +49,17 @@ function CategorySection() {
   const [msg, setMsg] = useState('');
 
   async function load() {
-    const res = await get<CategoryInfo[]>('/api/categories/available');
-    if (res.success) setCategories(res.data);
+    try {
+      const [followedRes, availableRes] = await Promise.all([
+        get<CategoryInfo[]>('/api/categories'),
+        get<CategoryInfo[]>('/api/categories/available'),
+      ]);
+      const all: CategoryInfo[] = [];
+      if (followedRes.success) all.push(...followedRes.data);
+      if (availableRes.success) all.push(...availableRes.data);
+      all.sort((a, b) => a.name.localeCompare(b.name));
+      setCategories(all);
+    } catch {}
     setLoading(false);
   }
 
@@ -59,12 +68,16 @@ function CategorySection() {
   async function deleteCategory(cat: CategoryInfo) {
     if (!confirm(`Delete "${cat.name}"? This will remove all its ${cat.job_count} jobs from the system.`)) return;
     setMsg('');
-    const res = await del(`/api/admin/categories/${cat.id}`);
-    if (res.success) {
-      setMsg(`Deleted "${cat.name}" and all its jobs.`);
-      setCategories(prev => prev.filter(c => c.id !== cat.id));
-    } else {
-      setMsg(res.error || 'Deletion failed');
+    try {
+      const res = await del<null>(`/api/admin/categories/${cat.id}`);
+      if (res.success) {
+        setMsg(`Deleted "${cat.name}" and all its jobs.`);
+        setCategories(prev => prev.filter(c => c.id !== cat.id));
+      } else {
+        setMsg(res.error || 'Deletion failed');
+      }
+    } catch {
+      setMsg('Connection error');
     }
     setTimeout(() => setMsg(''), 6000);
   }

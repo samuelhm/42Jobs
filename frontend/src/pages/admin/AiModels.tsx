@@ -40,6 +40,9 @@ export default function AdminAiModels() {
 
   async function deleteModel(id: number) {
     if (!confirm('Delete this model?')) return;
+    const opsToUnassign = prompts.filter(p => p.default_model_id === id);
+    await Promise.all(opsToUnassign.map(p => put(`/api/admin/ai-prompts/${p.id}`, { default_model_id: null })));
+    setPrompts(prev => prev.map(p => p.default_model_id === id ? { ...p, default_model_id: null } : p));
     await del(`/api/admin/ai-models/${id}`);
     load();
   }

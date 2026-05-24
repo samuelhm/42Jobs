@@ -22,7 +22,7 @@ function ApiKeyInput({ service }: { service: AiService }) {
   return (
     <div className="apikey-row">
       <input type="password" className="input apikey-input" value={key}
-        placeholder={service.api_key ? "API key configured" : "API key not set — configure here"}
+        placeholder="API key encrypted — enter new one to overwrite"
         onChange={e => handleChange(e.target.value)} />
       {saved && <span className="apikey-saved">Saved</span>}
     </div>
