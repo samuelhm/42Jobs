@@ -7,7 +7,7 @@ COMPOSE_PROD := docker compose -f docker-compose.yml -f docker-compose.prod.yml
 .PHONY: help \
         dev-up dev-down dev-build dev-restart dev-logs dev-ps dev-shell \
         prod-up prod-down prod-build prod-restart prod-logs prod-ps \
-        switch-prod switch-dev install clean logs-clean
+        switch-prod switch-dev install clean logs-clean users
 
 # ─── Default ───────────────────────────────────────────────
 help:
@@ -38,6 +38,7 @@ help:
 	@echo "    make install        dotnet restore (backend) + npm install (frontend)"
 	@echo "    make clean          Down + eliminar volúmenes"
 	@echo "    make logs-clean     Truncar tabla admin_logs"
+	@echo "    make users          Contar usuarios registrados"
 
 # ═══════════════════════════════════════════════════════════
 #  DESARROLLO
@@ -112,3 +113,6 @@ logs-clean:
 	@echo "Truncating admin_logs..."
 	@docker exec -i 42jobs-db psql -U 42jobs -d 42jobs -c "TRUNCATE TABLE admin_logs;"
 	@echo "Done."
+
+users:
+	@docker exec -i 42jobs-db psql -U 42jobs -d 42jobs -c "SELECT COUNT(*) AS total_users FROM users;"
