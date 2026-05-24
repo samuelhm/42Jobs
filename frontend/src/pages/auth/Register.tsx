@@ -17,6 +17,8 @@ export default function Register() {
       errs.email = 'Email is required';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
       errs.email = 'Invalid email format';
+    } else if (!email.trim().endsWith('@student.42barcelona.com')) {
+      errs.email = 'Only @student.42barcelona.com emails are allowed';
     }
 
     if (!password) {
@@ -80,7 +82,7 @@ export default function Register() {
               value={email}
               onChange={(e) => { setEmail(e.target.value); setErrors((p) => ({ ...p, email: '' })); }}
               className={errors.email ? 'input-error' : ''}
-              placeholder="you@example.com"
+              placeholder="you@student.42barcelona.com"
               autoComplete="email"
               autoFocus
             />
