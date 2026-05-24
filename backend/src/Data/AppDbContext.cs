@@ -143,7 +143,9 @@ public class AppDbContext : DbContext
         // ── User ─────────────────────────────────────────────
         modelBuilder.Entity<User>(entity =>
         {
-            entity.ToTable("users");
+            entity.ToTable("users", t => t.HasCheckConstraint(
+                "CK_users_role",
+                "role IN ('Admin', 'User')"));
             entity.HasKey(u => u.Id);
             entity.Property(u => u.Id)
                   .HasDefaultValueSql("gen_random_uuid()")
@@ -166,9 +168,6 @@ public class AppDbContext : DbContext
             entity.Property(u => u.Role)
                   .HasMaxLength(20)
                   .HasDefaultValue("User");
-            entity.HasCheckConstraint(
-                "CK_users_role",
-                "role IN ('Admin', 'User')");
             entity.Property(u => u.CreatedAt)
                   .HasDefaultValueSql("NOW()")
                   .ValueGeneratedOnAdd();
@@ -309,7 +308,9 @@ public class AppDbContext : DbContext
         // ── UserJob ──────────────────────────────────────────
         modelBuilder.Entity<UserJob>(entity =>
         {
-            entity.ToTable("user_jobs");
+            entity.ToTable("user_jobs", t => t.HasCheckConstraint(
+                "CK_user_jobs_status",
+                "status IN ('saved', 'cv_enviado', 'entrevista_conseguida', 'empleo_conseguido', 'rechazado')"));
             entity.HasKey(u => new { u.UserId, u.JobId });
             entity.Property(u => u.SavedAt)
                   .HasDefaultValueSql("NOW()")
@@ -318,9 +319,6 @@ public class AppDbContext : DbContext
             entity.Property(u => u.Status)
                   .HasMaxLength(30)
                   .HasDefaultValue("saved");
-            entity.HasCheckConstraint(
-                "CK_user_jobs_status",
-                "status IN ('saved', 'cv_enviado', 'entrevista_conseguida', 'empleo_conseguido', 'rechazado')");
             entity.Property(u => u.StatusUpdatedAt)
                   .HasDefaultValueSql("NOW()")
                   .ValueGeneratedOnAdd();
@@ -417,16 +415,14 @@ public class AppDbContext : DbContext
         // ── UserKeyword (M2M: users ↔ keywords) ──────────────
         modelBuilder.Entity<UserKeyword>(entity =>
         {
-            entity.ToTable("user_keywords");
+            entity.ToTable("user_keywords", t => t.HasCheckConstraint(
+                "CK_user_keywords_learning_status",
+                "learning_status IN ('not_learned', 'learned_personal_project', 'learned_in_school')"));
             entity.HasKey(uk => new { uk.UserId, uk.KeywordId });
 
             entity.Property(uk => uk.LearningStatus)
                   .HasMaxLength(50)
                   .HasDefaultValue("not_learned");
-
-            entity.HasCheckConstraint(
-                "CK_user_keywords_learning_status",
-                "learning_status IN ('not_learned', 'learned_personal_project', 'learned_in_school')");
 
             entity.HasOne(uk => uk.User)
                   .WithMany(u => u.UserKeywords)

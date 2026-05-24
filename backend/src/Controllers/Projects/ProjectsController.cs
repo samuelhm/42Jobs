@@ -67,7 +67,7 @@ public partial class ProjectsController : ControllerBase
     private static readonly ConcurrentDictionary<Guid, ImportStatus> ImportStatuses = new();
 
     private static async Task ProcessImportAsync(
-        Guid jobId, Guid userId, string username, string token,
+        Guid jobId, Guid userId, string username, string? token,
         IServiceScopeFactory scopeFactory, IHttpClientFactory httpFactory,
         ILogger logger)
     {
