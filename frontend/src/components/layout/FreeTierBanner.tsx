@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
+import { fetchWithAuth } from '../../utils';
 
 export default function FreeTierBanner() {
   const [show, setShow] = useState(false);
 
   useEffect(() => {
-    fetch('/api/admin/ai-services')
+    fetchWithAuth('/api/admin/ai-services')
       .then(r => r.json().catch(() => ({})))
       .then(d => {
         const services = d?.data || [];

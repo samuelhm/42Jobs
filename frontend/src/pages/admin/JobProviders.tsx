@@ -100,7 +100,7 @@ export default function AdminJobProviders() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    get<Provider[]>('/api/admin/job-providers').then(res => {
+    get<Provider[]>('/api/admin/job-providers').then((res: any) => {
       if (res.success) setProviders(res.data);
       setLoading(false);
     });

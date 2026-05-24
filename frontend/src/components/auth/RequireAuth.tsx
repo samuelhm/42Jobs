@@ -1,4 +1,4 @@
-import { Outlet } from 'react-router';
+import { Navigate, Outlet } from 'react-router';
 import { AuthProvider, useAuth } from '../../context';
 
 function AuthGate() {
@@ -13,4 +13,11 @@ export default function RequireAuth() {
       <AuthGate />
     </AuthProvider>
   );
+}
+
+export function RequireAdmin() {
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  if (!user || user.role !== 'Admin') return <Navigate to="/" replace />;
+  return <Outlet />;
 }

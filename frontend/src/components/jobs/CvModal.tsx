@@ -1,10 +1,22 @@
 import { useState, useEffect } from 'react';
+import { fetchWithAuth } from '../../utils/fetchWithAuth';
 
 interface Props {
   jobId: number;
   jobTitle: string;
   onClose: () => void;
   onGenerated?: () => void;
+}
+
+function sanitizeHtml(html: string): string {
+  return html
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+    .replace(/<([\w-]+)([^>]*?)>/gi, (_m, tag, attrs) => {
+      const cleaned = attrs
+        .replace(/\s*on\w+\s*=\s*("[^"]*"|'[^']*'|[^\s>]*)/gi, '')
+        .replace(/(?:href|src|xlink:href)\s*=\s*["']javascript:[^"']*["']/gi, 'href=""');
+      return `<${tag}${cleaned}>`;
+    });
 }
 
 export default function CvModal({ jobId, jobTitle, onClose }: Props) {
@@ -20,11 +32,11 @@ export default function CvModal({ jobId, jobTitle, onClose }: Props) {
 
   async function checkExisting() {
     try {
-      const res = await fetch(`/api/resumes/job/${jobId}`);
+      const res = await fetchWithAuth(`/api/resumes/job/${jobId}`);
       if (res.ok) {
         const data = await res.json();
         if (data.html) {
-          setHtml(data.html);
+          setHtml(sanitizeHtml(data.html));
           setModel(data.model || '');
           setExists(true);
         }
@@ -37,17 +49,17 @@ export default function CvModal({ jobId, jobTitle, onClose }: Props) {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch(`/api/resumes/${jobId}`, {
+      const res = await fetchWithAuth(`/api/resumes/${jobId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
       });
       const data = await res.json();
       if (data.cached) {
-        setHtml(data.html);
+        setHtml(sanitizeHtml(data.html));
         setModel(data.model || '');
         setExists(true);
       } else if (data.html) {
-        setHtml(data.html);
+        setHtml(sanitizeHtml(data.html));
         setModel(data.model || '');
         setExists(true);
       } else {

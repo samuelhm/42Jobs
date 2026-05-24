@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { fetchWithAuth } from '../../utils';
 
 interface Field {
   key: string;
@@ -33,7 +34,7 @@ export default function ProfileList({ title, fields, fetchUrl, createUrl, update
   }
 
   async function load() {
-    const res = await fetch(fetchUrl);
+    const res = await fetchWithAuth(fetchUrl);
     const data = await res.json();
     if (data.success) setItems(data.data);
     setLoading(false);
@@ -46,7 +47,7 @@ export default function ProfileList({ title, fields, fetchUrl, createUrl, update
     const body = bodyBuilder(form);
     const url = editingId ? updateUrl(editingId) : createUrl;
     const method = editingId ? 'PUT' : 'POST';
-    const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    const res = await fetchWithAuth(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
     const data = await res.json();
     if (data.success) { resetForm(); load(); }
   }
@@ -60,7 +61,7 @@ export default function ProfileList({ title, fields, fetchUrl, createUrl, update
 
   async function handleDelete(id: number) {
     if (!confirm('Delete?')) return;
-    await fetch(deleteUrl(id), { method: 'DELETE' });
+    await fetchWithAuth(deleteUrl(id), { method: 'DELETE' });
     load();
   }
 

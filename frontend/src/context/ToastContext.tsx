@@ -1,10 +1,5 @@
 import { createContext, useContext, useState, useCallback, useRef } from 'react';
-
-interface Toast {
-  id: string;
-  message: string;
-  type: 'info' | 'success' | 'error';
-}
+import type { Toast } from '../types';
 
 interface ToastContextValue {
   toast: (key: string, message: string, type?: 'info' | 'success' | 'error') => void;

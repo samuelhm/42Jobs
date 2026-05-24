@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { fetchWithAuth } from '../../utils';
 import type { ProfileData } from '../../types';
 
 interface Props {
@@ -16,7 +17,7 @@ export default function ProfileInfo({ profile, onSave }: Props) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
-    const res = await fetch('/api/profile', {
+    const res = await fetchWithAuth('/api/profile', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(form),

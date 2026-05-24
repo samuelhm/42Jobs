@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { fetchWithAuth } from '../../utils';
 
 interface Props {
   endpoint: string;
@@ -17,7 +18,7 @@ export default function LinkedInImport({ endpoint, placeholder, onImported }: Pr
     setLoading(true);
     setMsg('Analyzing with AI...');
     try {
-      const res = await fetch(endpoint, {
+      const res = await fetchWithAuth(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ raw_text: raw }),

@@ -11,7 +11,7 @@ function ApiKeyInput({ service }: { service: AiService }) {
   const debounce = useDebounce();
 
   useEffect(() => {
-    get<any[]>('/api/admin/ai-services').then(r => {
+    get<any[]>('/api/admin/ai-services').then((r: any) => {
       if (r.success) {
         const s = r.data.find((x: any) => x.id === service.id);
         if (s) setKey(s.api_key || '');
@@ -47,7 +47,7 @@ export default function AdminAiServices() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    get<AiService[]>('/api/admin/ai-services').then(res => {
+    get<AiService[]>('/api/admin/ai-services').then((res: any) => {
       if (res.success) setServices(res.data);
       setLoading(false);
     });

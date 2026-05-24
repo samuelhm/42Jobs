@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useLoaderData, useSearchParams } from 'react-router';
 import { CategoriesBar, NotesModal, KeywordTag, CvModal } from '../../components';
-import { formatDescription, getMatchPct, getMatchClass, isRecent } from '../../utils';
+import { fetchWithAuth, formatDescription, getMatchPct, getMatchClass, isRecent } from '../../utils';
 import { useToast } from '../../context';
 import type { Job, UserKeyword } from '../../types';
 import type { OffersData } from './offers.loader';
@@ -44,7 +44,7 @@ function OffersContent() {
 
   async function handleDelete(job: Job) {
     if (!confirm(`Delete "${job.title}"?`)) return;
-    const res = await fetch(`/api/jobs/${job.id}`, { method: 'DELETE' });
+    const res = await fetchWithAuth(`/api/jobs/${job.id}`, { method: 'DELETE' });
     const data = await res.json();
     if (data.success) setJobs((prev) => prev.filter((j) => j.id !== job.id));
   }
@@ -52,7 +52,7 @@ function OffersContent() {
   async function handleRefresh(job: Job) {
     toast(`refresh-${job.id}`, 'Refreshing job details...', 'info');
     try {
-      const res = await fetch(`/api/jobs/${job.id}/refresh`, { method: 'PATCH' });
+      const res = await fetchWithAuth(`/api/jobs/${job.id}/refresh`, { method: 'PATCH' });
       const data = await res.json();
       if (data.status === 'rate-limited') {
         toast(`refresh-${job.id}`, data.message, 'error');
@@ -70,7 +70,7 @@ function OffersContent() {
   async function saveTitle() {
     if (!editingTitle) return;
     const { jobId, title } = editingTitle;
-    await fetch(`/api/jobs/${jobId}`, {
+    await fetchWithAuth(`/api/jobs/${jobId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ title }),
@@ -100,7 +100,7 @@ function OffersContent() {
 
         <div id="ofertas-list">
           {jobs.map((job) => {
-            const pct = getMatchPct(job, userKeywords as any);
+            const pct = getMatchPct(job, userKeywords);
             const matchClass = getMatchClass(pct);
 
             return (

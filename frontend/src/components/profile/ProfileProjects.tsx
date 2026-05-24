@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { fetchWithAuth } from '../../utils';
 
 interface Project {
   id: number;
@@ -21,7 +22,7 @@ export default function ProfileProjects() {
   const activeJobRef = useRef<string | null>(null);
 
   async function load() {
-    const res = await fetch('/api/projects');
+    const res = await fetchWithAuth('/api/projects');
     const data = await res.json();
     if (data.success) setProjects(data.data);
     setLoading(false);
@@ -56,7 +57,7 @@ export default function ProfileProjects() {
     };
     const url = editingId ? `/api/projects/${editingId}` : '/api/projects';
     const method = editingId ? 'PUT' : 'POST';
-    const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    const res = await fetchWithAuth(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
     const data = await res.json();
     if (data.success) { resetForm(); load(); }
   }
@@ -68,7 +69,7 @@ export default function ProfileProjects() {
 
   async function handleDelete(id: number) {
     if (!confirm('Delete?')) return;
-    await fetch(`/api/projects/${id}`, { method: 'DELETE' });
+    await fetchWithAuth(`/api/projects/${id}`, { method: 'DELETE' });
     load();
   }
 
@@ -79,7 +80,7 @@ export default function ProfileProjects() {
     setImportStatus({ message: 'Starting import — this may take several minutes while AI analyzes your repositories.', type: 'info' });
 
     try {
-      const res = await fetch('/api/projects/import-github', {
+      const res = await fetchWithAuth('/api/projects/import-github', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, token: ghToken || null }),
@@ -108,7 +109,7 @@ export default function ProfileProjects() {
   function pollImportInternal(jobId: string, resolve: () => void) {
     pollRef.current = setInterval(async () => {
       try {
-        const r = await fetch(`/api/projects/import-github/${jobId}`);
+        const r = await fetchWithAuth(`/api/projects/import-github/${jobId}`);
         const d = await r.json();
         if (d.status === 'completed') {
           clearInterval(pollRef.current!);

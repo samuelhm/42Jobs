@@ -1,20 +1,13 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import { fetchWithAuth } from '../utils/fetchWithAuth';
-
-interface User {
-  id: string;
-  email: string;
-  name: string | null;
-  last_name: string | null;
-  role: string;
-}
+import type { User } from '../types';
 
 interface AuthState {
   user: User | null;
   loading: boolean;
 }
 
-const AuthContext = createContext<AuthState>({ user: null, loading: true });
+const AuthContext = createContext<AuthState | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AuthState>({ user: null, loading: true });
@@ -36,5 +29,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 }
 
 export function useAuth() {
-  return useContext(AuthContext);
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error('useAuth must be used within AuthProvider');
+  return ctx;
 }

@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams } from 'react-router';
 import AddCategoryDialog from './AddCategoryDialog';
 import { useToast } from '../../context';
+import { fetchWithAuth } from '../../utils';
 import type { Category } from '../../types';
 
 export default function CategoriesBar() {
@@ -25,7 +26,7 @@ export default function CategoriesBar() {
 
   const loadCategories = useCallback(async () => {
     try {
-      const res = await fetch('/api/categories');
+      const res = await fetchWithAuth('/api/categories');
       const json = await res.json();
       if (json.success) {
         setCategories(json.data);
@@ -54,7 +55,7 @@ export default function CategoriesBar() {
     let datePosted = 'past-week';
     let missingPrefs = false;
     try {
-      const prefsRes = await fetch('/api/profile/preferences');
+      const prefsRes = await fetchWithAuth('/api/profile/preferences');
       const prefsData = await prefsRes.json();
       if (prefsData.success) {
         if (prefsData.data.preferred_location) {
@@ -74,7 +75,7 @@ export default function CategoriesBar() {
       toast('prefs-warning', 'Configure your preferred location and date filter in Profile > Personal for better results.', 'info');
     }
 
-    const res = await fetch(`/api/categories/${categoryId}/fetch`, {
+    const res = await fetchWithAuth(`/api/categories/${categoryId}/fetch`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ location, limit: 10, datePosted, sortBy: 'recent' }),
@@ -98,7 +99,7 @@ export default function CategoriesBar() {
     await new Promise<void>((resolve) => {
       pollingRef.current = setInterval(async () => {
         try {
-          const r = await fetch(`/api/categories/${categoryId}/fetch/${jobId}`);
+          const r = await fetchWithAuth(`/api/categories/${categoryId}/fetch/${jobId}`);
           const d = await r.json();
           if (d.status === 'completed' || d.status === 'done') {
             clearInterval(pollingRef.current!);

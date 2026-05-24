@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { Chart, DoughnutController, ArcElement, Tooltip } from 'chart.js';
+import { fetchWithAuth } from '../../utils';
 
 Chart.register(DoughnutController, ArcElement, Tooltip);
 
@@ -31,7 +32,7 @@ export default function KeywordsChart({ categoryId, onHover }: Props) {
 
     let cancelled = false;
 
-    fetch(`/api/categories/${categoryId}/keywords`)
+    fetchWithAuth(`/api/categories/${categoryId}/keywords`)
       .then((r) => r.json())
       .then((json) => {
         if (cancelled || !json.success || !canvasRef.current) return;

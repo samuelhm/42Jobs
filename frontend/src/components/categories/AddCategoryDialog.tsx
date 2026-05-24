@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { fetchWithAuth } from '../../utils';
 
 interface Props {
   onClose: () => void;
@@ -20,7 +21,7 @@ export default function AddCategoryDialog({ onClose, onCreated, onSubscribed }: 
   const [available, setAvailable] = useState<AvailableCategory[]>([]);
 
   useEffect(() => {
-    fetch('/api/categories/available')
+    fetchWithAuth('/api/categories/available')
       .then(r => r.json())
       .then(d => { if (d.success) setAvailable(d.data); })
       .catch(() => {});
@@ -33,7 +34,7 @@ export default function AddCategoryDialog({ onClose, onCreated, onSubscribed }: 
     setLoading(true);
     setError('');
     try {
-      const res = await fetch('/api/categories', {
+      const res = await fetchWithAuth('/api/categories', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: trimmed }),
@@ -54,7 +55,7 @@ export default function AddCategoryDialog({ onClose, onCreated, onSubscribed }: 
   async function handleSubscribe(id: number, categoryName: string) {
     setLoading(true);
     try {
-      const res = await fetch('/api/categories', {
+      const res = await fetchWithAuth('/api/categories', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: categoryName }),
