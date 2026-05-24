@@ -24,8 +24,20 @@ Thanks for your interest in contributing.
 ### Database
 
 - Migrations are plain SQL files in `database/migrations/`, applied alphabetically on container startup via `docker-entrypoint-initdb.d`.
-- Naming convention: `NN-descriptive-name.sql` (e.g., `07-users.sql`, `019-ai-services.sql`).
-- Seed data files follow the same pattern (e.g., `022-seed-ai.sql`).
+- Naming convention: `NN-descriptive-name.sql` (e.g., `07-users.sql`, `19-ai-services.sql`).
+- Seed data files follow the same pattern (e.g., `35-seed-ai.sql`).
+- **New `.sql` files only run when the DB is first created** (empty data directory). If the `pgdata` volume already exists, new migrations are skipped. To apply them, delete the volume and recreate:
+
+  ```bash
+  make clean          # deletes pgdata volume
+  make dev-up         # recreates DB → all .sql files run
+  ```
+
+  Or run them manually:
+
+  ```bash
+  docker compose exec db psql -U 42jobs -d 42jobs -f /docker-entrypoint-initdb.d/30-your-migration.sql
+  ```
 
 ### Frontend
 
@@ -77,14 +89,6 @@ Thanks for your interest in contributing.
 If your feature requires storing API keys, tokens, or secrets in the database, you **must** encrypt them. Never store credentials in plaintext.
 
 See the dedicated guide: [docs/Encryption.md](docs/Encryption.md).
-
-## Adding a new AI provider
-
-See the dedicated guide: [docs/IAProvider.md](docs/IAProvider.md).
-
-## Adding a new job provider
-
-See the dedicated guide: [docs/JobProvider.md](docs/JobProvider.md).
 
 ## Commit messages
 

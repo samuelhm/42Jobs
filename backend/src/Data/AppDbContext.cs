@@ -25,6 +25,7 @@ public class AppDbContext : DbContext
     public DbSet<AiPrompt> AiPrompts => Set<AiPrompt>();
     public DbSet<CvTemplate> CvTemplates => Set<CvTemplate>();
     public DbSet<JobProvider> JobProviders => Set<JobProvider>();
+    public DbSet<AdminLog> AdminLogs => Set<AdminLog>();
 
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
@@ -543,6 +544,26 @@ public class AppDbContext : DbContext
             entity.Property(p => p.UpdatedAt)
                   .HasDefaultValueSql("NOW()")
                   .ValueGeneratedOnAddOrUpdate();
+        });
+
+        // ── AdminLog ───────────────────────────────────────────
+        modelBuilder.Entity<AdminLog>(entity =>
+        {
+            entity.ToTable("admin_logs");
+            entity.HasKey(l => l.Id);
+            entity.Property(l => l.Id).ValueGeneratedOnAdd();
+            entity.Property(l => l.CreatedAt)
+                  .HasDefaultValueSql("NOW()")
+                  .ValueGeneratedOnAdd();
+            entity.Property(l => l.Actor).IsRequired().HasMaxLength(200);
+            entity.Property(l => l.Action).IsRequired().HasMaxLength(200);
+            entity.Property(l => l.Payload1).HasColumnType("jsonb");
+            entity.Property(l => l.Payload2).HasColumnType("text");
+            entity.Property(l => l.Payload3).HasColumnType("text");
+
+            entity.HasIndex(l => l.CreatedAt).IsDescending();
+            entity.HasIndex(l => l.Actor);
+            entity.HasIndex(l => l.Action);
         });
     }
 }
