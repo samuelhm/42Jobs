@@ -34,6 +34,8 @@ export default function CategoriesBar() {
         if (activeId === null || !ids.includes(activeId)) {
           if (ids.length > 0) {
             setSearchParams({ category: String(ids[0]) }, { replace: true });
+          } else {
+            setSearchParams({}, { replace: true });
           }
         }
       }
@@ -174,6 +176,12 @@ export default function CategoriesBar() {
     }
   }
 
+  async function handleUnfollow(id: number, e: React.MouseEvent) {
+    e.stopPropagation();
+    await fetchWithAuth(`/api/categories/${id}/follow`, { method: 'DELETE' });
+    await loadCategories();
+  }
+
   async function handleUpdate() {
     if (!activeId) return;
     setUpdating(true);
@@ -209,6 +217,7 @@ export default function CategoriesBar() {
             >
               {c.name}
               <span className="tab-count">{c.job_count}</span>
+              <span className="tab-close" onClick={(e) => handleUnfollow(c.id, e)} title="Unfollow">x</span>
             </button>
           ))}
           <button className="tab-btn tab-add" onClick={() => setShowAdd(true)}>+</button>

@@ -108,6 +108,25 @@
   font-size: 0.62rem; color: var(--amber-dim); margin-left: 0.3rem;
 }
 
+.tab-btn .tab-close {
+  margin-left: 0.3rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-dim);
+  opacity: 0;
+  transition: opacity 0.15s, color 0.15s;
+  line-height: 1;
+  vertical-align: middle;
+}
+
+.tab-btn:hover .tab-close {
+  opacity: 1;
+}
+
+.tab-close:hover {
+  color: var(--red);
+}
+
 .tab-btn.active .tab-count { color: var(--amber); }
 
 .tab-add { font-size: 1.05rem; padding: 0.25rem 0.6rem; line-height: 1; flex-shrink: 0; }
