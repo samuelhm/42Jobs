@@ -76,7 +76,7 @@ export default function ProfileProjects() {
     const username = ghUsername.trim();
     if (!username || !ghToken.trim()) return;
     setImporting(true);
-    setImportStatus({ message: 'Starting import...', type: 'info' });
+    setImportStatus({ message: 'Starting import — this may take several minutes while AI analyzes your repositories.', type: 'info' });
 
     try {
       const res = await fetch('/api/projects/import-github', {
