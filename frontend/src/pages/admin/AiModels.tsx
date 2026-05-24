@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { get, post, put, del } from './api';
+import { get, post, put, del } from '../../utils';
 
 interface AiModel { id: number; name: string; ai_service_name: string; ai_service_id: number; is_active: boolean; used_by: string[]; }
 interface AiService { id: number; name: string; }

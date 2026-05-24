@@ -1,5 +1,6 @@
-import { useEffect, useState, useCallback } from 'react';
-import { get, put } from './api';
+import { useEffect, useState } from 'react';
+import { get, put } from '../../utils';
+import { useDebounce } from '../../hooks';
 
 interface Provider { id: number; portal: string; provider_name: string; is_enabled: boolean; is_active: boolean; base_url: string | null; api_key: string | null; config: string | null; }
 
@@ -14,14 +15,6 @@ const FILTERS = {
   companySize: ['', 'startup', 'small', 'medium', 'large', 'enterprise', 'mega', 'giant', 'massive'],
 };
 
-function useDebouncedSave(delay = 800) {
-  const [timer, setTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
-  return useCallback((fn: () => void) => {
-    if (timer) clearTimeout(timer);
-    setTimer(setTimeout(fn, delay));
-  }, [delay]);
-}
-
 function ProviderCard({ p }: { p: Provider }) {
   const [host, setHost] = useState(p.base_url || '');
   const [key, setKey] = useState(p.api_key || '');
@@ -29,7 +22,7 @@ function ProviderCard({ p }: { p: Provider }) {
   const [saved, setSaved] = useState(false);
   const [config, setConfig] = useState<Record<string, string>>({});
 
-  const debounce = useDebouncedSave();
+  const debounce = useDebounce();
 
   useEffect(() => {
     try { setConfig(p.config ? JSON.parse(p.config) : {}); } catch { setConfig({}); }

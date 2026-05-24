@@ -1,0 +1,46 @@
+/* ── Chart area ── */
+.chart-wrap {
+  position: relative; padding: 0.8rem;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.chart-container { position: relative; margin: 0 auto; max-width: 85%; }
+
+/* ── Hover info ── */
+#hover-info {
+  margin-top: 0.8rem; padding: 0.8rem;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); font-size: 0.78rem;
+  color: var(--text-dim); min-height: 2.5rem;
+  transition: all 0.3s ease;
+  font-family: 'JetBrains Mono', monospace; letter-spacing: 0.01em;
+}
+
+#hover-info.active {
+  border-color: var(--amber); color: var(--text);
+  box-shadow: 0 0 16px var(--amber-glow);
+}
+
+#hover-info strong { color: var(--amber); font-weight: 600; }
+
+#hover-info .tag-cloud {
+  margin-top: 0.4rem; display: flex; flex-wrap: wrap; gap: 0.3rem;
+}
+
+#hover-info .tag {
+  background: var(--surface-hover); border: 1px solid var(--border);
+  padding: 0.18rem 0.5rem; border-radius: 3px;
+  font-size: 0.65rem; color: var(--teal);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.empty-state {
+  padding: 3rem 1rem; text-align: center; color: var(--text-dim);
+}
+
+.empty-state p { font-size: 0.85rem; margin-bottom: 1rem; }
+
+.empty-state .hint {
+  font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--amber-dim);
+}

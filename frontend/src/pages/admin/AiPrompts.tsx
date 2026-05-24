@@ -1,23 +1,16 @@
-import { useEffect, useState, useCallback } from 'react';
-import { get, put } from './api';
+import { useEffect, useState } from 'react';
+import { get, put } from '../../utils';
+import { useDebounce } from '../../hooks';
 
 interface Prompt { id: number; functionality: string; name: string; description: string | null; system_prompt: string; user_prompt_template: string; is_active: boolean; default_model_id: number | null; default_model_name: string | null; default_model_service: string | null; }
 interface AiModel { id: number; name: string; ai_service_name: string; }
-
-function useDebouncedSave(delay = 1000) {
-  const [timer, setTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
-  return useCallback((fn: () => void) => {
-    if (timer) clearTimeout(timer);
-    setTimer(setTimeout(fn, delay));
-  }, [delay]);
-}
 
 function PromptCard({ p, models }: { p: Prompt; models: AiModel[] }) {
   const [system, setSystem] = useState(p.system_prompt);
   const [user, setUser] = useState(p.user_prompt_template);
   const [modelId, setModelId] = useState(p.default_model_id);
   const [saved, setSaved] = useState(false);
-  const debounce = useDebouncedSave();
+  const debounce = useDebounce(1000);
 
   function doSave(s: string, u: string, m: number | null) {
     setSaved(false);

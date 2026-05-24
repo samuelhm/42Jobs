@@ -1,0 +1,124 @@
+/* ── Admin ── */
+.admin-btn {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem; font-weight: 600;
+  padding: 0.3rem 0.7rem;
+  border: 1px solid var(--amber-dim);
+  border-radius: var(--radius);
+  background: rgba(212,168,83,0.08);
+  color: var(--amber); cursor: pointer;
+  transition: all 0.2s; white-space: nowrap; text-decoration: none;
+}
+.admin-btn:hover { background: rgba(212,168,83,0.18); border-color: var(--amber); }
+
+.admin-layout { min-height: 100vh; display: flex; flex-direction: column; }
+.admin-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.75rem 1.5rem; border-bottom: 1px solid var(--border);
+  background: var(--surface); position: sticky; top: 0; z-index: 50;
+}
+.admin-header-right { display: flex; align-items: center; gap: 0.75rem; flex-shrink: 0; }
+.admin-body { flex: 1; display: flex; }
+.admin-sidebar {
+  width: 200px; min-width: 200px;
+  background: var(--surface); border-right: 1px solid var(--border);
+  padding: 1rem 0; display: flex; flex-direction: column; gap: 0.15rem;
+}
+.admin-nav-link {
+  font-family: 'Outfit', sans-serif; font-size: 0.78rem; font-weight: 500;
+  padding: 0.45rem 1rem; color: var(--text-dim); text-decoration: none;
+  transition: all 0.2s; border-left: 2px solid transparent;
+}
+.admin-nav-link:hover { color: var(--text); background: var(--surface-hover); }
+.admin-nav-link.active { color: var(--amber); background: rgba(212,168,83,0.08); border-left-color: var(--amber); }
+.admin-content { flex: 1; padding: 2rem; overflow-y: auto; }
+.admin-content h2 { font-size: 1.15rem; color: var(--text-bright); margin-bottom: 0.5rem; }
+.admin-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem; }
+.admin-card { padding: 1.2rem 1rem; text-align: center; text-decoration: none; color: var(--text-bright); font-weight: 600; transition: all 0.2s; }
+.admin-card:hover { border-color: var(--amber); background: var(--surface-hover); }
+
+/* ── Service cards ── */
+.service-grid { display: flex; flex-direction: column; gap: 0.75rem; }
+.service-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 1.25rem; transition: border-color 0.2s;
+}
+.service-card:hover { border-color: var(--border-active); }
+.service-card.inactive { opacity: 0.6; }
+.service-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem; }
+.service-header h3 { font-size: 0.95rem; color: var(--text-bright); margin: 0; }
+.service-count { font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; color: var(--text-dim); }
+.free-tier-banner {
+  background: rgba(212,168,83,0.08); border-bottom: 1px solid var(--amber-dim);
+  color: var(--amber); text-align: center; padding: 0.5rem 1rem;
+  font-size: 0.78rem; font-family: 'Outfit', sans-serif;
+}
+.service-models { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.75rem; }
+.model-chip {
+  font-family: 'JetBrains Mono', monospace; font-size: 0.62rem;
+  padding: 0.15rem 0.55rem; border-radius: 4px;
+  background: var(--bg); border: 1px solid var(--border); color: var(--text-dim);
+}
+.model-chip.default { border-color: var(--amber-dim); color: var(--amber); background: rgba(212,168,83,0.08); }
+.model-chip.muted { opacity: 0.5; }
+
+/* ── Toggle switch ── */
+.toggle-switch {
+  width: 40px; height: 22px; border-radius: 11px;
+  border: 1px solid var(--border); background: var(--bg);
+  cursor: pointer; position: relative; transition: all 0.2s;
+  flex-shrink: 0; padding: 0;
+}
+.toggle-switch.on { background: rgba(77,184,160,0.25); border-color: var(--teal-dim); }
+.toggle-switch.small { width: 32px; height: 18px; border-radius: 9px; }
+.toggle-knob {
+  position: absolute; top: 2px; left: 2px;
+  width: 16px; height: 16px; border-radius: 50%;
+  background: var(--text-dim); transition: all 0.2s;
+}
+.toggle-switch.on .toggle-knob { left: 20px; background: var(--teal); }
+.toggle-switch.small .toggle-knob { width: 12px; height: 12px; }
+.toggle-switch.small.on .toggle-knob { left: 16px; }
+.toggle-group { display: flex; gap: 0.4rem; }
+
+/* ── API key input ── */
+.apikey-row { display: flex; align-items: center; gap: 0.5rem; }
+.apikey-input { max-width: 400px; }
+.apikey-saved { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; color: var(--teal); white-space: nowrap; }
+
+/* ── Model list ── */
+.model-list { display: flex; flex-direction: column; gap: 0.3rem; }
+.model-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 0.5rem 0.75rem; border-radius: var(--radius);
+  background: var(--bg); border: 1px solid var(--border);
+}
+.model-info { display: flex; align-items: center; gap: 0.5rem; }
+.model-name { font-size: 0.82rem; color: var(--text); }
+.model-usage { display: flex; gap: 0.25rem; flex-wrap: wrap; }
+.model-usage code {
+  font-family: 'JetBrains Mono', monospace; font-size: 0.55rem;
+  padding: 0.1rem 0.35rem; border-radius: 3px;
+  background: rgba(77,184,160,0.1); color: var(--teal);
+  border: 1px solid rgba(77,184,160,0.2);
+}
+.model-selector select { max-width: 220px; font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; }
+.model-selector { flex-shrink: 0; }
+
+/* ── Dashboard cards ── */
+.admin-dash-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 0.75rem; margin-top: 1.5rem; }
+.admin-dash-card {
+  padding: 1.2rem 1rem; text-align: center; text-decoration: none;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  color: var(--text-bright); font-weight: 600; font-size: 0.85rem;
+  transition: all 0.2s; display: flex; flex-direction: column; align-items: center; gap: 0.4rem;
+}
+.admin-dash-card:hover { border-color: var(--amber); background: var(--surface-hover); }
+.admin-dash-card .icon { font-size: 1.5rem; }
+.admin-dash-card .label { color: var(--text-dim); font-size: 0.68rem; font-weight: 400; }
+
+.free-tier-row { display: flex; align-items: center; gap: 1rem; margin-top: 0.5rem; }
+
+.provider-config { margin-top: 0.75rem; }
+.provider-config summary { cursor: pointer; font-family: "JetBrains Mono", monospace; font-size: 0.7rem; color: var(--amber-dim); margin-bottom: 0.5rem; }
+.config-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 0.3rem; }

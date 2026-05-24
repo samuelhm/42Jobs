@@ -1,23 +1,9 @@
 import { useState, useEffect } from 'react';
+import type { ProfileData } from '../../types';
 
 interface Props {
   profile: ProfileData;
   onSave: () => void;
-}
-
-interface ProfileData {
-  name?: string;
-  last_name?: string;
-  phone?: string;
-  email?: string;
-  address?: string;
-  linkedin_url?: string;
-  website_url?: string;
-  github_url?: string;
-  junior?: boolean;
-  presentation?: string;
-  preferred_location?: string;
-  preferred_date_posted?: string;
 }
 
 export default function ProfileInfo({ profile, onSave }: Props) {

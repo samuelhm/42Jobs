@@ -1,4 +1,6 @@
-async function api<T>(url: string, options?: RequestInit): Promise<{ success: boolean; data: T; error?: string }> {
+import type { ApiResponse } from '../types';
+
+async function api<T>(url: string, options?: RequestInit): Promise<ApiResponse<T>> {
   const res = await fetch(url, { headers: { 'Content-Type': 'application/json' }, ...options });
   return res.json();
 }

@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router';
-import { ToastProvider } from '../context/ToastContext';
-import { useAuth } from '../context/AuthContext';
+import { ToastProvider, useAuth } from '../../context';
 import FreeTierBanner from './FreeTierBanner';
-import ToastContainer from './ToastContainer';
+import ToastContainer from '../ui/ToastContainer';
 
 const navItems = [
   { to: '/', label: 'Dashboard' },

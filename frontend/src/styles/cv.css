@@ -1,0 +1,64 @@
+/* ── CV preview ── */
+.cv-preview {
+  background: #fff;
+  max-width: 850px;
+  width: 90vw;
+  max-height: 90vh;
+  overflow-y: auto;
+  border-radius: var(--radius);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+}
+
+.cv-toolbar {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 0.75rem 1.5rem;
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  border-radius: var(--radius) var(--radius) 0 0;
+  position: sticky; top: 0; z-index: 2;
+}
+.cv-toolbar h3 { color: var(--text); font-size: 0.9rem; }
+.cv-toolbar div { display: flex; gap: 0.5rem; }
+
+.cv-content { padding: 2rem; background: #fff; color: #222; }
+
+.cv-page {
+  max-width: 700px; margin: 0 auto;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 0.85rem; line-height: 1.5;
+}
+
+.cv-header { text-align: center; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 2px solid #333; }
+.cv-header h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.2rem; color: #111; }
+.cv-subtitle { font-size: 0.9rem; color: #555; margin-bottom: 0.4rem; }
+.cv-contact { font-size: 0.75rem; color: #666; }
+.cv-contact a { color: #2563eb; text-decoration: none; }
+
+.cv-section { margin-bottom: 1.2rem; }
+.cv-section h2 {
+  font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+  color: #333; border-bottom: 1px solid #ccc; padding-bottom: 0.2rem; margin-bottom: 0.5rem;
+  font-weight: 700;
+}
+
+.cv-item { margin-bottom: 0.6rem; }
+.cv-item-header { font-size: 0.82rem; margin-bottom: 0.15rem; }
+.cv-item-dates { color: #888; font-size: 0.75rem; }
+.cv-type-tag { color: #2563eb; font-size: 0.7rem; font-weight: 600; }
+.cv-item p { font-size: 0.78rem; color: #444; margin: 0; }
+
+.cv-skills { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+.cv-skill-tag {
+  background: #f0f4ff; color: #2563eb; border: 1px solid #c8d6f7;
+  padding: 0.15rem 0.5rem; border-radius: 3px;
+  font-size: 0.72rem; font-weight: 500;
+}
+
+.cv-skill-group { margin-bottom: 0.35rem; }
+.cv-skill-cat { font-weight: 600; font-size: 0.72rem; color: #555; margin-bottom: 0.12rem; }
+
+@media print {
+  .dialog-overlay { background: none !important; position: static !important; }
+  .cv-preview { box-shadow: none !important; max-width: 100% !important; max-height: none !important; }
+  .cv-toolbar { display: none !important; }
+  .cv-content { padding: 0 !important; }
+}

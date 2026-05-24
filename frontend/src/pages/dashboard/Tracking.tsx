@@ -1,28 +1,12 @@
-import { useEffect, useState } from 'react';
-import CvModal from '../components/CvModal';
-
-interface Job {
-  id: number;
-  title: string;
-  company_name: string;
-  job_url: string;
-}
+import { useState } from 'react';
+import { useLoaderData } from 'react-router';
+import { CvModal } from '../../components';
+import type { TrackingData } from './tracking.loader';
+import type { TrackingJob } from './tracking.types';
 
 export default function Tracking() {
-  const [jobs, setJobs] = useState<Job[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [cvJob, setCvJob] = useState<Job | null>(null);
-
-  useEffect(() => {
-    fetch('/api/tracking')
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.success) setJobs(data.data);
-        setLoading(false);
-      });
-  }, []);
-
-  if (loading) return <div className="loading">Loading...</div>;
+  const { jobs } = useLoaderData() as TrackingData;
+  const [cvJob, setCvJob] = useState<TrackingJob | null>(null);
 
   return (
     <div className="tracking-page">
@@ -44,17 +28,13 @@ export default function Tracking() {
                 </svg>
               </button>
               {job.job_url && (
-                <a className="oferta-link" href={job.job_url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
-                  ver
-                </a>
+                <a className="oferta-link" href={job.job_url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>ver</a>
               )}
             </div>
           </div>
         ))}
       </div>
-      {cvJob && (
-        <CvModal jobId={cvJob.id} jobTitle={cvJob.title} onClose={() => setCvJob(null)} />
-      )}
+      {cvJob && <CvModal jobId={cvJob.id} jobTitle={cvJob.title} onClose={() => setCvJob(null)} />}
     </div>
   );
 }

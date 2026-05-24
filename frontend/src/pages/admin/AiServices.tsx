@@ -1,21 +1,14 @@
-import { useEffect, useState, useCallback } from 'react';
-import { get, put } from './api';
+import { useEffect, useState } from 'react';
+import { get, put } from '../../utils';
+import { useDebounce } from '../../hooks';
 
 interface AiService { id: number; name: string; api_key: string | null; is_active: boolean; is_free_tier: boolean; models: { id: number; name: string; is_active: boolean }[]; }
-
-function useDebouncedSave(delay = 800) {
-  const [timer, setTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
-  return useCallback((fn: () => void) => {
-    if (timer) clearTimeout(timer);
-    setTimer(setTimeout(fn, delay));
-  }, [delay]);
-}
 
 function ApiKeyInput({ service }: { service: AiService }) {
   const [key, setKey] = useState('');
   const [loaded, setLoaded] = useState(false);
   const [saved, setSaved] = useState(false);
-  const debounce = useDebouncedSave();
+  const debounce = useDebounce();
 
   useEffect(() => {
     get<any[]>('/api/admin/ai-services').then(r => {

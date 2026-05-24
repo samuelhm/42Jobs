@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { post } from './api';
+import { post } from '../../utils';
 
 export default function AdminDedup() {
   const [msg, setMsg] = useState('');

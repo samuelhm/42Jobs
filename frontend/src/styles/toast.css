@@ -1,0 +1,44 @@
+/* ── Toast ── */
+.toast-container {
+  position: fixed;
+  top: 4.5rem;
+  right: 1.5rem;
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-width: 380px;
+}
+
+.toast {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  padding: 0.6rem 1rem;
+  border-radius: var(--radius);
+  cursor: pointer;
+  animation: toastIn 0.3s ease;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+.toast-info {
+  background: rgba(212, 168, 83, 0.1);
+  border: 1px solid var(--amber-dim);
+  color: var(--amber);
+}
+
+.toast-success {
+  background: rgba(77, 184, 160, 0.1);
+  border: 1px solid var(--teal-dim);
+  color: var(--teal);
+}
+
+.toast-error {
+  background: rgba(212, 114, 106, 0.1);
+  border: 1px solid var(--red);
+  color: var(--red);
+}
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}

@@ -1,15 +1,8 @@
-import { useEffect, useState, useCallback } from 'react';
-import { get, put, del } from './api';
+import { useEffect, useState } from 'react';
+import { get, put, del } from '../../utils';
+import { useDebounce } from '../../hooks';
 
 interface Template { id: number; name: string; description: string | null; html_template: string; css: string | null; is_active: boolean; }
-
-function useDebouncedSave(delay = 1200) {
-  const [timer, setTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
-  return useCallback((fn: () => void) => {
-    if (timer) clearTimeout(timer);
-    setTimer(setTimeout(fn, delay));
-  }, [delay]);
-}
 
 function TemplateCard({ t }: { t: Template }) {
   const [name, setName] = useState(t.name);
@@ -17,7 +10,7 @@ function TemplateCard({ t }: { t: Template }) {
   const [css, setCss] = useState(t.css || '');
   const [active, setActive] = useState(t.is_active);
   const [saved, setSaved] = useState(false);
-  const debounce = useDebouncedSave();
+  const debounce = useDebounce(1200);
 
   function doSave(n: string, h: string, c: string, a: boolean) {
     setSaved(false);

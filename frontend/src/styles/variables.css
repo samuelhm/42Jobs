@@ -1,0 +1,24 @@
+:root {
+  --bg: #171614;
+  --surface: #21201d;
+  --surface-hover: #292824;
+  --border: #33302b;
+  --border-active: #5a5240;
+  --amber: #d4a853;
+  --amber-dim: #8a7038;
+  --amber-glow: rgba(212, 168, 83, 0.18);
+  --teal: #4db8a0;
+  --teal-dim: #2d7a6a;
+  --teal-glow: rgba(77, 184, 160, 0.15);
+  --text: #ddd6c8;
+  --text-dim: #8a8578;
+  --text-bright: #f5efe0;
+  --red: #d4726a;
+  --radius: 0.5rem;
+  --kw-not-learned: #4a4540;
+  --kw-not-learned-border: #5a5550;
+  --kw-project: #3a6a5a;
+  --kw-project-border: #4a8a72;
+  --kw-school: #6a5a2a;
+  --kw-school-border: #8a7a3a;
+}

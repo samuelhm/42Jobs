@@ -1,13 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams } from 'react-router';
 import AddCategoryDialog from './AddCategoryDialog';
-import { useToast } from '../context/ToastContext';
-
-interface Category {
-  id: number;
-  name: string;
-  job_count: number;
-}
+import { useToast } from '../../context';
+import type { Category } from '../../types';
 
 export default function CategoriesBar() {
   const [searchParams, setSearchParams] = useSearchParams();

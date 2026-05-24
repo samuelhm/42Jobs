@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 
 interface Props {
   jobId: number;
@@ -11,10 +11,6 @@ export default function NotesModal({ jobId, jobTitle, initialNotes, onClose }: P
   const [notes, setNotes] = useState(initialNotes || '');
   const [saved, setSaved] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    return () => { if (timerRef.current) clearTimeout(timerRef.current); };
-  }, []);
 
   function handleChange(value: string) {
     setNotes(value);

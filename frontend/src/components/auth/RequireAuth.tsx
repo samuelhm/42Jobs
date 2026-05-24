@@ -1,5 +1,5 @@
 import { Outlet } from 'react-router';
-import { AuthProvider, useAuth } from '../context/AuthContext';
+import { AuthProvider, useAuth } from '../../context';
 
 function AuthGate() {
   const { loading } = useAuth();
