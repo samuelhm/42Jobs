@@ -29,3 +29,8 @@ resources/
 
 # Private migration
 database/migrations/99-private.sql
+
+# ─── OpenCode / AI tools ─────────────────────────────────────
+.agents/
+package-lock.json
+skills-lock.json
