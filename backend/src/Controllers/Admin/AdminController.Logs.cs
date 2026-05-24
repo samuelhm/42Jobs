@@ -35,6 +35,7 @@ public partial class AdminController
                 l.Payload1,
                 l.Payload2,
                 l.Payload3,
+                l.CorrelationId,
             })
             .AsNoTracking()
             .ToListAsync();

@@ -556,10 +556,12 @@ public class AppDbContext : DbContext
             entity.Property(l => l.Payload1).HasColumnType("jsonb");
             entity.Property(l => l.Payload2).HasColumnType("text");
             entity.Property(l => l.Payload3).HasColumnType("text");
+            entity.Property(l => l.CorrelationId).IsRequired().HasMaxLength(50);
 
             entity.HasIndex(l => l.CreatedAt).IsDescending();
             entity.HasIndex(l => l.Actor);
             entity.HasIndex(l => l.Action);
+            entity.HasIndex(l => l.CorrelationId);
         });
     }
 }

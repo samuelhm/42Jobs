@@ -16,7 +16,7 @@ public class AdminLogService
         _logger = logger;
     }
 
-    public async Task LogAsync(string actor, string action, object? payload1, string? payload2, string? payload3)
+    public async Task LogAsync(string actor, string action, object? payload1, string? payload2, string? payload3, string? correlationId = null)
     {
         try
         {
@@ -30,6 +30,7 @@ public class AdminLogService
                 Payload1 = payload1 is not null ? JsonSerializer.Serialize(payload1) : null,
                 Payload2 = payload2,
                 Payload3 = payload3,
+                CorrelationId = correlationId ?? string.Empty,
             });
 
             await db.SaveChangesAsync();

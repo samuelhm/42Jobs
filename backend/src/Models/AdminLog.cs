@@ -9,4 +9,5 @@ public class AdminLog
     public string? Payload1 { get; set; }
     public string? Payload2 { get; set; }
     public string? Payload3 { get; set; }
+    public string CorrelationId { get; set; } = string.Empty;
 }

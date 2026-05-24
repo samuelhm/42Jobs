@@ -23,6 +23,7 @@ public class GeminiProvider : IAiProvider
     public async Task<JsonElement> CallAsync(
         string systemPrompt, string userPrompt, JsonElement schema, string model, string? apiKey, string functionality, CancellationToken ct, bool useThinking = false)
     {
+        var correlationId = Guid.NewGuid().ToString("N");
         var combinedPrompt = $"{systemPrompt}\n\n{userPrompt}";
 
         if (string.IsNullOrWhiteSpace(apiKey))
@@ -58,7 +59,7 @@ public class GeminiProvider : IAiProvider
 
         await _log.LogAsync("Gemini", functionality,
             new { system_prompt = systemPrompt, user_prompt = userPrompt, model, use_thinking = useThinking },
-            model, "sent");
+            model, "sent", correlationId);
 
         var response = await http.PostAsync(url, content, ct);
 
@@ -70,7 +71,7 @@ public class GeminiProvider : IAiProvider
             var errorBody = await response.Content.ReadAsStringAsync(ct);
             await _log.LogAsync("Gemini", functionality,
                 new { error = errorBody, status_code = (int)response.StatusCode },
-                model, $"error:{(int)response.StatusCode}");
+                model, $"error:{(int)response.StatusCode}", correlationId);
             _logger.LogError("Gemini HTTP {Status}: {Error}", (int)response.StatusCode, errorBody);
             response.EnsureSuccessStatusCode();
         }
@@ -88,7 +89,7 @@ public class GeminiProvider : IAiProvider
         var result = JsonDocument.Parse(text).RootElement;
         await _log.LogAsync("Gemini", functionality,
             result,
-            model, "received:200");
+            model, "received:200", correlationId);
 
         return result;
     }

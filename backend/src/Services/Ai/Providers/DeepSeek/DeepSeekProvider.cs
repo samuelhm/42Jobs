@@ -24,6 +24,8 @@ public class DeepSeekProvider : IAiProvider
         string systemPrompt, string userPrompt, JsonElement schema, string model, string? apiKey,
         string functionality, CancellationToken ct, bool useThinking = false)
     {
+        var correlationId = Guid.NewGuid().ToString("N");
+
         if (string.IsNullOrWhiteSpace(apiKey))
             throw new InvalidOperationException("DeepSeek API key not configured. Set it in Admin > AI Services.");
 
@@ -70,7 +72,7 @@ public class DeepSeekProvider : IAiProvider
 
         await _log.LogAsync("DeepSeek", functionality,
             new { system_prompt = systemPrompt, user_prompt = userPrompt, schema, model, use_thinking = useThinking },
-            model, "sent");
+            model, "sent", correlationId);
 
         var response = await http.PostAsync($"{BaseUrl}/chat/completions", content, ct);
         var responseBody = await response.Content.ReadAsStringAsync(ct);
@@ -79,7 +81,7 @@ public class DeepSeekProvider : IAiProvider
         {
             await _log.LogAsync("DeepSeek", functionality,
                 new { error = responseBody, status_code = (int)response.StatusCode },
-                model, $"error:{(int)response.StatusCode}");
+                model, $"error:{(int)response.StatusCode}", correlationId);
             _logger.LogError("DeepSeek error (HTTP {Status}): {Body}", (int)response.StatusCode,
                 responseBody.Length > 800 ? responseBody[..800] : responseBody);
             response.EnsureSuccessStatusCode();
@@ -97,7 +99,7 @@ public class DeepSeekProvider : IAiProvider
         var result = JsonDocument.Parse(text).RootElement;
         await _log.LogAsync("DeepSeek", functionality,
             result,
-            model, "received:200");
+            model, "received:200", correlationId);
 
         return result;
     }

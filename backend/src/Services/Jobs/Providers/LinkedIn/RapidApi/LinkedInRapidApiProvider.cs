@@ -87,14 +87,14 @@ public class LinkedInRapidApiProvider : IJobProvider
         return client;
     }
 
-    private async Task<HttpResponseMessage> GetWithRetryAsync(HttpClient http, string relativeUrl, string action, object? logData, string logInfo, CancellationToken ct)
+    private async Task<HttpResponseMessage> GetWithRetryAsync(HttpClient http, string relativeUrl, string action, object? logData, string logInfo, string correlationId, CancellationToken ct)
     {
         while (true)
         {
             ct.ThrowIfCancellationRequested();
             await WaitForRateLimitAsync(ct);
 
-            await _log.LogAsync("LinkedInRapidAPI", action, logData, logInfo, "sent");
+            await _log.LogAsync("LinkedInRapidAPI", action, logData, logInfo, "sent", correlationId);
 
             var response = await http.GetAsync(relativeUrl, ct);
 
@@ -110,14 +110,14 @@ public class LinkedInRapidApiProvider : IJobProvider
                 _logger.LogWarning("LinkedIn RapidAPI rate limited (429). Retrying after {DelayMs}ms...", retryAfter.TotalMilliseconds);
                 await _log.LogAsync("LinkedInRapidAPI", action,
                     new { error = "429 rate limited", retry_after = retryAfter.ToString() },
-                    logInfo, "error:429, retrying");
+                    logInfo, "error:429, retrying", correlationId);
                 await Task.Delay(retryAfter, ct);
                 continue;
             }
 
             await _log.LogAsync("LinkedInRapidAPI", action,
                 new { error = err, status_code = (int)response.StatusCode },
-                logInfo, $"error:{(int)response.StatusCode}");
+                logInfo, $"error:{(int)response.StatusCode}", correlationId);
             response.EnsureSuccessStatusCode();
             return response;
         }
@@ -125,6 +125,7 @@ public class LinkedInRapidApiProvider : IJobProvider
 
     public async Task<JobSearchResult> SearchAsync(JobSearchRequest request, CancellationToken ct)
     {
+        var correlationId = Guid.NewGuid().ToString("N");
         using var http = CreateClient();
         var queryParams = new Dictionary<string, string>
         {
@@ -166,7 +167,7 @@ public class LinkedInRapidApiProvider : IJobProvider
 
         var response = await GetWithRetryAsync(http, $"/search?{qs}", "search",
             new { keywords = request.Keywords, location = request.Location, limit = request.Limit, start = request.Start },
-            searchInfo, ct);
+            searchInfo, correlationId, ct);
 
         var json = await response.Content.ReadAsStringAsync(ct);
         using var doc = JsonDocument.Parse(json);
@@ -201,19 +202,20 @@ public class LinkedInRapidApiProvider : IJobProvider
 
         await _log.LogAsync("LinkedInRapidAPI", "search",
             new { keywords = request.Keywords, location = request.Location, count = result.Jobs.Count },
-            searchInfo, $"received:200, {result.Jobs.Count} jobs");
+            searchInfo, $"received:200, {result.Jobs.Count} jobs", correlationId);
 
         return result;
     }
 
     public async Task<JobDetailResult?> GetDetailsAsync(string externalId, CancellationToken ct)
     {
+        var correlationId = Guid.NewGuid().ToString("N");
         using var http = CreateClient();
         var url = $"/job/{Uri.EscapeDataString(externalId)}";
 
         var response = await GetWithRetryAsync(http, url, "getDetails",
             new { external_id = externalId },
-            url, ct);
+            url, correlationId, ct);
 
         var json = await response.Content.ReadAsStringAsync(ct);
         using var doc = JsonDocument.Parse(json);
@@ -232,7 +234,7 @@ public class LinkedInRapidApiProvider : IJobProvider
 
             await _log.LogAsync("LinkedInRapidAPI", "getDetails",
                 new { description = desc?[..Math.Min(desc.Length, 500)], job_type = jt, experience_level = el, industry = ind, job_function = jf, applicants = app },
-                $"/job/{Uri.EscapeDataString(externalId)}", "received:200");
+                $"/job/{Uri.EscapeDataString(externalId)}", "received:200", correlationId);
 
             return new JobDetailResult
             {
@@ -247,7 +249,7 @@ public class LinkedInRapidApiProvider : IJobProvider
 
         await _log.LogAsync("LinkedInRapidAPI", "getDetails",
             null,
-            $"/job/{Uri.EscapeDataString(externalId)}", "received:200, no job data");
+            $"/job/{Uri.EscapeDataString(externalId)}", "received:200, no job data", correlationId);
 
         return null;
     }

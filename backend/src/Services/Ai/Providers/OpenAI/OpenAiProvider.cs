@@ -23,6 +23,7 @@ public class OpenAiProvider : IAiProvider
     public async Task<JsonElement> CallAsync(
         string systemPrompt, string userPrompt, JsonElement schema, string model, string? apiKey, string functionality, CancellationToken ct, bool useThinking = false)
     {
+        var correlationId = Guid.NewGuid().ToString("N");
         var combinedPrompt = $"{systemPrompt}\n\n{userPrompt}";
 
         if (string.IsNullOrWhiteSpace(apiKey))
@@ -60,7 +61,7 @@ public class OpenAiProvider : IAiProvider
 
         await _log.LogAsync("OpenAI", functionality,
             new { system_prompt = systemPrompt, user_prompt = userPrompt, model, use_thinking = useThinking },
-            model, "sent");
+            model, "sent", correlationId);
 
         var response = await http.PostAsync($"{BaseUrl}/v1/responses", content, ct);
         var responseBody = await response.Content.ReadAsStringAsync(ct);
@@ -69,7 +70,7 @@ public class OpenAiProvider : IAiProvider
         {
             await _log.LogAsync("OpenAI", functionality,
                 new { error = responseBody, status_code = (int)response.StatusCode },
-                model, $"error:{(int)response.StatusCode}");
+                model, $"error:{(int)response.StatusCode}", correlationId);
             _logger.LogError("OpenAI error (HTTP {Status}): {Body}", (int)response.StatusCode,
                 responseBody.Length > 800 ? responseBody[..800] : responseBody);
             response.EnsureSuccessStatusCode();
@@ -87,7 +88,7 @@ public class OpenAiProvider : IAiProvider
         var result = JsonDocument.Parse(text).RootElement;
         await _log.LogAsync("OpenAI", functionality,
             result,
-            model, "received:200");
+            model, "received:200", correlationId);
 
         return result;
     }
