@@ -71,6 +71,12 @@ Thanks for your interest in contributing.
 4. Create the controller endpoint (partial class file).
 5. If it uses AI, inject `IAiService` and use the appropriate prompt from the DB.
 
+## Adding a new API key or credential
+
+If your feature requires storing API keys, tokens, or secrets in the database, you **must** encrypt them. Never store credentials in plaintext.
+
+See the dedicated guide: [docs/Encryption.md](docs/Encryption.md).
+
 ## Adding a new AI provider
 
 See the dedicated guide: [docs/IAProvider.md](docs/IAProvider.md).
