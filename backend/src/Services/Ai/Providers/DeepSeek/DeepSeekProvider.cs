@@ -48,7 +48,7 @@ public class DeepSeekProvider : IAiProvider
             writer.WriteString("model", model);
             writer.WritePropertyName("messages");
             JsonSerializer.Serialize(writer, messages);
-            writer.WriteNumber("max_tokens", 8000);
+            writer.WriteNumber("max_tokens", 32768);
             writer.WriteNumber("temperature", 0.1);
 
             writer.WriteStartObject("response_format");
