@@ -18,6 +18,16 @@ public partial class CategoriesController
             return NotFound(new { error = "Category not found" });
         }
 
+        var user = await _db.Users.FindAsync(userId);
+        if (user is null)
+            return NotFound(new { error = "User not found" });
+
+        if (!string.IsNullOrWhiteSpace(user.PreferredLocation) && string.IsNullOrWhiteSpace(body.Location))
+            body.Location = user.PreferredLocation;
+
+        if (!string.IsNullOrWhiteSpace(user.PreferredDatePosted) && string.IsNullOrWhiteSpace(body.DatePosted))
+            body.DatePosted = user.PreferredDatePosted;
+
         if (!await _db.UserCategories.AnyAsync(uc => uc.UserId == userId && uc.CategoryId == id))
         {
             _db.UserCategories.Add(new UserCategory { UserId = userId, CategoryId = id });
