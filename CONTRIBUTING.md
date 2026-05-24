@@ -108,6 +108,37 @@ Examples:
 - `refactor(frontend): split CSS into modules`
 - `feat(frontend): add loader for Dashboard`
 
+## Releases
+
+Releases use **semantic versioning** with `v{major}.{minor}.{patch}-alpha` tags (e.g. `v0.1.4-alpha`).
+
+To create a new release:
+
+```bash
+# 1. Ensure all changes are committed and pushed to master
+git push origin master
+
+# 2. Tag the release with the next version
+git tag v0.1.4-alpha
+
+# 3. Push the tag — this triggers the deploy pipeline
+git push origin v0.1.4-alpha
+```
+
+### What happens when a tag is pushed
+
+The [release workflow](.github/workflows/release.yml) is triggered on any `v*` tag push:
+
+1. **Build** — Backend and frontend Docker images are built and pushed to GitHub Container Registry (`ghcr.io`) with the version tag and `:latest`
+2. **GitHub Release** — A release is auto-generated from the commit history
+3. **Deploy** — The VPS pulls the latest code, pulls the new images, and restarts the backend and frontend containers
+
+```
+git tag vX.Y.Z-alpha  ──>  GitHub Actions  ──>  ghcr.io images  ──>  VPS deploy
+```
+
+> Only commits on `master` should be tagged. The tag must start with `v` to trigger the pipeline.
+
 ## Questions?
 
 Open an issue or start a discussion.

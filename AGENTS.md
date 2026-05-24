@@ -120,6 +120,37 @@ Este es un proyecto **personal de aprendizaje**. El objetivo principal no es ent
 6. ✅ APIs externas (LinkedIn RapidAPI + Gemini filtro/keywords).
 7. ✅ Frontend refactorizado (barrel pattern, CSS modules, data router, loaders/actions).
 
+## Releases y deploy
+
+Las releases usan **versionado semántico** con tags `v{major}.{minor}.{patch}-alpha` (ej. `v0.1.4-alpha`).
+
+Para crear una nueva release:
+
+```bash
+# 1. Asegurarse de que todos los cambios están commiteados y pusheados a master
+git push origin master
+
+# 2. Crear el tag con la siguiente versión
+git tag v0.1.4-alpha
+
+# 3. Pushear el tag — esto dispara el pipeline de deploy
+git push origin v0.1.4-alpha
+```
+
+### Qué sucede al pushear un tag
+
+El [release workflow](.github/workflows/release.yml) se dispara con cualquier push de tag `v*`:
+
+1. **Build** — Se construyen las imágenes Docker de backend y frontend y se suben a GitHub Container Registry (`ghcr.io`) con el tag de versión y `:latest`
+2. **GitHub Release** — Se genera un release automático a partir del historial de commits
+3. **Deploy** — El VPS hace pull del código, pull de las nuevas imágenes, y reinicia los contenedores
+
+```
+git tag vX.Y.Z-alpha  ──>  GitHub Actions  ──>  ghcr.io images  ──>  VPS deploy
+```
+
+> Solo los commits en `master` deben taggearse. El tag debe empezar con `v` para disparar el pipeline.
+
 ## Cómo trabajar
 
 - Al iniciar una tarea, **leer `roadmap.md`** para saber en qué checkpoint estamos.
