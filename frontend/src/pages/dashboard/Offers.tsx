@@ -247,5 +247,5 @@ function JobAccordion({ job, userKeywords, onStatusChange }: {
 
 export function OffersRoute() {
   const [searchParams] = useSearchParams();
-  return <Offers key={searchParams.toString()} />;
+  return <Offers key={searchParams.get('_t') || ''} />;
 }
