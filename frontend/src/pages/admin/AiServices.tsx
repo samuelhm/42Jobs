@@ -74,6 +74,7 @@ export default function AdminAiServices() {
               </div>
             </div>
             <ApiKeyInput service={s} />
+            {s.name !== 'DeepSeek' && (
             <div className="free-tier-row">
               <label className="checkbox-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <span>Free tier</span>
@@ -86,6 +87,7 @@ export default function AdminAiServices() {
                 {s.is_free_tier ? 'Delays + retries active' : 'No rate limiting'}
               </span>
             </div>
+            )}
             <div className="service-models">
               {s.models.map(m => (
                 <span key={m.id} className={`model-chip ${!m.is_active ? 'muted' : ''}`}>

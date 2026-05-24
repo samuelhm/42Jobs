@@ -10,6 +10,7 @@ using src.Data;
 using src.Services;
 using src.Services.Ai;
 using src.Services.Ai.Providers;
+using src.Services.Ai.Providers.DeepSeek;
 using src.Services.Ai.Providers.Gemini;
 using src.Services.Ai.Providers.OpenAI;
 using src.Services.Jobs;
@@ -51,6 +52,7 @@ builder.Services.AddSingleton<IJobProvider, LinkedInRapidApiProvider>();
 
 builder.Services.AddSingleton<IAiProvider, GeminiProvider>();
 builder.Services.AddSingleton<IAiProvider, OpenAiProvider>();
+builder.Services.AddSingleton<IAiProvider, DeepSeekProvider>();
 builder.Services.AddScoped<IAiService, AiService>();
 
 builder.Services.AddSingleton<IJobFetchService, JobFetchService>();

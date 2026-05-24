@@ -12,7 +12,7 @@ public partial class AiService
 
         var (provider, model, apiKey, isFreeTier) = await ResolveModelAsync(defaultModelId);
         var schema = LoadSchema("cv_generation", provider.ServiceName);
-        var result = await CallWithRetryAsync(provider, systemPrompt, userPrompt, schema, model, apiKey, isFreeTier, ct);
+        var result = await CallWithRetryAsync(provider, systemPrompt, userPrompt, schema, model, apiKey, isFreeTier, ct, useThinking: true);
 
         if (result.TryGetProperty("error", out var err) && err.ValueKind != JsonValueKind.Null)
         {

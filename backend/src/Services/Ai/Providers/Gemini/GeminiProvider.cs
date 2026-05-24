@@ -21,7 +21,7 @@ public class GeminiProvider : IAiProvider
     }
 
     public async Task<JsonElement> CallAsync(
-        string systemPrompt, string userPrompt, JsonElement schema, string model, string? apiKey, CancellationToken ct)
+        string systemPrompt, string userPrompt, JsonElement schema, string model, string? apiKey, CancellationToken ct, bool useThinking = false)
     {
         var combinedPrompt = $"{systemPrompt}\n\n{userPrompt}";
 

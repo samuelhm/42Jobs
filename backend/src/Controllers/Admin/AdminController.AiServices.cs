@@ -20,7 +20,8 @@ public partial class AdminController
     [HttpPost("ai-services")]
     public async Task<IActionResult> CreateAiService([FromBody] AiServiceDto body)
     {
-        var service = new AiService { Name = body.Name, ApiKey = _encryption.Encrypt(body.ApiKey), IsActive = body.IsActive, IsFreeTier = body.IsFreeTier };
+        var isFreeTier = body.Name == "DeepSeek" ? false : body.IsFreeTier;
+        var service = new AiService { Name = body.Name, ApiKey = _encryption.Encrypt(body.ApiKey), IsActive = body.IsActive, IsFreeTier = isFreeTier };
         _db.AiServices.Add(service);
         await _db.SaveChangesAsync();
         return Ok(new { success = true, data = service });
@@ -34,7 +35,7 @@ public partial class AdminController
         service.Name = body.Name;
         service.ApiKey = _encryption.Encrypt(body.ApiKey);
         service.IsActive = body.IsActive;
-        service.IsFreeTier = body.IsFreeTier;
+        service.IsFreeTier = service.Name == "DeepSeek" ? false : body.IsFreeTier;
         service.UpdatedAt = DateTime.UtcNow;
         await _db.SaveChangesAsync();
         return Ok(new { success = true, data = service });

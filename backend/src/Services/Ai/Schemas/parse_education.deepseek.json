@@ -1,0 +1,39 @@
+{
+  "type": "object",
+  "required": [
+    "error",
+    "education"
+  ],
+  "properties": {
+    "error": {
+      "type": "string",
+      "description": "Empty string if successful. Error description if parsing fails."
+    },
+    "education": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "degree",
+          "end_year",
+          "start_year",
+          "institution"
+        ],
+        "properties": {
+          "degree": {
+            "type": "string"
+          },
+          "end_year": {
+            "type": "number"
+          },
+          "start_year": {
+            "type": "number"
+          },
+          "institution": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}
