@@ -1,5 +1,5 @@
--- 39-update-dedup-prompt.sql
--- Refined dedup_keywords prompt: version merging, canonical forms, false-positive prevention
+-- Production patch: refined dedup_keywords AI prompt
+-- Run this on already-provisioned databases only
 
 UPDATE ai_prompts SET
   system_prompt = 'You are a technical keyword deduplicator for an ATS. Group keywords that represent IDENTICAL technologies into clusters. The first item in each group will be kept; the rest will be merged into it.',

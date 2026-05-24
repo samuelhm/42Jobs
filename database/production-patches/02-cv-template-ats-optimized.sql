@@ -1,5 +1,5 @@
--- 38-seed-cv-template-ats-optimized.sql
--- New ATS-optimized CV template with comma-separated skills and project dates
+-- Production patch: update existing CV template to ATS Optimized
+-- Run this on already-provisioned databases only
 
 UPDATE cv_templates SET is_active = FALSE;
 
