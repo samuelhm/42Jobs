@@ -161,18 +161,25 @@ public class LinkedInRapidApiProvider : IJobProvider
             && root.TryGetProperty("job", out var jobData))
         {
             var d = jobData;
+            var desc = d.TryGetProperty("description", out var de) ? de.GetString() : null;
+            var jt = d.TryGetProperty("jobType", out var jj) ? jj.GetString() : null;
+            var el = d.TryGetProperty("experienceLevel", out var ee) ? ee.GetString() : null;
+            var ind = d.TryGetProperty("industry", out var ii) ? ii.GetString() : null;
+            var jf = d.TryGetProperty("jobFunction", out var ff) ? ff.GetString() : null;
+            var app = d.TryGetProperty("applicants", out var aa) ? aa.GetString() : null;
+
             await _log.LogAsync("LinkedInRapidAPI", "getDetails",
-                null,
+                new { description = desc?[..Math.Min(desc.Length, 500)], job_type = jt, experience_level = el, industry = ind, job_function = jf, applicants = app },
                 $"/job/{Uri.EscapeDataString(externalId)}", "received:200");
 
             return new JobDetailResult
             {
-                Description = d.TryGetProperty("description", out var desc) ? desc.GetString() : null,
-                JobType = d.TryGetProperty("jobType", out var jt) ? jt.GetString() : null,
-                ExperienceLevel = d.TryGetProperty("experienceLevel", out var el) ? el.GetString() : null,
-                Industry = d.TryGetProperty("industry", out var ind) ? ind.GetString() : null,
-                JobFunction = d.TryGetProperty("jobFunction", out var jf) ? jf.GetString() : null,
-                Applicants = d.TryGetProperty("applicants", out var app) ? app.GetString() : null,
+                Description = desc,
+                JobType = jt,
+                ExperienceLevel = el,
+                Industry = ind,
+                JobFunction = jf,
+                Applicants = app,
             };
         }
 
