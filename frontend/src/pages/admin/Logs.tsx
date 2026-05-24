@@ -37,7 +37,8 @@ function statusLabel(payload3: string | null): string {
 function formatJson(raw: string | null): string {
   if (!raw) return '';
   try {
-    return JSON.stringify(JSON.parse(raw), null, 2);
+    const obj = JSON.parse(raw);
+    return JSON.stringify(obj, null, 2).replace(/\\n/g, '\n');
   } catch {
     return raw;
   }
