@@ -79,11 +79,16 @@ public class OpenAiProvider : IAiProvider
         using var doc = JsonDocument.Parse(responseBody);
         var root = doc.RootElement;
 
-        var text = root
-            .GetProperty("output")[0]
-            .GetProperty("content")[0]
-            .GetProperty("text")
-            .GetString()!;
+        var text = FindTextInOutput(root);
+        if (text is null)
+        {
+            _logger.LogError("OpenAI response has no text content: {Body}",
+                responseBody.Length > 800 ? responseBody[..800] : responseBody);
+            await _log.LogAsync("OpenAI", functionality,
+                new { error = "No text content in response output", body_preview = responseBody.Length > 500 ? responseBody[..500] : responseBody },
+                model, "error: no text in output", correlationId);
+            throw new InvalidOperationException("OpenAI response has no text content");
+        }
 
         var result = JsonDocument.Parse(text).RootElement;
         await _log.LogAsync("OpenAI", functionality,
@@ -91,5 +96,25 @@ public class OpenAiProvider : IAiProvider
             model, "received:200", correlationId);
 
         return result;
+    }
+
+    private static string? FindTextInOutput(JsonElement root)
+    {
+        if (!root.TryGetProperty("output", out var output))
+            return null;
+
+        foreach (var item in output.EnumerateArray())
+        {
+            if (!item.TryGetProperty("content", out var content))
+                continue;
+
+            foreach (var contentItem in content.EnumerateArray())
+            {
+                if (contentItem.TryGetProperty("text", out var t))
+                    return t.GetString();
+            }
+        }
+
+        return null;
     }
 }
