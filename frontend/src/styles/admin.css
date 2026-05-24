@@ -137,36 +137,17 @@
 
 .log-table-wrap { overflow-x: auto; }
 .log-table {
-  width: 100%; border-collapse: collapse; font-size: 0.72rem; table-layout: fixed;
+  width: 100%; border-collapse: collapse; font-size: 0.72rem;
 }
-.log-table th:nth-child(1) { width: 9%; }
-.log-table th:nth-child(2) { width: 11%; }
-.log-table th:nth-child(3) { width: 8%; }
-.log-table th:nth-child(4) { width: 6%; }
-.log-table th:nth-child(6) { width: 14%; }
 .log-table thead {
   position: sticky; top: 0; z-index: 1;
   background: var(--surface);
 }
-.log-table th {
-  text-align: left; padding: 0.5rem 0.6rem; color: var(--text-dim);
-  border-bottom: 1px solid var(--border); font-weight: 600; white-space: nowrap;
-}
-.log-table td {
-  padding: 0.4rem 0.6rem; border-bottom: 1px solid var(--border-subtle);
-  color: var(--text);
-}
-.log-table tr:hover { background: var(--surface-hover); }
 
 .log-time { white-space: nowrap; color: var(--text-dim) !important; font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; }
-.log-actor { font-weight: 600; }
-.log-action { color: var(--amber-dim) !important; font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; }
+.log-actor { font-weight: 600; white-space: nowrap; }
+.log-action { color: var(--amber-dim) !important; font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; white-space: nowrap; }
 .log-payload2 { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; color: var(--text-dim) !important; word-break: break-all; }
-
-tr.log-sent { border-left: 3px solid var(--info, #4a9eff); }
-tr.log-received { border-left: 3px solid var(--success, #4ecf7d); }
-tr.log-error { border-left: 3px solid var(--danger, #e05252); }
-
 .log-payload3 {
   font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; white-space: nowrap;
 }
