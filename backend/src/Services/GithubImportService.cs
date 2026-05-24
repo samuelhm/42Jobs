@@ -120,6 +120,8 @@ public class GithubImportService : BackgroundService
 
             const int batchSize = 5;
             var totalBatches = (int)Math.Ceiling(projectTexts.Count / (double)batchSize);
+            status.Total = projectTexts.Count;
+            status.Processed = 0;
             status.Inserted = 0;
 
             for (var batch = 0; batch < totalBatches; batch++)
@@ -127,7 +129,7 @@ public class GithubImportService : BackgroundService
                 ct.ThrowIfCancellationRequested();
 
                 var batchItems = projectTexts.Skip(batch * batchSize).Take(batchSize).ToList();
-                status.Message = $"Analyzing batch {batch + 1}/{totalBatches} ({batchItems.Count} projects) with AI...";
+                status.Message = $"Analyzing with AI...";
 
                 List<GithubProjectResult> batchProjects;
                 string error;
@@ -141,11 +143,11 @@ public class GithubImportService : BackgroundService
                 if (!string.IsNullOrEmpty(error))
                 {
                     status.Status = "failed";
-                    status.Error = $"Batch {batch + 1}/{totalBatches}: {error}";
+                    status.Error = error;
                     return;
                 }
 
-                status.Message = $"Saving batch {batch + 1}/{totalBatches}...";
+                status.Message = $"Saving projects...";
 
                 using (var saveScope = _scopeFactory.CreateScope())
                 {
@@ -190,13 +192,15 @@ public class GithubImportService : BackgroundService
                             }
 
                             await db.Database.ExecuteSqlRawAsync(
-                                "INSERT INTO project_keywords (project_id, keyword_id) VALUES ({0}, {1}) ON CONFLICT DO NOTHING",
-                                ct, project.Id, kw.Id);
+                                $"INSERT INTO project_keywords (project_id, keyword_id) VALUES ({project.Id}, {kw.Id}) ON CONFLICT DO NOTHING",
+                                ct);
                         }
 
                         status.Inserted++;
                     }
                 }
+
+                status.Processed = status.Inserted;
             }
 
             status.Status = "completed";

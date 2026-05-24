@@ -125,13 +125,13 @@ export default function ProfileProjects() {
           resolve();
         } else if (d.status === 'running') {
           const total = d.total || 0;
-          const processed = d.processed || 0;
-          const isAnalyzing = d.message && d.message.includes('Analyzing');
+          const inserted = d.inserted || 0;
+          const isFetching = d.message && d.message.includes('Fetching');
           setImportStatus({
-            message: d.message || `Processing... ${processed}/${total}`,
+            message: `${d.message || 'Processing...'} ${total > 0 ? `${inserted}/${total}` : ''}`,
             type: 'info',
-            processed: isAnalyzing ? undefined : (total > 0 ? processed : undefined),
-            total: isAnalyzing ? undefined : (total > 0 ? total : undefined),
+            processed: isFetching ? d.processed || 0 : inserted,
+            total: isFetching ? total : total,
           });
         }
       } catch {
