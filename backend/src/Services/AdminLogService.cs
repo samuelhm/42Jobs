@@ -36,7 +36,7 @@ public class AdminLogService
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Failed to write admin log for {Actor}/{Action}", actor, action);
+            _logger.LogWarning(ex, "Failed to write admin log for {Actor}/{Action}: {Error}", actor, action, ex.GetBaseException().Message);
         }
     }
 }

@@ -33,9 +33,11 @@ public class DeepSeekProvider : IAiProvider
 
         var schemaJson = schema.GetRawText();
 
+        var enrichedSystemPrompt = systemPrompt + "\n\nYou must respond with a JSON object matching this exact structure:\n" + schemaJson;
+
         var messages = new[]
         {
-            new { role = "system", content = systemPrompt },
+            new { role = "system", content = enrichedSystemPrompt },
             new { role = "user", content = userPrompt }
         };
 
