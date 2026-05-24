@@ -1,6 +1,6 @@
 import { createBrowserRouter, createRoutesFromElements, Route } from 'react-router';
 import { RequireAuth, AuthLayout, AdminLayout } from './components';
-import { Login, Register, Dashboard, Offers, Profile, Tracking, KeywordsPage } from './pages';
+import { Login, Register, Dashboard, OffersRoute, Profile, Tracking, KeywordsPage } from './pages';
 import { AdminDashboard, AiServices, AiModels, AiPrompts, Templates, JobProviders, Dedup, Logs } from './pages/admin';
 
 import { dashboardLoader } from './pages/dashboard/dashboard.loader';
@@ -20,7 +20,7 @@ const routes = createRoutesFromElements(
     <Route element={<RequireAuth />}>
       <Route element={<AuthLayout />}>
         <Route index element={<Dashboard />} loader={dashboardLoader} />
-        <Route path="offers" element={<Offers />} loader={offersLoader} />
+        <Route path="offers" element={<OffersRoute />} loader={offersLoader} />
         <Route path="profile" element={<Profile />} loader={profileLoader} />
         <Route path="tracking" element={<Tracking />} loader={trackingLoader} />
         <Route path="keywords" element={<KeywordsPage />} loader={keywordsPageLoader} />

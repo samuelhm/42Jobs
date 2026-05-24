@@ -1,12 +1,24 @@
 import { useState } from 'react';
-import { useLoaderData } from 'react-router';
+import { useLoaderData, useSearchParams } from 'react-router';
 import { CategoriesBar, NotesModal, KeywordTag, CvModal } from '../../components';
 import { formatDescription, getMatchPct, getMatchClass, isRecent } from '../../utils';
 import { useToast } from '../../context';
 import type { Job, UserKeyword } from '../../types';
 import type { OffersData } from './offers.loader';
 
-export default function Offers() {
+export function OffersRoute() {
+  const [searchParams] = useSearchParams();
+  const categoryId = searchParams.get('category') || 'none';
+  const refreshKey = searchParams.get('_r') || '0';
+  return (
+    <>
+      <CategoriesBar />
+      <OffersContent key={`${categoryId}_${refreshKey}`} />
+    </>
+  );
+}
+
+function OffersContent() {
   const { userKeywords: initialKeywords, jobs: initialJobs, categoryId } = useLoaderData() as OffersData;
 
   const [userKeywords, setUserKeywords] = useState<Record<string, UserKeyword>>(initialKeywords);
@@ -71,18 +83,14 @@ export default function Offers() {
 
   if (!categoryId) {
     return (
-      <>
-        <CategoriesBar />
-        <div className="empty-state">
-          <p>Select or add a category to view offers</p>
-        </div>
-      </>
+      <div className="empty-state">
+        <p>Select or add a category to view offers</p>
+      </div>
     );
   }
 
   return (
     <>
-      <CategoriesBar />
       <div className="offers-main">
         <div className="section-label">
           <span className="indicator" />
