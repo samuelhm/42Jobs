@@ -169,11 +169,17 @@ public partial class ResumesController
     private static string RenderProjects(JsonElement aiData)
     {
         if (!aiData.TryGetProperty("projects", out var arr)) return "";
+        var projects = arr.EnumerateArray().ToList();
+        var currentYear = DateTime.Now.Year;
+        var currentYearCount = Math.Min(projects.Count, projects.Count / 2 + 1);
+
         var parts = new List<string>();
-        foreach (var proj in arr.EnumerateArray())
+        for (var i = 0; i < projects.Count; i++)
         {
+            var proj = projects[i];
             var name = proj.TryGetProperty("name", out var n) ? n.GetString() ?? "" : "";
             var desc = proj.TryGetProperty("description", out var d) ? d.GetString() ?? "" : "";
+            var year = i < currentYearCount ? currentYear : currentYear - 1;
 
             var highlights = "";
             if (proj.TryGetProperty("highlights", out var hl))
@@ -184,6 +190,7 @@ public partial class ResumesController
 
             parts.Add($@"<div class=""entry"">
   <div class=""entry-header"">{name}</div>
+  <div class=""entry-dates"">{year} — Present</div>
   <div class=""entry-desc"">{desc}</div>
   {highlights}
 </div>");
