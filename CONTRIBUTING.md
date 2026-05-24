@@ -6,10 +6,11 @@ Thanks for your interest in contributing.
 
 1. Fork the repository
 2. Clone your fork
-3. Copy `.env.example` to `.env` and fill in the required API keys
+3. Copy `.env.example` to `.env` and fill in the database credentials and a random JWT secret
 4. Run `make dev-up` to start the development environment
-5. Make your changes
-6. Open a pull request
+5. Open the frontend, register an account, and configure your API keys via the **Admin panel** (AI services, job providers)
+6. Make your changes
+7. Open a pull request
 
 ## Project conventions
 

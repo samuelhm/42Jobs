@@ -7,6 +7,8 @@
 
 42jobs is a job search platform tailored for **junior software engineers**. It fetches job offers from LinkedIn, filters them with AI for relevance and junior-friendliness, extracts keywords, and generates ATS-optimized CVs — so you spend less time searching and more time landing interviews.
 
+**Live at [42jobs.xyz](https://42jobs.xyz)**
+
 ## Table of Contents
 
 - [Features](#features)
@@ -173,18 +175,7 @@ Got an idea? [Open an issue](https://github.com/samuelhm/42jobs/issues) or pick 
 
 ## Contributing
 
-Contributions are what make the open source community amazing. Any contribution you make is **greatly appreciated**.
-
-1. Fork the project
-2. Create your feature branch (`git checkout -b feat/amazing-feature`)
-3. Make your changes following our [conventions](CONTRIBUTING.md)
-4. Commit (`git commit -m 'feat: add amazing feature'`)
-5. Push (`git push origin feat/amazing-feature`)
-6. Open a pull request
-
-Read the full guide: [CONTRIBUTING.md](CONTRIBUTING.md)
-
-If you find a bug or have a feature request, [open an issue](https://github.com/samuelhm/42jobs/issues). Don't forget to give the project a star!
+Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on how to get started, project conventions, and how to add new providers.
 
 ## License
 

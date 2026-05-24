@@ -136,9 +136,9 @@ The `AiService` picks it up automatically via `IEnumerable<IAiProvider>` — no 
 Use the Admin panel (recommended) or insert directly via SQL:
 
 ```sql
--- Insert the service
-INSERT INTO ai_services (name, is_free_tier, api_key) VALUES
-    ('DeepSeek', FALSE, 'sk-your-key-here')
+-- Insert the service (leave api_key NULL and set it via Admin panel, which encrypts it automatically)
+INSERT INTO ai_services (name, is_free_tier) VALUES
+    ('DeepSeek', FALSE)
 ON CONFLICT (name) DO NOTHING;
 
 -- Insert its models
@@ -149,7 +149,7 @@ ON CONFLICT (ai_service_id, name) DO NOTHING;
 ```
 
 - `is_free_tier`: enable if this provider has rate limits (adds pre-call delay + exponential backoff on 429).
-- `api_key`: can be `NULL` and set later via the admin panel.
+- `api_key`: set via **Admin > AI Services** — it will be encrypted before storage. See [docs/Encryption.md](Encryption.md).
 - To make a model the default for a prompt, set `default_model_id` in `ai_prompts` via Admin > AI Prompts.
 
 ## 4. Verify

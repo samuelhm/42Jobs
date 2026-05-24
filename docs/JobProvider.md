@@ -135,16 +135,16 @@ The `JobFetchService` picks it up automatically via `IEnumerable<IJobProvider>`.
 Insert a row into `job_providers`:
 
 ```sql
-INSERT INTO job_providers (portal, provider_name, is_enabled, base_url, api_key) VALUES
-    ('InfoJobs', 'Native', TRUE, 'https://api.infojobs.net/', 'your_api_key_here')
+INSERT INTO job_providers (portal, provider_name, is_enabled, base_url) VALUES
+    ('InfoJobs', 'Native', TRUE, 'https://api.infojobs.net/')
 ON CONFLICT (portal, provider_name) DO NOTHING;
 ```
 
 - `is_enabled = TRUE`: the provider will be called on every fetch.
-- `api_key`: the API key is stored **directly in the database** (not in environment variables). It is injected into the provider at runtime by `JobFetchService` via the `IJobProvider.ApiKey` setter.
+- `api_key`: set via **Admin > Job Providers** — encrypted at rest (see [docs/Encryption.md](Encryption.md)). Injected at runtime by `JobFetchService`.
 - `base_url`: the base URL for the provider's API. Injected via `IJobProvider.BaseUrl` setter.
 - `config`: optional JSON for provider-specific settings (e.g., `{"jobType":"F","remote":"true"}`). Injected via `IJobProvider.Config` setter.
-- **Only one provider per portal** should be enabled. The `JobFetchService` enforces this by picking the first enabled one per portal.
+- **Only one provider per portal** should be enabled. `JobFetchService` picks the first enabled one per portal.
 
 ## 4. Verify
 
