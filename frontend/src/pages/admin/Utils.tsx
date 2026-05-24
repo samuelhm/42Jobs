@@ -6,6 +6,7 @@ interface CategoryInfo {
   name: string;
   last_fetched_at: string | null;
   job_count: number;
+  subscriber_count: number;
 }
 
 export default function AdminUtils() {
@@ -50,15 +51,11 @@ function CategorySection() {
 
   async function load() {
     try {
-      const [followedRes, availableRes] = await Promise.all([
-        get<CategoryInfo[]>('/api/categories'),
-        get<CategoryInfo[]>('/api/categories/available'),
-      ]);
-      const all: CategoryInfo[] = [];
-      if (followedRes.success) all.push(...followedRes.data);
-      if (availableRes.success) all.push(...availableRes.data);
-      all.sort((a, b) => a.name.localeCompare(b.name));
-      setCategories(all);
+      const res = await get<CategoryInfo[]>('/api/admin/categories');
+      if (res.success) {
+        const sorted = [...res.data].sort((a, b) => a.name.localeCompare(b.name));
+        setCategories(sorted);
+      }
     } catch {}
     setLoading(false);
   }
@@ -101,7 +98,7 @@ function CategorySection() {
             <div key={c.id} className="util-row">
               <div>
                 <span className="util-name">{c.name}</span>
-                <span className="util-meta">{c.job_count} jobs · {c.last_fetched_at ? new Date(c.last_fetched_at).toLocaleDateString() : 'never'}</span>
+                <span className="util-meta">{c.job_count} jobs · {c.subscriber_count} users · {c.last_fetched_at ? new Date(c.last_fetched_at).toLocaleDateString() : 'never'}</span>
               </div>
               <button className="btn-delete" onClick={() => deleteCategory(c)}>Delete</button>
             </div>
