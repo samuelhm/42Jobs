@@ -137,8 +137,13 @@
 
 .log-table-wrap { overflow-x: auto; }
 .log-table {
-  width: 100%; border-collapse: collapse; font-size: 0.72rem;
+  width: 100%; border-collapse: collapse; font-size: 0.72rem; table-layout: fixed;
 }
+.log-table th:nth-child(1) { width: 130px; }
+.log-table th:nth-child(2) { width: 130px; }
+.log-table th:nth-child(3) { width: 110px; }
+.log-table th:nth-child(4) { width: 90px; }
+.log-table th:nth-child(6) { width: 180px; }
 .log-table thead {
   position: sticky; top: 0; z-index: 1;
   background: var(--surface);
