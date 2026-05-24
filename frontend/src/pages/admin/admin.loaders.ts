@@ -1,5 +1,7 @@
+import { fetchWithAuth } from '../../utils/fetchWithAuth';
+
 export async function aiServicesLoader() {
-  const res = await fetch('/api/admin/ai-services').then(r => r.json());
+  const res = await fetchWithAuth('/api/admin/ai-services').then(r => r.json());
   return { services: res.success ? res.data : [] };
 }
 
@@ -12,7 +14,7 @@ export async function adminLogsLoader({ request }: { request: Request }) {
   if (actor) params.set('actor', actor);
   if (action) params.set('action', action);
   if (payload2) params.set('payload2', payload2);
-  const res = await fetch(`/api/admin/logs?${params.toString()}`).then(r => r.json());
+  const res = await fetchWithAuth(`/api/admin/logs?${params.toString()}`).then(r => r.json());
   return {
     logs: res.success ? res.data : [],
     actors: res.success ? res.actors : [],

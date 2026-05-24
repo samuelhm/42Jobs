@@ -1,7 +1,8 @@
 import type { ApiResponse } from '../types';
+import { fetchWithAuth } from './fetchWithAuth';
 
 async function api<T>(url: string, options?: RequestInit): Promise<ApiResponse<T>> {
-  const res = await fetch(url, { headers: { 'Content-Type': 'application/json' }, ...options });
+  const res = await fetchWithAuth(url, { headers: { 'Content-Type': 'application/json' }, ...options });
   return res.json();
 }
 

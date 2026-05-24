@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import { fetchWithAuth } from '../utils/fetchWithAuth';
 
 interface User {
   id: string;
@@ -19,7 +20,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AuthState>({ user: null, loading: true });
 
   useEffect(() => {
-    fetch('/api/users/me')
+    fetchWithAuth('/api/users/me')
       .then(res => res.ok ? res.json() : null)
       .then(data => {
         if (data?.success) {
