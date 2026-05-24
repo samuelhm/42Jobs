@@ -32,6 +32,13 @@ function AuthLayoutInner() {
       <header className="layout-header">
         <NavLink to="/" className="layout-logo">
           42<span className="accent">jobs</span>
+          <span className="logo-leds">
+            <span className="logo-led" />
+            <span className="logo-led" />
+            <span className="logo-led" />
+            <span className="logo-led" />
+            <span className="logo-led" />
+          </span>
         </NavLink>
 
         <nav className="layout-nav-desktop">

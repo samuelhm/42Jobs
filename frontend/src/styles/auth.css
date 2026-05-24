@@ -159,6 +159,29 @@
 
 .layout-logo .accent { color: var(--amber); }
 
+.logo-leds {
+  display: inline-flex;
+  gap: 3px;
+  margin-left: 0.4rem;
+  vertical-align: middle;
+  position: relative;
+  top: -2px;
+}
+
+.logo-led {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--teal);
+  box-shadow: 0 0 4px var(--teal), 0 0 8px rgba(77,184,160,0.4);
+  animation: ledPulse 2.5s ease-in-out infinite;
+}
+
+.logo-led:nth-child(2) { animation-delay: 0.6s; background: var(--amber); box-shadow: 0 0 4px var(--amber), 0 0 8px var(--amber-glow); }
+.logo-led:nth-child(3) { animation-delay: 1.2s; }
+.logo-led:nth-child(4) { animation-delay: 0.3s; background: var(--amber); box-shadow: 0 0 4px var(--amber), 0 0 8px var(--amber-glow); }
+.logo-led:nth-child(5) { animation-delay: 0.9s; }
+
 .layout-nav-desktop {
   display: flex;
   gap: 0.25rem;
