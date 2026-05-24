@@ -169,7 +169,7 @@ AI and job provider API keys are configured via the **Admin panel** (not env var
 - [ ] Email notifications for new matching jobs
 - [ ] More job providers (InfoJobs, Indeed)
 - [ ] UI tests with Playwright
-- [ ] Dark mode
+- [ ] Light mode
 - [ ] Public demo instance
 
 Got an idea? [Open an issue](https://github.com/samuelhm/42jobs/issues) or pick one from the roadmap and send a PR!
