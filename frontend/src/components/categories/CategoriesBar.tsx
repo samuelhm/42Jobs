@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useSearchParams } from 'react-router';
+import { useSearchParams, useRevalidator } from 'react-router';
 import AddCategoryDialog from './AddCategoryDialog';
 import { useToast } from '../../context';
 import type { Category } from '../../types';
@@ -17,6 +17,7 @@ export default function CategoriesBar() {
     total?: number;
   } | null>(null);
   const { toast } = useToast();
+  const revalidator = useRevalidator();
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const statusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -162,11 +163,7 @@ export default function CategoriesBar() {
       const ok = await triggerFetch(id);
       if (ok) {
         await loadCategories();
-        setSearchParams((prev) => {
-          prev.set('category', String(id));
-          prev.set('_t', String(Date.now()));
-          return prev;
-        }, { replace: true });
+        revalidator.revalidate();
       }
     } finally {
       setUpdating(false);
@@ -180,10 +177,7 @@ export default function CategoriesBar() {
       const ok = await triggerFetch(activeId);
       if (ok) {
         await loadCategories();
-        setSearchParams((prev) => {
-          prev.set('_t', String(Date.now()));
-          return prev;
-        });
+        revalidator.revalidate();
       }
     } catch {
       setFetchStatus({ message: 'Connection error', type: 'error' });
