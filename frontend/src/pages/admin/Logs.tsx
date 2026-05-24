@@ -46,51 +46,45 @@ interface LogGroup {
   id: number;
   sent: LogEntry;
   response: LogEntry | null;
-  correlation_id: string;
 }
 
 function groupLogs(logs: LogEntry[]): LogGroup[] {
-  const groupsMap = new Map<string, LogGroup>();
-  const unpaired: LogEntry[] = [];
+  const groups: LogGroup[] = [];
+  const responseMap = new Map<string, LogEntry>();
 
   for (const log of logs) {
-    if (!log.correlation_id) {
-      unpaired.push(log);
-      continue;
-    }
-    if (log.payload3?.startsWith('sent')) {
-      if (!groupsMap.has(log.correlation_id)) {
-        groupsMap.set(log.correlation_id, { id: log.id, sent: log, response: null, correlation_id: log.correlation_id });
-      } else {
-        groupsMap.get(log.correlation_id)!.sent = log;
-      }
-    } else {
-      if (!groupsMap.has(log.correlation_id)) {
-        groupsMap.set(log.correlation_id, { id: log.id, sent: {} as LogEntry, response: log, correlation_id: log.correlation_id });
-      } else {
-        groupsMap.get(log.correlation_id)!.response = log;
-      }
+    if (log.payload3?.startsWith('sent')) continue;
+    if (log.correlation_id) {
+      responseMap.set(log.correlation_id, log);
     }
   }
 
-  const paired: LogGroup[] = [];
-  for (const group of groupsMap.values()) {
-    if (group.sent.id) {
-      paired.push(group);
-    } else {
-      unpaired.push(group.response!);
-    }
+  const pairedIds = new Set<number>();
+
+  for (const log of logs) {
+    if (!log.payload3?.startsWith('sent')) continue;
+
+    const cid = log.correlation_id || '';
+    const response = cid ? responseMap.get(cid) : null;
+    groups.push({ id: log.id, sent: log, response: response || null });
+
+    pairedIds.add(log.id);
+    if (response) pairedIds.add(response.id);
   }
 
-  paired.sort((a, b) => new Date(b.sent.created_at).getTime() - new Date(a.sent.created_at).getTime());
-  return paired;
+  for (const log of logs) {
+    if (pairedIds.has(log.id)) continue;
+    groups.push({ id: log.id, sent: log, response: null });
+  }
+
+  groups.sort((a, b) => new Date(b.sent.created_at).getTime() - new Date(a.sent.created_at).getTime());
+  return groups;
 }
 
 export default function AdminLogs() {
   const { logs, actors, actions, filters } = useLoaderData() as LoaderData;
   const [, setSearchParams] = useSearchParams();
   const [modalJson, setModalJson] = useState<string | null>(null);
-  const [expanded, setExpanded] = useState<Set<number>>(new Set());
 
   const groups = groupLogs(logs);
 
@@ -103,15 +97,6 @@ export default function AdminLogs() {
     if (action) params.set('action', action);
     if (payload2) params.set('payload2', payload2);
     setSearchParams(params);
-  }
-
-  function toggleExpand(id: number) {
-    setExpanded(prev => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
   }
 
   function renderRow(log: LogEntry, isResponse: boolean = false) {
@@ -177,37 +162,12 @@ export default function AdminLogs() {
             </tr>
           </thead>
           <tbody>
-            {groups.map((group) => {
-              const isOpen = expanded.has(group.id);
-              return (
-                <Fragment key={group.id}>
-                  <tr
-                    className={`${statusClass(group.sent.payload3)} log-clickable`}
-                    onClick={() => group.response && toggleExpand(group.id)}
-                    style={{ cursor: group.response ? 'pointer' : 'default' }}
-                  >
-                    <td className="log-time">
-                      {group.response && <span className="log-expand">{isOpen ? '▼' : '▶'}</span>}
-                      {formatDate(group.sent.created_at)}
-                    </td>
-                    <td className="log-actor">{group.sent.actor}</td>
-                    <td className="log-action">{group.sent.action}</td>
-                    <td>
-                      {group.sent.payload1 ? (
-                        <button className="admin-btn" onClick={(e) => { e.stopPropagation(); setModalJson(formatJson(group.sent.payload1)); }}>
-                          view JSON
-                        </button>
-                      ) : (
-                        <span className="text-muted">—</span>
-                      )}
-                    </td>
-                    <td className="log-payload2">{group.sent.payload2 || '—'}</td>
-                    <td className={`log-payload3 ${statusClass(group.sent.payload3)}`}>{group.sent.payload3 || '—'}</td>
-                  </tr>
-                  {isOpen && group.response && renderRow(group.response, true)}
-                </Fragment>
-              );
-            })}
+            {groups.map((group) => (
+              <Fragment key={group.id}>
+                {renderRow(group.sent)}
+                {group.response && renderRow(group.response, true)}
+              </Fragment>
+            ))}
             {groups.length === 0 && (
               <tr><td colSpan={6} className="text-muted" style={{ textAlign: 'center', padding: '2rem' }}>No logs found.</td></tr>
             )}

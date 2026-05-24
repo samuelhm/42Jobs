@@ -232,14 +232,11 @@ tr.log-sent { border-left: 3px solid var(--info, #4a9eff); }
 tr.log-received { border-left: 3px solid var(--success, #4ecf7d); }
 tr.log-error { border-left: 3px solid var(--danger, #e05252); }
 
-tr.log-response { opacity: 0.85; background: var(--bg); }
-tr.log-response td { padding-top: 0.2rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--border); }
-tr.log-clickable:hover { background: var(--surface-hover); }
-.log-expand {
-  display: inline-block; width: 1rem; font-size: 0.55rem;
-  color: var(--amber-dim); margin-right: 0.2rem;
-  transition: transform 0.15s;
-}
+tr.log-sent + tr.log-response { border-left: 3px solid var(--success, #4ecf7d); }
+tr.log-response { border-bottom: 1px solid var(--border); background: linear-gradient(90deg, var(--bg) 0%, transparent 100%); }
+tr.log-response td { padding-top: 0.15rem; padding-bottom: 0.45rem; }
+tr.log-response + tr.log-sent,
+tr.log-response + tr:not(.log-response) { border-top: 2px solid var(--border); }
 
 .log-payload3 {
   font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; white-space: nowrap;
