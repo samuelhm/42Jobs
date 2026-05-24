@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using src.Data;
@@ -20,4 +21,8 @@ public partial class UsersController : ControllerBase
         _db = db;
         _jwt = jwt;
     }
+
+    private Guid GetUserId() =>
+        Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                ?? User.FindFirst("sub")?.Value!);
 }
