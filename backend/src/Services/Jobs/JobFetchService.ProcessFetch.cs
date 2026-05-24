@@ -54,9 +54,7 @@ public partial class JobFetchService
             status.Total = uniqueJobs.Count;
             _logger.LogInformation("Fetch {JobId}: {Total} unique jobs", request.JobId, status.Total);
 
-            var isFreeTier = await db.AiServices.AnyAsync(s => s.IsFreeTier && s.IsActive, ct);
-            var maxParallel = isFreeTier ? 1 : 3;
-            var semaphore = new SemaphoreSlim(maxParallel);
+            var semaphore = new SemaphoreSlim(50);
             var tasks = uniqueJobs.Select(job => Task.Run(async () =>
             {
                 try
