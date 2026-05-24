@@ -65,7 +65,7 @@ public partial class AiService : IAiService
 
     private async Task<JsonElement> CallWithRetryAsync(
         IAiProvider provider, string systemPrompt, string userPrompt,
-        JsonElement schema, string model, string? apiKey, bool isFreeTier, CancellationToken ct, bool useThinking = false)
+        JsonElement schema, string model, string? apiKey, string functionality, bool isFreeTier, CancellationToken ct, bool useThinking = false)
     {
         if (isFreeTier)
             await Task.Delay(6000 + Random.Shared.Next(1500), ct);
@@ -74,7 +74,7 @@ public partial class AiService : IAiService
         {
             try
             {
-                return await provider.CallAsync(systemPrompt, userPrompt, schema, model, apiKey, ct, useThinking);
+                return await provider.CallAsync(systemPrompt, userPrompt, schema, model, apiKey, functionality, ct, useThinking);
             }
             catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
             {

@@ -54,16 +54,16 @@ export default function CategoriesBar() {
     let datePosted = 'past-week';
     let missingPrefs = false;
     try {
-      const profileRes = await fetch('/api/profile');
-      const profileData = await profileRes.json();
-      if (profileData.success) {
-        if (profileData.data.preferred_location) {
-          location = profileData.data.preferred_location;
+      const prefsRes = await fetch('/api/profile/preferences');
+      const prefsData = await prefsRes.json();
+      if (prefsData.success) {
+        if (prefsData.data.preferred_location) {
+          location = prefsData.data.preferred_location;
         } else {
           missingPrefs = true;
         }
-        if (profileData.data.preferred_date_posted) {
-          datePosted = profileData.data.preferred_date_posted;
+        if (prefsData.data.preferred_date_posted) {
+          datePosted = prefsData.data.preferred_date_posted;
         } else {
           missingPrefs = true;
         }
@@ -103,7 +103,7 @@ export default function CategoriesBar() {
           if (d.status === 'completed' || d.status === 'done') {
             clearInterval(pollingRef.current!);
             pollingRef.current = null;
-            setFetchStatus({ message: `${d.inserted} new offers (${d.total} found)`, type: 'success' });
+            setFetchStatus({ message: `${d.total} found, ${d.skipped} discarded, ${d.inserted} new offers`, type: 'success' });
             clearStatusAfter(12000);
             resolve();
           } else if (d.status === 'failed' || d.error) {

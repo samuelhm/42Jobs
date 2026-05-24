@@ -21,7 +21,7 @@ public class OpenAiProvider : IAiProvider
     }
 
     public async Task<JsonElement> CallAsync(
-        string systemPrompt, string userPrompt, JsonElement schema, string model, string? apiKey, CancellationToken ct, bool useThinking = false)
+        string systemPrompt, string userPrompt, JsonElement schema, string model, string? apiKey, string functionality, CancellationToken ct, bool useThinking = false)
     {
         var combinedPrompt = $"{systemPrompt}\n\n{userPrompt}";
 
@@ -58,7 +58,7 @@ public class OpenAiProvider : IAiProvider
 
         var content = new StringContent(Encoding.UTF8.GetString(bodyStream.ToArray()), Encoding.UTF8, "application/json");
 
-        await _log.LogAsync("OpenAI", "llm:call",
+        await _log.LogAsync("OpenAI", functionality,
             new { system_prompt = systemPrompt, user_prompt = userPrompt, model, use_thinking = useThinking },
             model, "sent");
 
@@ -67,7 +67,7 @@ public class OpenAiProvider : IAiProvider
 
         if (!response.IsSuccessStatusCode)
         {
-            await _log.LogAsync("OpenAI", "llm:call",
+            await _log.LogAsync("OpenAI", functionality,
                 new { error = responseBody, status_code = (int)response.StatusCode },
                 model, $"error:{(int)response.StatusCode}");
             _logger.LogError("OpenAI error (HTTP {Status}): {Body}", (int)response.StatusCode,
@@ -85,7 +85,7 @@ public class OpenAiProvider : IAiProvider
             .GetString()!;
 
         var result = JsonDocument.Parse(text).RootElement;
-        await _log.LogAsync("OpenAI", "llm:call",
+        await _log.LogAsync("OpenAI", functionality,
             result,
             model, "received:200");
 

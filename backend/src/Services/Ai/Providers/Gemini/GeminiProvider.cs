@@ -21,7 +21,7 @@ public class GeminiProvider : IAiProvider
     }
 
     public async Task<JsonElement> CallAsync(
-        string systemPrompt, string userPrompt, JsonElement schema, string model, string? apiKey, CancellationToken ct, bool useThinking = false)
+        string systemPrompt, string userPrompt, JsonElement schema, string model, string? apiKey, string functionality, CancellationToken ct, bool useThinking = false)
     {
         var combinedPrompt = $"{systemPrompt}\n\n{userPrompt}";
 
@@ -56,7 +56,7 @@ public class GeminiProvider : IAiProvider
         if (!string.IsNullOrEmpty(apiKey))
             url += $"?key={apiKey}";
 
-        await _log.LogAsync("Gemini", "llm:call",
+        await _log.LogAsync("Gemini", functionality,
             new { system_prompt = systemPrompt, user_prompt = userPrompt, model, use_thinking = useThinking },
             model, "sent");
 
@@ -68,7 +68,7 @@ public class GeminiProvider : IAiProvider
         else
         {
             var errorBody = await response.Content.ReadAsStringAsync(ct);
-            await _log.LogAsync("Gemini", "llm:call",
+            await _log.LogAsync("Gemini", functionality,
                 new { error = errorBody, status_code = (int)response.StatusCode },
                 model, $"error:{(int)response.StatusCode}");
             _logger.LogError("Gemini HTTP {Status}: {Error}", (int)response.StatusCode, errorBody);
@@ -86,7 +86,7 @@ public class GeminiProvider : IAiProvider
             .GetString()!;
 
         var result = JsonDocument.Parse(text).RootElement;
-        await _log.LogAsync("Gemini", "llm:call",
+        await _log.LogAsync("Gemini", functionality,
             result,
             model, "received:200");
 

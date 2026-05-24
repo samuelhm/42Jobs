@@ -22,7 +22,7 @@ public class DeepSeekProvider : IAiProvider
 
     public async Task<JsonElement> CallAsync(
         string systemPrompt, string userPrompt, JsonElement schema, string model, string? apiKey,
-        CancellationToken ct, bool useThinking = false)
+        string functionality, CancellationToken ct, bool useThinking = false)
     {
         if (string.IsNullOrWhiteSpace(apiKey))
             throw new InvalidOperationException("DeepSeek API key not configured. Set it in Admin > AI Services.");
@@ -68,7 +68,7 @@ public class DeepSeekProvider : IAiProvider
 
         var content = new StringContent(Encoding.UTF8.GetString(bodyStream.ToArray()), Encoding.UTF8, "application/json");
 
-        await _log.LogAsync("DeepSeek", "llm:call",
+        await _log.LogAsync("DeepSeek", functionality,
             new { system_prompt = systemPrompt, user_prompt = userPrompt, schema = schemaJson, model, use_thinking = useThinking },
             model, "sent");
 
@@ -77,7 +77,7 @@ public class DeepSeekProvider : IAiProvider
 
         if (!response.IsSuccessStatusCode)
         {
-            await _log.LogAsync("DeepSeek", "llm:call",
+            await _log.LogAsync("DeepSeek", functionality,
                 new { error = responseBody, status_code = (int)response.StatusCode },
                 model, $"error:{(int)response.StatusCode}");
             _logger.LogError("DeepSeek error (HTTP {Status}): {Body}", (int)response.StatusCode,
@@ -95,7 +95,7 @@ public class DeepSeekProvider : IAiProvider
             .GetString()!;
 
         var result = JsonDocument.Parse(text).RootElement;
-        await _log.LogAsync("DeepSeek", "llm:call",
+        await _log.LogAsync("DeepSeek", functionality,
             result,
             model, "received:200");
 

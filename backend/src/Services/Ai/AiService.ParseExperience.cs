@@ -15,7 +15,7 @@ public partial class AiService
 
             var (provider, model, apiKey, isFreeTier) = await ResolveModelAsync(defaultModelId);
             var schema = LoadSchema("parse_experience", provider.ServiceName);
-            var result = await CallWithRetryAsync(provider, systemPrompt, userPrompt, schema, model, apiKey, isFreeTier, ct, useThinking: false);
+            var result = await CallWithRetryAsync(provider, systemPrompt, userPrompt, schema, model, apiKey, "parse_experience", isFreeTier, ct, useThinking: false);
 
             if (result.TryGetProperty("error", out var err) && err.ValueKind != JsonValueKind.Null)
             {
