@@ -30,7 +30,7 @@ public class OpenAiProvider : IAiProvider
             throw new InvalidOperationException("OpenAI API key not configured. Set it in Admin > AI Services.");
 
         using var http = _httpFactory.CreateClient();
-        http.Timeout = TimeSpan.FromSeconds(600);
+        http.Timeout = TimeSpan.FromSeconds(2400);
         http.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
 
         using var bodyStream = new MemoryStream();

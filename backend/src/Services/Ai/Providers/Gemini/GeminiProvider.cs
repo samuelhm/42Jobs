@@ -51,7 +51,7 @@ public class GeminiProvider : IAiProvider
         var content = new StringContent(json, Encoding.UTF8, "application/json");
 
         using var http = _httpFactory.CreateClient();
-        http.Timeout = TimeSpan.FromSeconds(600);
+        http.Timeout = TimeSpan.FromSeconds(2400);
 
         var url = $"{BaseUrl}/v1beta/models/{model}:generateContent";
         if (!string.IsNullOrEmpty(apiKey))
