@@ -1,5 +1,3 @@
-using System.ComponentModel.DataAnnotations;
-
 namespace src.Models.DTOs;
 
 public class LanguageDto
@@ -98,11 +96,8 @@ public class UpdateProfileDto
     public string? LastName { get; set; }
     public string? Phone { get; set; }
     public string? Address { get; set; }
-    [RegularExpression(@"^(https?://\S+|)$", ErrorMessage = "Invalid URL format")]
     public string? LinkedinUrl { get; set; }
-    [RegularExpression(@"^(https?://\S+|)$", ErrorMessage = "Invalid URL format")]
     public string? WebsiteUrl { get; set; }
-    [RegularExpression(@"^(https?://\S+|)$", ErrorMessage = "Invalid URL format")]
     public string? GithubUrl { get; set; }
     public bool? Junior { get; set; }
     public string? Presentation { get; set; }
