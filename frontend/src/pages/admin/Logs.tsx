@@ -142,13 +142,13 @@ export default function AdminLogs() {
       </div>
 
       {modalJson && (
-        <div className="modal-overlay" onClick={() => setModalJson(null)}>
-          <div className="modal-content log-modal" onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>Payload</h3>
-              <button className="admin-btn" onClick={() => setModalJson(null)}>Close</button>
-            </div>
+        <div className="dialog-overlay" onClick={() => setModalJson(null)}>
+          <div className="dialog-box log-modal" onClick={e => e.stopPropagation()}>
+            <h3>Payload</h3>
             <pre className="log-json">{modalJson}</pre>
+            <div className="dialog-actions">
+              <button className="btn-cancel" onClick={() => setModalJson(null)}>Close</button>
+            </div>
           </div>
         </div>
       )}
