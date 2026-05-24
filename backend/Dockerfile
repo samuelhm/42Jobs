@@ -22,6 +22,7 @@ RUN dotnet publish src/src.csproj -c Release -o /out
 
 # ─── Production ────────────────────────────────────────────
 FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine AS production
+RUN apk add --no-cache curl
 WORKDIR /app
 COPY --from=build /out .
 EXPOSE 8080
