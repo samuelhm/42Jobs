@@ -45,6 +45,28 @@ export default function CvModal({ jobId, jobTitle, onClose }: Props) {
     setLoading(false);
   }
 
+  async function generateCv() {
+    setLoading(true);
+    setError('');
+    try {
+      const res = await fetchWithAuth(`/api/resumes/${jobId}`, {
+        method: 'POST',
+      });
+      const data = await res.json();
+      if (data.html) {
+        setHtml(sanitizeHtml(data.html));
+        setModel(data.model || '');
+        setExists(true);
+      } else {
+        setError(data.error || 'Generation failed');
+      }
+    } catch {
+      setError('Connection error');
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function regenerateCv() {
     setLoading(true);
     setError('');
