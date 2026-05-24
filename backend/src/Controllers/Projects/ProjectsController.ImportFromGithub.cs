@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using src.Services;
 
 namespace src.Controllers;
 
@@ -12,16 +13,7 @@ public partial class ProjectsController
         if (string.IsNullOrEmpty(username))
             return BadRequest(new { error = "Username is required" });
 
-        var jobId = Guid.NewGuid();
-        ImportStatuses[jobId] = new ImportStatus { Status = "queued", JobId = jobId };
-
-        var token = body.Token;
-
-        var scopeFactory = _scopeFactory;
-        var httpFactory = _httpFactory;
-        var logger = _logger;
-
-        _ = Task.Run(async () => await ProcessImportAsync(jobId, userId, username, token, scopeFactory, httpFactory, logger));
+        var jobId = _githubImport.Enqueue(userId, username, body.Token);
 
         return Accepted(new { job_id = jobId, status = "queued", status_url = $"/api/projects/import-github/{jobId}" });
     }

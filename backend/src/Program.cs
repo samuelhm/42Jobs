@@ -58,6 +58,9 @@ builder.Services.AddScoped<IAiService, AiService>();
 builder.Services.AddSingleton<IJobFetchService, JobFetchService>();
 builder.Services.AddHostedService(sp => (JobFetchService)sp.GetRequiredService<IJobFetchService>());
 
+builder.Services.AddSingleton<GithubImportService>();
+builder.Services.AddHostedService(sp => sp.GetRequiredService<GithubImportService>());
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {

@@ -7,7 +7,8 @@ public partial class ProjectsController
     [HttpGet("import-github/{jobId:guid}")]
     public IActionResult GetImportStatus(Guid jobId)
     {
-        if (ImportStatuses.TryGetValue(jobId, out var status))
+        var status = _githubImport.GetStatus(jobId);
+        if (status is not null)
             return Ok(status);
 
         return NotFound(new { error = "Import job not found" });
