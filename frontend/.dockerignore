@@ -1,13 +1,11 @@
-**/bin
-**/obj
-**/.vs
-**/*.user
+node_modules/
+dist/
 .git/
 .gitignore
-.vscode/
 Dockerfile
 docker-compose*
 .env*
 *.md
 README*
 .DS_Store
+npm-debug.log*

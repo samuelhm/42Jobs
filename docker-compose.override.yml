@@ -30,7 +30,7 @@ services:
       - ./frontend/src:/app/src:ro
       - ./frontend/public:/app/public:ro
       - ./frontend/index.html:/app/index.html:ro
-      - ./frontend/vite.config.js:/app/vite.config.js:ro
+      - ./frontend/vite.config.ts:/app/vite.config.ts:ro
     ports:
       - "${FRONTEND_PORT:-3000}:5173"
     environment:
