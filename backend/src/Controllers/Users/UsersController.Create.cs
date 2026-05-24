@@ -16,6 +16,12 @@ public partial class UsersController
     {
         _logger.LogInformation("Registration attempt for email {Email}", body.Email);
 
+        if (!body.Email.EndsWith("@student.42barcelona.com", StringComparison.OrdinalIgnoreCase))
+        {
+            _logger.LogWarning("Registration rejected: {Email} is not a @student.42barcelona.com address", body.Email);
+            return BadRequest(new { error = "Only @student.42barcelona.com email addresses are allowed" });
+        }
+
         var emailExists = await _db.Users.AnyAsync(u => u.Email == body.Email);
         if (emailExists)
         {
