@@ -45,25 +45,20 @@ export default function CvModal({ jobId, jobTitle, onClose }: Props) {
     setLoading(false);
   }
 
-  async function generateCv() {
+  async function regenerateCv() {
     setLoading(true);
     setError('');
     try {
-      const res = await fetchWithAuth(`/api/resumes/${jobId}`, {
+      const res = await fetchWithAuth(`/api/resumes/${jobId}/regenerate`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
       });
       const data = await res.json();
-      if (data.cached) {
-        setHtml(sanitizeHtml(data.html));
-        setModel(data.model || '');
-        setExists(true);
-      } else if (data.html) {
+      if (data.html) {
         setHtml(sanitizeHtml(data.html));
         setModel(data.model || '');
         setExists(true);
       } else {
-        setError(data.error || 'Generation failed');
+        setError(data.error || 'Regeneration failed');
       }
     } catch {
       setError('Connection error');
@@ -107,7 +102,7 @@ export default function CvModal({ jobId, jobTitle, onClose }: Props) {
           <>
             <div className="cv-content" dangerouslySetInnerHTML={{ __html: html }} />
             <div style={{ padding: '0.75rem 1.5rem', borderTop: '1px solid var(--border)', textAlign: 'center' }}>
-              <button className="btn-cancel" style={{ fontSize: '0.75rem' }} onClick={() => { setExists(false); setHtml(''); generateCv(); }}>
+              <button className="btn-cancel" style={{ fontSize: '0.75rem' }} onClick={() => { setExists(false); setHtml(''); regenerateCv(); }}>
                 Regenerate CV
               </button>
             </div>
