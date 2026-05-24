@@ -1,6 +1,25 @@
-# 42jobs
+# 42jobs — junior job search, done right
 
-42jobs is a job search platform tailored for **junior software engineers**. It fetches job offers from LinkedIn, filters them with AI for relevance and junior-friendliness, extracts keywords, and generates ATS-optimized CVs.
+[![License](https://img.shields.io/badge/license-AGPL_v3-blue.svg?style=for-the-badge)](LICENSE)
+[![Stars](https://img.shields.io/github/stars/samuelhm/42jobs?style=for-the-badge)](https://github.com/samuelhm/42jobs/stargazers)
+[![Issues](https://img.shields.io/github/issues/samuelhm/42jobs?style=for-the-badge)](https://github.com/samuelhm/42jobs/issues)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=for-the-badge)](CONTRIBUTING.md)
+
+42jobs is a job search platform tailored for **junior software engineers**. It fetches job offers from LinkedIn, filters them with AI for relevance and junior-friendliness, extracts keywords, and generates ATS-optimized CVs — so you spend less time searching and more time landing interviews.
+
+## Table of Contents
+
+- [Features](#features)
+- [Screenshots](#screenshots)
+- [Tech Stack](#tech-stack)
+- [Prerequisites](#prerequisites)
+- [Quick Start](#quick-start)
+- [Architecture](#architecture)
+- [Environment Variables](#environment-variables)
+- [Roadmap](#roadmap)
+- [Contributing](#contributing)
+- [License](#license)
+- [Contact](#contact)
 
 ## Features
 
@@ -11,6 +30,15 @@
 - **GitHub import** — analyzes your repositories and creates project entries automatically
 - **Profile management** — education, experience, certifications, languages, skills
 - **Job tracking** — status pipeline: saved → CV sent → interview → hired / rejected
+- **Pluggable AI** — swap between Gemini and OpenAI, or add your own provider
+- **Pluggable job sources** — LinkedIn today, more sources planned
+
+## Screenshots
+
+<!-- TODO: add screenshots of Dashboard, Offers, Profile, CV generation -->
+| Dashboard | Job Search | CV Generation |
+|-----------|------------|---------------|
+| _coming soon_ | _coming soon_ | _coming soon_ |
 
 ## Tech Stack
 
@@ -18,23 +46,51 @@
 |-------------|-------------------------------------------------|
 | Backend     | .NET 10 (ASP.NET Core Web API), EF Core, JWT    |
 | Database    | PostgreSQL 16                                   |
-| Frontend    | React + React Router + TypeScript (Vite)        |
+| Frontend    | React 19 + React Router 7 + TypeScript (Vite)   |
 | AI          | OpenAI / Google Gemini (pluggable providers)    |
-| Infra       | Docker + Docker Compose                         |
+| Auth        | JWT in HttpOnly cookies + BCrypt                |
+| Infra       | Docker + Docker Compose (dev & prod profiles)   |
 | Package mgr | pnpm                                            |
+
+## Prerequisites
+
+Before you start, make sure you have:
+
+- [Docker](https://docs.docker.com/get-docker/) & Docker Compose
+- [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0) _(optional, only for local dev without Docker)_
+- [Node.js 20+](https://nodejs.org/) + [pnpm](https://pnpm.io/installation) _(optional, only for local dev without Docker)_
+- A [RapidAPI](https://rapidapi.com/) account with LinkedIn Jobs API subscription
+- An API key for [Google Gemini](https://aistudio.google.com/) or [OpenAI](https://platform.openai.com/)
 
 ## Quick Start
 
 ```bash
-cp .env.example .env   # edit with your API keys
-make dev-up            # starts db + backend + frontend
+# 1. Clone
+git clone https://github.com/samuelhm/42jobs.git
+cd 42jobs
+
+# 2. Configure environment
+cp .env.example .env
+# Edit .env with your database credentials and a random JWT secret
+
+# 3. Start
+make dev-up
 ```
 
 The app will be available at:
+
 - **Frontend**: http://localhost:3000
 - **API**: http://localhost:8080
 
-### Available commands
+### First-time setup
+
+1. Open the frontend, register an account
+2. Go to **Admin** panel (you'll need to promote your user to Admin in the DB first — see [CONTRIBUTING.md](CONTRIBUTING.md))
+3. Configure your AI provider (Gemini or OpenAI) with your API key
+4. Configure a job provider (LinkedIn RapidAPI) with your API key
+5. Create a search category (e.g. "React Developer") and hit **Fetch Jobs**
+
+### Useful commands
 
 ```bash
 make dev-up          # start development services
@@ -42,7 +98,6 @@ make dev-down        # stop development services
 make dev-restart     # rebuild + restart
 make dev-logs        # follow all logs
 make prod-up         # start production services
-make prod-down       # stop production services
 make clean           # stop everything + delete volumes
 ```
 
@@ -56,49 +111,87 @@ make clean           # stop everything + delete volumes
 │   ├── Data/            # EF Core DbContext (Fluent API config)
 │   ├── Services/
 │   │   ├── Ai/          # AI abstraction layer
-│   │   │   ├── AiService.cs             # reads prompts from DB, resolves providers
-│   │   │   └── Providers/{Gemini,OpenAI} # low-level API clients
-│   │   ├── JwtService.cs
-│   │   ├── LinkedInApiService.cs
-│   │   └── JobFetchOrchestrator.cs       # background job queue
+│   │   │   ├── AiService.cs               # reads prompts from DB, resolves providers
+│   │   │   └── Providers/{Gemini,OpenAI}   # low-level API clients
+│   │   ├── Jobs/        # Job fetching (background queue via Channel<T>)
+│   │   ├── EncryptionService.cs            # API key encryption at rest
+│   │   └── JwtService.cs
 │   └── Utils/
-├── frontend/src/       # React 19 + React Router 7 (Vite + TypeScript)
-│   ├── router.tsx       # createBrowserRouter with loaders/actions
-│   ├── types/           # Shared TypeScript interfaces
-│   ├── utils/           # api, format, match (barrel)
-│   ├── hooks/           # useDebounce, usePolling (barrel)
-│   ├── context/         # AuthContext, ToastContext (barrel)
-│   ├── styles/          # 13 CSS modules by responsibility
-│   ├── components/      # Reusable components (7 domain folders + barrel)
-│   └── pages/           # Route pages with loaders (4 domain folders + barrel)
-├── database/migrations/ # 22 SQL migration + seed files
-└── docs/               # Documentation
+├── frontend/src/        # React 19 + React Router 7 (Vite + TypeScript)
+│   ├── router.tsx        # createBrowserRouter with loaders/actions
+│   ├── types/            # Shared TypeScript interfaces
+│   ├── utils/            # api, format, match (barrel)
+│   ├── hooks/            # useDebounce, usePolling (barrel)
+│   ├── context/          # AuthContext, ToastContext (barrel)
+│   ├── styles/           # 13 CSS modules by responsibility
+│   ├── components/       # Reusable components (7 domain folders + barrel)
+│   └── pages/            # Route pages with loaders (4 domain folders + barrel)
+├── database/migrations/  # 22 SQL migration + seed files
+└── docs/                # Provider guides, encryption docs
 ```
 
 ### AI provider abstraction
 
-Controllers inject `IAiService`. The actual provider (Gemini, OpenAI, or future ones) is selected at runtime based on the **default model** configured in the database (`ai_models.is_default`). Prompts and response schemas are stored in the DB, not hardcoded.
+Controllers never call AI providers directly. They inject `IAiService`. The actual provider (Gemini, OpenAI, or future ones) is selected at runtime from the database. Prompts and response schemas are stored in the DB, not hardcoded.
 
-See [docs/IAProvider.md](docs/IAProvider.md) to add a new provider.
+→ [Add a new AI provider](docs/IAProvider.md)
+
+### Job provider abstraction
+
+Job sources are pluggable. `JobFetchService` calls all enabled `IJobProvider` implementations, one per portal. Provider config (keys, URLs) lives in the database and is encrypted at rest.
+
+→ [Add a new job provider](docs/JobProvider.md)
+→ [How API key encryption works](docs/Encryption.md)
 
 ## Environment Variables
 
-| Variable           | Description                  |
-|--------------------|------------------------------|
-| `POSTGRES_USER`    | Database user                |
-| `POSTGRES_PASSWORD`| Database password            |
-| `POSTGRES_DB`      | Database name                |
-| `DATABASE_URL`     | Full connection string       |
-| `JWT_SECRET_KEY`   | JWT signing key              |
-| `LINKEDIN_API_KEY` | RapidAPI key for LinkedIn    |
-| `LINKEDIN_API_HOST`| RapidAPI LinkedIn host       |
-| `LLM_GOOGLE_API_KEY`| Google Gemini API key       |
-| `LLM_OPENAI_API_KEY`| OpenAI API key              |
+| Variable           | Description                  | Required |
+|--------------------|------------------------------|----------|
+| `POSTGRES_USER`    | Database user                | Yes      |
+| `POSTGRES_PASSWORD`| Database password            | Yes      |
+| `POSTGRES_DB`      | Database name                | Yes      |
+| `DATABASE_URL`     | Full connection string (`postgres://user:pass@host:5432/db`) | Yes |
+| `JWT_SECRET_KEY`   | Random string for JWT signing (≥ 256 bits) | Yes |
+
+AI and job provider API keys are configured via the **Admin panel** (not env vars) and are **encrypted at rest** in the database.
+
+## Roadmap
+
+- [x] Job fetching from LinkedIn (RapidAPI)
+- [x] AI filtering + keyword extraction (Gemini / OpenAI)
+- [x] CV generation per job offer
+- [x] GitHub project import
+- [x] Job tracking pipeline
+- [x] API key encryption at rest
+- [ ] Email notifications for new matching jobs
+- [ ] More job providers (InfoJobs, Indeed)
+- [ ] UI tests with Playwright
+- [ ] Dark mode
+- [ ] Public demo instance
+
+Got an idea? [Open an issue](https://github.com/samuelhm/42jobs/issues) or pick one from the roadmap and send a PR!
+
+## Contributing
+
+Contributions are what make the open source community amazing. Any contribution you make is **greatly appreciated**.
+
+1. Fork the project
+2. Create your feature branch (`git checkout -b feat/amazing-feature`)
+3. Make your changes following our [conventions](CONTRIBUTING.md)
+4. Commit (`git commit -m 'feat: add amazing feature'`)
+5. Push (`git push origin feat/amazing-feature`)
+6. Open a pull request
+
+Read the full guide: [CONTRIBUTING.md](CONTRIBUTING.md)
+
+If you find a bug or have a feature request, [open an issue](https://github.com/samuelhm/42jobs/issues). Don't forget to give the project a star!
 
 ## License
 
 Dual-licensed under [AGPL v3](LICENSE) for open source / non-commercial use. For commercial use (if you wish to keep your modifications private), contact the author for a commercial license.
 
-## Contributing
+## Contact
 
-See [CONTRIBUTING.md](CONTRIBUTING.md).
+Samuel Hurtado — [@hurtadom.dev](https://hurtadom.dev) — samuel@hurtadom.dev
+
+Project Link: [https://github.com/samuelhm/42jobs](https://github.com/samuelhm/42jobs)
