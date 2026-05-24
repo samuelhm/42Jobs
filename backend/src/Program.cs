@@ -91,7 +91,8 @@ var connectionString = string.IsNullOrEmpty(databaseUrl)
     : DatabaseUrlParser.ToConnectionString(databaseUrl);
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(connectionString!).UseSnakeCaseNamingConvention());
+    options.UseNpgsql(connectionString!).UseSnakeCaseNamingConvention()
+           .UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery));
 
 var app = builder.Build();
 
