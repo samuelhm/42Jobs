@@ -31,7 +31,7 @@
 }
 .admin-nav-link:hover { color: var(--text); background: var(--surface-hover); }
 .admin-nav-link.active { color: var(--amber); background: rgba(212,168,83,0.08); border-left-color: var(--amber); }
-.admin-content { flex: 1; padding: 2rem; overflow-y: auto; min-width: 0; width: 100%; }
+.admin-content { flex: 1; padding: 2rem; overflow-y: auto; }
 .admin-content h2 { font-size: 1.15rem; color: var(--text-bright); margin-bottom: 0.5rem; }
 .admin-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem; }
 .admin-card { padding: 1.2rem 1rem; text-align: center; text-decoration: none; color: var(--text-bright); font-weight: 600; transition: all 0.2s; }
@@ -139,11 +139,11 @@
 .log-table {
   width: 100%; border-collapse: collapse; font-size: 0.72rem; table-layout: fixed;
 }
-.log-table th:nth-child(1) { width: 130px; }
-.log-table th:nth-child(2) { width: 130px; }
-.log-table th:nth-child(3) { width: 110px; }
-.log-table th:nth-child(4) { width: 90px; }
-.log-table th:nth-child(6) { width: 180px; }
+.log-table th:nth-child(1) { width: 9%; }
+.log-table th:nth-child(2) { width: 11%; }
+.log-table th:nth-child(3) { width: 8%; }
+.log-table th:nth-child(4) { width: 6%; }
+.log-table th:nth-child(6) { width: 14%; }
 .log-table thead {
   position: sticky; top: 0; z-index: 1;
   background: var(--surface);
