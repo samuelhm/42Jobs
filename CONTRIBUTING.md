@@ -20,6 +20,7 @@ Thanks for your interest in contributing.
 - The constructor, fields, helpers, and `[Route]` attribute go in `{Name}Controller.cs`. Each endpoint lives in `{Name}Controller.{Verb}.cs`.
 - All responses follow `{ success: bool, data: ... }` with `snake_case` JSON.
 - Authentication uses JWT stored in a cookie named `42jobs_auth`.
+- EF Core uses **split queries globally** to avoid cartesian explosion with multiple `.Include()`. See [docs/EFCore.md](docs/EFCore.md).
 
 ### Database
 
