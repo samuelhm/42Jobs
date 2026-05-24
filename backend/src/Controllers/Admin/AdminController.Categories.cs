@@ -5,6 +5,24 @@ namespace src.Controllers;
 
 public partial class AdminController
 {
+    [HttpGet("categories")]
+    public async Task<IActionResult> GetCategories()
+    {
+        var categories = await _db.Categories
+            .OrderBy(c => c.Name)
+            .Select(c => new
+            {
+                c.Id,
+                c.Name,
+                c.LastFetchedAt,
+                JobCount = c.Jobs.Count,
+                SubscriberCount = c.UserCategories.Count,
+            })
+            .ToListAsync();
+
+        return Ok(new { success = true, data = categories });
+    }
+
     [HttpDelete("categories/{id:int}")]
     public async Task<IActionResult> DeleteCategory([FromRoute] int id)
     {
