@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using src.Models;
@@ -11,14 +12,16 @@ public partial class CategoriesController
     public async Task<IActionResult> Create([FromBody] CreateCategoryDto body)
     {
         var userId = GetUserId();
+        var normalizedInput = NormalizeName(body.Name);
 
-        var existing = await _db.Categories.FirstOrDefaultAsync(c => c.Name == body.Name);
+        var allCategories = await _db.Categories.ToListAsync();
+        var existing = allCategories.FirstOrDefault(c => NormalizeName(c.Name) == normalizedInput);
 
         Category category;
         if (existing is not null)
         {
             category = existing;
-            _logger.LogInformation("Category '{Name}' already exists, reusing id={Id}", body.Name, category.Id);
+            _logger.LogInformation("Category '{Name}' normalizes to existing '{Existing}', reusing id={Id}", body.Name, existing.Name, category.Id);
         }
         else
         {
@@ -60,5 +63,10 @@ public partial class CategoriesController
             id = category.Id,
             name = category.Name,
         });
+    }
+
+    private static string NormalizeName(string name)
+    {
+        return Regex.Replace(name.ToLowerInvariant(), @"[^a-z0-9]", "");
     }
 }

@@ -15,7 +15,7 @@ public partial class CategoriesController
             .Select(uc => uc.CategoryId)
             .ToListAsync();
 
-        var available = await _db.Categories
+        var allAvailable = await _db.Categories
             .Where(c => !subscribedIds.Contains(c.Id))
             .OrderBy(c => c.Name)
             .Select(c => new
@@ -27,6 +27,12 @@ public partial class CategoriesController
             })
             .ToListAsync();
 
-        return Ok(new { success = true, data = available });
+        var deduped = allAvailable
+            .GroupBy(c => NormalizeName(c.Name))
+            .Select(g => g.OrderByDescending(c => c.JobCount).First())
+            .OrderBy(c => c.Name)
+            .ToList();
+
+        return Ok(new { success = true, data = deduped });
     }
 }
