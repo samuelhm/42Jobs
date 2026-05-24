@@ -194,6 +194,11 @@ public class GithubImportService : BackgroundService
                             await db.Database.ExecuteSqlRawAsync(
                                 $"INSERT INTO project_keywords (project_id, keyword_id) VALUES ({project.Id}, {kw.Id}) ON CONFLICT DO NOTHING",
                                 ct);
+
+                            var learningStatus = proj.Type == "school" ? "learned_in_school" : "learned_personal_project";
+                            await db.Database.ExecuteSqlRawAsync(
+                                $"INSERT INTO user_keywords (user_id, keyword_id, learning_status) VALUES ('{userId}', {kw.Id}, '{learningStatus}') ON CONFLICT (user_id, keyword_id) DO UPDATE SET learning_status = EXCLUDED.learning_status WHERE user_keywords.learning_status != 'learned_in_school'",
+                                ct);
                         }
 
                         status.Inserted++;
