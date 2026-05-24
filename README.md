@@ -101,6 +101,7 @@ make dev-restart     # rebuild + restart
 make dev-logs        # follow all logs
 make prod-up         # start production services
 make clean           # stop everything + delete volumes
+make release         # create new version tag + trigger deploy
 ```
 
 ## Architecture

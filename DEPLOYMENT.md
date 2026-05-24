@@ -106,6 +106,10 @@ The PostgreSQL data is stored in a named volume (`pgdata`). Back up regularly us
 ## Updating
 
 ```bash
+# Automated: bumps version, creates tag, triggers CI deploy
+make release
+
+# Manual (from the server):
 git pull
 docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
 ```
