@@ -80,6 +80,10 @@ public class LinkedInRapidApiProvider : IJobProvider
         var qs = string.Join("&", queryParams.Select(kv =>
             $"{Uri.EscapeDataString(kv.Key)}={Uri.EscapeDataString(kv.Value)}"));
 
+        await _log.LogAsync("LinkedInRapidAPI", "search",
+            new { keywords = request.Keywords, location = request.Location, limit = request.Limit, start = request.Start },
+            $"search?keywords={Uri.EscapeDataString(request.Keywords)}", "sent");
+
         var response = await http.GetAsync($"/search?{qs}", ct);
 
         if (!response.IsSuccessStatusCode)
@@ -133,6 +137,11 @@ public class LinkedInRapidApiProvider : IJobProvider
     {
         using var http = CreateClient();
         var url = $"/job/{Uri.EscapeDataString(externalId)}";
+
+        await _log.LogAsync("LinkedInRapidAPI", "getDetails",
+            new { external_id = externalId },
+            url, "sent");
+
         var response = await http.GetAsync(url, ct);
 
         if (!response.IsSuccessStatusCode)
