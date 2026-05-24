@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { useLoaderData } from 'react-router';
-import { NotesModal, CvModal } from '../../components';
+import { NotesModal, CvModal, KeywordTag } from '../../components';
 import { fetchWithAuth, formatDescription, isRecent } from '../../utils';
 import { useToast } from '../../context';
 import type { TrackingJob } from './tracking.types';
 import type { TrackingData } from './tracking.loader';
+import type { UserKeyword } from '../../types';
 
 const SECTIONS: { status: string; label: string; desc: string }[] = [
   { status: 'entrevista_conseguida', label: 'Interview', desc: 'Active pipeline — prepare for the interview.' },
@@ -23,7 +24,21 @@ const STATUS_OPTIONS = [
 ];
 
 export default function Tracking() {
-  const { jobs } = useLoaderData() as TrackingData;
+  const { jobs, userKeywords: initialKeywords } = useLoaderData() as TrackingData;
+  const [userKeywords, setUserKeywords] = useState<Record<string, UserKeyword>>(initialKeywords);
+
+  function handleKwStatusChange(keywordId: number, newStatus: string) {
+    setUserKeywords((prev) => {
+      const next = { ...prev };
+      for (const key of Object.keys(next)) {
+        if (next[key].id === keywordId) {
+          next[key] = { ...next[key], learning_status: newStatus };
+          break;
+        }
+      }
+      return next;
+    });
+  }
 
   const grouped: Record<string, TrackingJob[]> = {};
   for (const s of SECTIONS) grouped[s.status] = [];
@@ -45,13 +60,18 @@ export default function Tracking() {
       )}
 
       {nonEmpty.map(s => (
-        <TrackingSection key={s.status} section={s} jobs={grouped[s.status]} />
+        <TrackingSection key={s.status} section={s} jobs={grouped[s.status]} userKeywords={userKeywords} onKwStatusChange={handleKwStatusChange} />
       ))}
     </div>
   );
 }
 
-function TrackingSection({ section, jobs }: { section: typeof SECTIONS[0]; jobs: TrackingJob[] }) {
+function TrackingSection({ section, jobs, userKeywords, onKwStatusChange }: {
+  section: typeof SECTIONS[0];
+  jobs: TrackingJob[];
+  userKeywords: Record<string, UserKeyword>;
+  onKwStatusChange: (kwId: number, status: string) => void;
+}) {
   return (
     <div style={{ marginBottom: '2rem' }}>
       <div className="section-label" style={{ marginBottom: '0.5rem' }}>
@@ -70,14 +90,18 @@ function TrackingSection({ section, jobs }: { section: typeof SECTIONS[0]; jobs:
       </p>
       <div id="ofertas-list">
         {jobs.map(job => (
-          <JobCard key={job.job_id} job={job} />
+          <JobCard key={job.job_id} job={job} userKeywords={userKeywords} onKwStatusChange={onKwStatusChange} />
         ))}
       </div>
     </div>
   );
 }
 
-function JobCard({ job }: { job: TrackingJob }) {
+function JobCard({ job, userKeywords, onKwStatusChange }: {
+  job: TrackingJob;
+  userKeywords: Record<string, UserKeyword>;
+  onKwStatusChange: (kwId: number, status: string) => void;
+}) {
   const [expanded, setExpanded] = useState(false);
   const [status, setStatus] = useState(job.status);
   const [editingTitle, setEditingTitle] = useState<string | null>(null);
@@ -211,13 +235,19 @@ function JobCard({ job }: { job: TrackingJob }) {
               </div>
             )}
             {job.keywords.length > 0 && (
-              <div className="accordion-field">
-                <div className="label">Keywords</div>
-                <div className="value" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem' }}>
-                  {job.keywords.map(kw => (
-                    <span key={kw} className="pf-kw">{kw}</span>
-                  ))}
-                </div>
+              <div className="accordion-kw-list">
+                {job.keywords.map(kw => {
+                  const entry = userKeywords[kw];
+                  return (
+                    <KeywordTag
+                      key={kw}
+                      name={kw}
+                      id={entry?.id || 0}
+                      status={entry?.learning_status || 'not_learned'}
+                      onStatusChange={onKwStatusChange}
+                    />
+                  );
+                })}
               </div>
             )}
           </div>
