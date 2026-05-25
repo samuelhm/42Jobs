@@ -57,8 +57,7 @@ export default function AdminAiPrompts() {
   useEffect(() => {
     get<Prompt[]>('/api/admin/ai-prompts').then(res => {
       if (res.success) setPrompts(res.data);
-      setLoading(false);
-    });
+    }).catch(() => {}).finally(() => setLoading(false));
   }, []);
 
   if (loading) return <div className="p-4 text-muted">Loading...</div>;
