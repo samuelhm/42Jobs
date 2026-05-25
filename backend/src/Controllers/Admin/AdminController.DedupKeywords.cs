@@ -6,6 +6,8 @@ namespace src.Controllers;
 
 public partial class AdminController
 {
+    private const int DedupChunkSize = 150;
+
     [HttpPost("dedup-keywords")]
     public async Task<IActionResult> DedupKeywords()
     {
@@ -14,10 +16,32 @@ public partial class AdminController
             return Ok(new { message = "Not enough keywords to deduplicate", merged = 0 });
 
         var names = allKeywords.Select(k => k.Name).ToList();
-        var result = await _ai.DedupKeywordsAsync(names);
+        var chunks = names
+            .Select((name, i) => new { name, i })
+            .GroupBy(x => x.i / DedupChunkSize)
+            .Select(g => g.Select(x => x.name).ToList())
+            .ToList();
+
+        var allGroups = new List<List<string>>();
+        for (var i = 0; i < chunks.Count; i++)
+        {
+            try
+            {
+                var groups = await _ai.DedupKeywordsAsync(chunks[i]);
+                allGroups.AddRange(groups);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Dedup chunk {Chunk}/{Total} failed, keeping keywords as-is", i + 1, chunks.Count);
+                allGroups.AddRange(chunks[i].Select(k => new List<string> { k }));
+            }
+
+            if (i < chunks.Count - 1)
+                await Task.Delay(2000);
+        }
 
         int merged = 0;
-        foreach (var group in result)
+        foreach (var group in allGroups)
         {
             if (group.Count < 2) continue;
 
@@ -25,7 +49,7 @@ public partial class AdminController
             foreach (var dupName in group.Skip(1))
             {
                 var dup = allKeywords.FirstOrDefault(k => k.Name.Equals(dupName, StringComparison.OrdinalIgnoreCase));
-                if (dup is null) continue;
+                if (dup is null || dup.Id == keep.Id) continue;
 
                 await _db.Database.ExecuteSqlRawAsync(
                     @"INSERT INTO job_keywords (job_id, keyword_id)
