@@ -181,7 +181,6 @@ function OffersContent() {
           jobTitle={cvJob.title}
           onClose={() => setCvJob(null)}
           onGenerated={() => {
-            setJobs((prev) => prev.filter((j) => j.id !== cvJob.id));
             setCvJob(null);
           }}
         />
