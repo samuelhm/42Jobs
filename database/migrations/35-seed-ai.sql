@@ -283,17 +283,12 @@ Use standard terminology likely to be recognized by ATS.
 Include both acronyms and expanded forms when useful and natural.
 Avoid keyword stuffing. The CV should read naturally to a human recruiter.
 
-9. KEYWORD ALIGNMENT
-Populate ats_keywords_used with the most important offer keywords that were truthfully included in the generated CV.
-Populate missing_or_weak_keywords with important job-offer requirements that are not clearly supported by the candidate background.
-Do not falsely include missing requirements in the CV content.
-
-10. CONSISTENCY
+9. CONSISTENCY
 Ensure the profile, experience, projects and skills are coherent with each other.
 Do not mention a technology in skills if it is contradicted by the background.
 Do not claim seniority, leadership, management or specialization unless supported by the candidate information.
 
-11. ERROR FIELD
+10. ERROR FIELD
 If generation succeeds, set error to an empty string.
 If required input is missing or impossible to process, set error with a concise explanation and leave unsupported fields empty.',
 (SELECT id FROM ai_models WHERE name = 'gpt-5.5'))
