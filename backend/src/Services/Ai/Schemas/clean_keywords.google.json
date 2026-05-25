@@ -1,0 +1,20 @@
+{
+  "type": "object",
+  "required": [
+    "error",
+    "remove"
+  ],
+  "properties": {
+    "error": {
+      "type": "string",
+      "description": "Null if successful. Error description if cleaning fails."
+    },
+    "remove": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Keywords that should be permanently removed."
+    }
+  }
+}

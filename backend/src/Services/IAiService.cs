@@ -25,4 +25,7 @@ public interface IAiService
 
     Task<(JsonElement result, string modelName)> GenerateCvAsync(
         Dictionary<string, string> context, CancellationToken ct = default);
+
+    Task<List<string>> CleanKeywordsAsync(
+        List<string> keywords, CancellationToken ct = default);
 }
