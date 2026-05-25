@@ -15,6 +15,7 @@ export default function AdminUtils() {
       <h2>Utils</h2>
       <p className="text-muted">Dangerous operations — use with caution.</p>
       <DedupSection />
+      <CleanSection />
       <CategorySection />
     </div>
   );
@@ -38,6 +39,30 @@ function DedupSection() {
       <p className="text-muted" style={{ marginBottom: '0.75rem' }}>Uses AI to find and merge duplicate/similar keywords across all tables.</p>
       <button className="admin-btn" onClick={runDedup} disabled={running}>
         {running ? 'Running...' : 'Run Dedup'}
+      </button>
+      {msg && <div style={{ marginTop: '0.75rem', padding: '0.75rem', background: 'var(--bg)', borderRadius: 'var(--radius)', border: '1px solid var(--border)', fontSize: '0.75rem' }}>{msg}</div>}
+    </div>
+  );
+}
+
+function CleanSection() {
+  const [msg, setMsg] = useState('');
+  const [running, setRunning] = useState(false);
+
+  async function runClean() {
+    setRunning(true);
+    setMsg('Running cleanup...');
+    const res = await post<{ message: string; removed: number }>('/api/admin/clean-keywords', {});
+    setMsg(res.success ? res.data.message : 'Error');
+    setRunning(false);
+  }
+
+  return (
+    <div className="service-card" style={{ marginBottom: '1rem' }}>
+      <h3>Clean Keywords</h3>
+      <p className="text-muted" style={{ marginBottom: '0.75rem' }}>Uses AI to remove low-quality keywords (filler words, overly broad terms, school identifiers, assignment names).</p>
+      <button className="admin-btn" onClick={runClean} disabled={running}>
+        {running ? 'Running...' : 'Run Clean'}
       </button>
       {msg && <div style={{ marginTop: '0.75rem', padding: '0.75rem', background: 'var(--bg)', borderRadius: 'var(--radius)', border: '1px solid var(--border)', fontSize: '0.75rem' }}>{msg}</div>}
     </div>
