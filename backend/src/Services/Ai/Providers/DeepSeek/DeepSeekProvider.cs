@@ -106,51 +106,29 @@ public class DeepSeekProvider : IAiProvider
 
     private static string BuildCompactSchema(JsonElement schema)
     {
-        var lines = new List<string>();
-        SerializeType(schema, lines, 0);
-        return string.Join("\n", lines);
+        return MinifySchema(schema);
     }
 
-    private static void SerializeType(JsonElement node, List<string> lines, int indent)
+    private static string MinifySchema(JsonElement node)
     {
-        var pad = new string(' ', indent * 2);
-        if (!node.TryGetProperty("type", out var type)) return;
+        if (!node.TryGetProperty("type", out var type)) return "{}";
         var t = type.GetString();
 
-        if (t == "string")
+        if (t == "string") return "{\"type\":\"string\"}";
+        if (t == "number") return "{\"type\":\"number\"}";
+        if (t == "array" && node.TryGetProperty("items", out var items))
+            return $"{{\"type\":\"array\",\"items\":{MinifySchema(items)}}}";
+        if (t == "object")
         {
-            var desc = node.TryGetProperty("description", out var d) ? d.GetString() ?? "" : "";
-            if (!string.IsNullOrEmpty(desc) && desc.Length > 60)
-                desc = desc[..57] + "...";
-            if (!string.IsNullOrEmpty(desc))
-                lines[^1] += $"  -- {desc}";
-        }
-        else if (t == "array" && node.TryGetProperty("items", out var items))
-        {
-            if (items.TryGetProperty("type", out var itemType) && itemType.GetString() == "string")
+            if (node.TryGetProperty("properties", out var props))
             {
-                lines[^1] += " (array of strings)";
+                var parts = new List<string>();
+                foreach (var prop in props.EnumerateObject())
+                    parts.Add($"\"{prop.Name}\":{MinifySchema(prop.Value)}");
+                return $"{{\"type\":\"object\",\"properties\":{{{string.Join(",", parts)}}}}}";
             }
-            else if (items.TryGetProperty("type", out var objType) && objType.GetString() == "object")
-            {
-                lines[^1] += " (array of objects):";
-                if (items.TryGetProperty("properties", out var arrProps))
-                    BuildObjectLines(arrProps, lines, indent + 1);
-            }
+            return "{\"type\":\"object\"}";
         }
-        else if (t == "object" && node.TryGetProperty("properties", out var props))
-        {
-            BuildObjectLines(props, lines, indent);
-        }
-    }
-
-    private static void BuildObjectLines(JsonElement props, List<string> lines, int indent)
-    {
-        var pad = new string(' ', indent * 2);
-        foreach (var prop in props.EnumerateObject())
-        {
-            lines.Add($"{pad}- \"{prop.Name}\"");
-            SerializeType(prop.Value, lines, indent);
-        }
+        return "{}";
     }
 }
