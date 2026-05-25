@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { get, post, put, del } from '../../utils';
+import { get, post, patch, del } from '../../utils';
 
 interface AiModel { id: number; name: string; ai_service_name: string; ai_service_id: number; is_active: boolean; used_by: string[]; }
 interface AiService { id: number; name: string; }
@@ -41,7 +41,7 @@ export default function AdminAiModels() {
   async function deleteModel(id: number) {
     if (!confirm('Delete this model?')) return;
     const opsToUnassign = prompts.filter(p => p.default_model_id === id);
-    await Promise.all(opsToUnassign.map(p => put(`/api/admin/ai-prompts/${p.id}`, { default_model_id: null })));
+    await Promise.all(opsToUnassign.map(p => patch(`/api/admin/ai-prompts/${p.id}/model`, { default_model_id: null })));
     setPrompts(prev => prev.map(p => p.default_model_id === id ? { ...p, default_model_id: null } : p));
     await del(`/api/admin/ai-models/${id}`);
     load();
@@ -68,12 +68,12 @@ export default function AdminAiModels() {
     const promptId = Number(e.dataTransfer.getData('text/plain'));
     if (!promptId) return;
     setPrompts(prev => prev.map(p => p.id === promptId ? { ...p, default_model_id: modelId } : p));
-    await put(`/api/admin/ai-prompts/${promptId}`, { default_model_id: modelId });
+    await patch(`/api/admin/ai-prompts/${promptId}/model`, { default_model_id: modelId });
   }
 
   async function removeAssignment(promptId: number) {
     setPrompts(prev => prev.map(p => p.id === promptId ? { ...p, default_model_id: null } : p));
-    await put(`/api/admin/ai-prompts/${promptId}`, { default_model_id: null });
+    await patch(`/api/admin/ai-prompts/${promptId}/model`, { default_model_id: null });
   }
 
   const grouped = models.reduce((acc: Record<string, AiModel[]>, m) => {

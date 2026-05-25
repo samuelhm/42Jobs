@@ -10,4 +10,5 @@ async function api<T>(url: string, options?: RequestInit): Promise<ApiResponse<T
 export async function get<T>(url: string) { return api<T>(url); }
 export async function post<T>(url: string, body: unknown) { return api<T>(url, { method: 'POST', body: JSON.stringify(body) }); }
 export async function put<T>(url: string, body: unknown) { return api<T>(url, { method: 'PUT', body: JSON.stringify(body) }); }
+export async function patch<T>(url: string, body: unknown) { return api<T>(url, { method: 'PATCH', body: JSON.stringify(body) }); }
 export async function del<T>(url: string) { return api<T>(url, { method: 'DELETE' }); }
