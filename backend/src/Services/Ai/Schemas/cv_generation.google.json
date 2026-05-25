@@ -10,9 +10,7 @@
     "projects",
     "education",
     "skills",
-    "languages",
-    "ats_keywords_used",
-    "missing_or_weak_keywords"
+    "languages"
   ],
   "properties": {
     "error": {
@@ -196,16 +194,6 @@
         }
       },
       "description": "Languages with proficiency levels from the candidate background."
-    },
-    "ats_keywords_used": {
-      "type": "array",
-      "items": { "type": "string" },
-      "description": "Most important offer keywords truthfully included in the generated CV."
-    },
-    "missing_or_weak_keywords": {
-      "type": "array",
-      "items": { "type": "string" },
-      "description": "Important job-offer requirements not clearly supported by the candidate background."
     }
   }
 }
