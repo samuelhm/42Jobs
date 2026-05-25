@@ -34,3 +34,4 @@ database/migrations/99-private.sql
 .agents/
 package-lock.json
 skills-lock.json
+examples/*
