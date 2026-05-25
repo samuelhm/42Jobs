@@ -113,21 +113,30 @@ public class DeepSeekProvider : IAiProvider
     {
         if (!node.TryGetProperty("type", out var type)) return "{}";
         var t = type.GetString();
+        var desc = node.TryGetProperty("description", out var d) && d.ValueKind == JsonValueKind.String
+            ? d.GetString() : null;
 
-        if (t == "string") return "{\"type\":\"string\"}";
-        if (t == "number") return "{\"type\":\"number\"}";
+        if (t == "string")
+            return desc != null ? $"{{\"type\":\"string\",\"description\":{JsonSerializer.Serialize(desc)}}}" : "{\"type\":\"string\"}";
+        if (t == "number")
+            return desc != null ? $"{{\"type\":\"number\",\"description\":{JsonSerializer.Serialize(desc)}}}" : "{\"type\":\"number\"}";
         if (t == "array" && node.TryGetProperty("items", out var items))
-            return $"{{\"type\":\"array\",\"items\":{MinifySchema(items)}}}";
+        {
+            var inner = MinifySchema(items);
+            return desc != null
+                ? $"{{\"type\":\"array\",\"items\":{inner},\"description\":{JsonSerializer.Serialize(desc)}}}"
+                : $"{{\"type\":\"array\",\"items\":{inner}}}";
+        }
         if (t == "object")
         {
+            var parts = new List<string>();
             if (node.TryGetProperty("properties", out var props))
-            {
-                var parts = new List<string>();
                 foreach (var prop in props.EnumerateObject())
                     parts.Add($"\"{prop.Name}\":{MinifySchema(prop.Value)}");
-                return $"{{\"type\":\"object\",\"properties\":{{{string.Join(",", parts)}}}}}";
-            }
-            return "{\"type\":\"object\"}";
+            var propsJson = string.Join(",", parts);
+            if (desc != null)
+                return $"{{\"type\":\"object\",\"properties\":{{{propsJson}}},\"description\":{JsonSerializer.Serialize(desc)}}}";
+            return $"{{\"type\":\"object\",\"properties\":{{{propsJson}}}}}";
         }
         return "{}";
     }
