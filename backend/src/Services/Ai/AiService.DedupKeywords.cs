@@ -15,7 +15,7 @@ public partial class AiService
 
             var (provider, model, apiKey, isFreeTier) = await ResolveModelAsync(defaultModelId);
             var schema = LoadSchema("dedup_keywords", provider.ServiceName);
-            var result = await CallWithRetryAsync(provider, systemPrompt, userPrompt, schema, model, apiKey, "dedup_keywords", isFreeTier, ct, useThinking: false);
+            var result = await CallWithRetryAsync(provider, systemPrompt, userPrompt, schema, model, apiKey, "dedup_keywords", isFreeTier, ct, useThinking: true, thinkingEffort: "low");
 
             if (result.TryGetProperty("error", out var err) && err.ValueKind != JsonValueKind.Null)
             {

@@ -22,7 +22,7 @@ public class DeepSeekProvider : IAiProvider
 
     public async Task<JsonElement> CallAsync(
         string systemPrompt, string userPrompt, JsonElement schema, string model, string? apiKey,
-        string functionality, CancellationToken ct, bool useThinking = false)
+        string functionality, CancellationToken ct, bool useThinking = false, string thinkingEffort = "high")
     {
         var correlationId = Guid.NewGuid().ToString("N");
 
@@ -62,7 +62,7 @@ public class DeepSeekProvider : IAiProvider
                 writer.WriteStartObject("thinking");
                 writer.WriteString("type", "enabled");
                 writer.WriteEndObject();
-                writer.WriteString("reasoning_effort", "high");
+                writer.WriteString("reasoning_effort", thinkingEffort);
             }
 
             writer.WriteEndObject();

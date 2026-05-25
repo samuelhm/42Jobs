@@ -21,7 +21,7 @@ public class OpenAiProvider : IAiProvider
     }
 
     public async Task<JsonElement> CallAsync(
-        string systemPrompt, string userPrompt, JsonElement schema, string model, string? apiKey, string functionality, CancellationToken ct, bool useThinking = false)
+        string systemPrompt, string userPrompt, JsonElement schema, string model, string? apiKey, string functionality, CancellationToken ct, bool useThinking = false, string thinkingEffort = "high")
     {
         var correlationId = Guid.NewGuid().ToString("N");
         var combinedPrompt = $"{systemPrompt}\n\n{userPrompt}";
@@ -51,7 +51,7 @@ public class OpenAiProvider : IAiProvider
             if (useThinking)
             {
                 writer.WriteStartObject("reasoning");
-                writer.WriteString("effort", "high");
+                writer.WriteString("effort", thinkingEffort);
                 writer.WriteEndObject();
             }
             writer.WriteEndObject();

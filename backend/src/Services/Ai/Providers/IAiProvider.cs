@@ -8,5 +8,6 @@ public interface IAiProvider
     Task<JsonElement> CallAsync(
         string systemPrompt, string userPrompt,
         JsonElement schema, string model, string? apiKey,
-        string functionality, CancellationToken ct, bool useThinking = false);
+        string functionality, CancellationToken ct,
+        bool useThinking = false, string thinkingEffort = "high");
 }
