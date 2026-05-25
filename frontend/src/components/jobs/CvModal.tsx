@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { fetchWithAuth } from '../../utils/fetchWithAuth';
+import { useAuth } from '../../context';
 
 interface Props {
   jobId: number;
@@ -20,6 +21,7 @@ function sanitizeHtml(html: string): string {
 }
 
 export default function CvModal({ jobId, jobTitle, onClose }: Props) {
+  const { user } = useAuth();
   const [html, setHtml] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -89,6 +91,28 @@ export default function CvModal({ jobId, jobTitle, onClose }: Props) {
     }
   }
 
+  async function forceRegenerate() {
+    setLoading(true);
+    setError('');
+    try {
+      const res = await fetchWithAuth(`/api/resumes/${jobId}?force=true`, {
+        method: 'POST',
+      });
+      const data = await res.json();
+      if (data.html) {
+        setHtml(sanitizeHtml(data.html));
+        setModel(data.model || '');
+        setExists(true);
+      } else {
+        setError(data.error || 'Force regeneration failed');
+      }
+    } catch {
+      setError('Connection error');
+    } finally {
+      setLoading(false);
+    }
+  }
+
   function download() {
     const blob = new Blob([html], { type: 'text/html' });
     const a = document.createElement('a');
@@ -123,10 +147,15 @@ export default function CvModal({ jobId, jobTitle, onClose }: Props) {
         {!loading && !error && exists && (
           <>
             <div className="cv-content" dangerouslySetInnerHTML={{ __html: html }} />
-            <div style={{ padding: '0.75rem 1.5rem', borderTop: '1px solid var(--border)', textAlign: 'center' }}>
+            <div style={{ padding: '0.75rem 1.5rem', borderTop: '1px solid var(--border)', textAlign: 'center', display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
               <button className="btn-cancel" style={{ fontSize: '0.75rem' }} onClick={() => { setExists(false); setHtml(''); regenerateCv(); }}>
                 Regenerate CV
               </button>
+              {user?.role === 'Admin' && (
+                <button className="btn-cancel" style={{ fontSize: '0.75rem', color: 'var(--red)' }} onClick={() => forceRegenerate()}>
+                  Force Regenerate (AI)
+                </button>
+              )}
             </div>
           </>
         )}

@@ -15,7 +15,12 @@ public partial class ResumesController
         var existing = await _db.Resumes.FirstOrDefaultAsync(r => r.UserId == userId && r.JobId == jobId);
         if (existing is not null)
         {
-            return Ok(new { success = true, id = existing.Id, cached = true, html = existing.CvData, model = existing.Model });
+            if (Request.Query["force"] != "true")
+            {
+                return Ok(new { success = true, id = existing.Id, cached = true, html = existing.CvData, model = existing.Model });
+            }
+            _db.Resumes.Remove(existing);
+            await _db.SaveChangesAsync();
         }
 
         var user = await _db.Users
