@@ -24,7 +24,6 @@ public class OpenAiProvider : IAiProvider
         string systemPrompt, string userPrompt, JsonElement schema, string model, string? apiKey, string functionality, CancellationToken ct, bool useThinking = false, string thinkingEffort = "high")
     {
         var correlationId = Guid.NewGuid().ToString("N");
-        var combinedPrompt = $"{systemPrompt}\n\n{userPrompt}";
 
         if (string.IsNullOrWhiteSpace(apiKey))
             throw new InvalidOperationException("OpenAI API key not configured. Set it in Admin > AI Services.");
@@ -38,7 +37,8 @@ public class OpenAiProvider : IAiProvider
         {
             writer.WriteStartObject();
             writer.WriteString("model", model);
-            writer.WriteString("input", combinedPrompt);
+            writer.WriteString("instructions", systemPrompt);
+            writer.WriteString("input", userPrompt);
             writer.WriteStartObject("text");
             writer.WriteStartObject("format");
             writer.WriteString("type", "json_schema");
