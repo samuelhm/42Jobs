@@ -33,9 +33,9 @@ public class DeepSeekProvider : IAiProvider
         http.Timeout = TimeSpan.FromSeconds(600);
         http.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
 
-        var schemaJson = schema.GetRawText();
+        var schemaJson = BuildCompactSchema(schema);
 
-        var enrichedSystemPrompt = systemPrompt + "\n\nYou must respond with a JSON object matching this exact structure:\n" + schemaJson;
+        var enrichedSystemPrompt = systemPrompt + "\n\nYou must respond with a JSON object matching this structure:\n" + schemaJson;
 
         var messages = new[]
         {
@@ -102,5 +102,31 @@ public class DeepSeekProvider : IAiProvider
             model, "received:200", correlationId);
 
         return result;
+    }
+
+    private static string BuildCompactSchema(JsonElement schema)
+    {
+        return SerializeType(schema);
+    }
+
+    private static string SerializeType(JsonElement node)
+    {
+        if (node.TryGetProperty("type", out var type))
+        {
+            var t = type.GetString();
+            if (t == "string") return "\"string\"";
+            if (t == "number") return "number";
+            if (t == "array" && node.TryGetProperty("items", out var items))
+                return $"[{SerializeType(items)}]";
+            if (t == "object" && node.TryGetProperty("properties", out var props))
+            {
+                var parts = new List<string>();
+                foreach (var prop in props.EnumerateObject())
+                    parts.Add($"\"{prop.Name}\":{SerializeType(prop.Value)}");
+                return $"{{{string.Join(",", parts)}}}";
+            }
+            return t ?? "unknown";
+        }
+        return "unknown";
     }
 }
