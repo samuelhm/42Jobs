@@ -8,6 +8,6 @@ public static class DatabaseUrlParser
         var userInfo = uri.UserInfo.Split(':');
         var user = userInfo[0];
         var password = userInfo.Length > 1 ? userInfo[1] : "";
-        return $"Host={uri.Host};Port={uri.Port};Database={uri.AbsolutePath.TrimStart('/')};Username={user};Password={password}";
+        return $"Host={uri.Host};Port={uri.Port};Database={uri.AbsolutePath.TrimStart('/')};Username={user};Password={password};MinPoolSize=1;MaxPoolSize=20;Keepalive=30;Connection Idle Lifetime=120";
     }
 }
