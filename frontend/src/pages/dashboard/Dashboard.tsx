@@ -42,10 +42,6 @@ export default function Dashboard() {
                 >
                   <div className="oferta-info">
                     <h3>{job.title}{isRecent(job.posted_date) && <span className="recent-badge">New</span>}</h3>
-                    <div className="oferta-meta">
-                      <span className="empresa">{job.company_name || 'Unknown'}</span>
-                      {job.company_type && <span className={`badge ${job.company_type}`}>{job.company_type}</span>}
-                    </div>
                   </div>
                   <div className="card-controls">
                     <span className={`match-badge ${matchClass}`}>{pct}%</span>
