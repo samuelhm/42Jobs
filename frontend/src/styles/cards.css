@@ -280,6 +280,24 @@
 .cv-btn:hover { border-color: #c9a84c; color: #c9a84c; background: rgba(180,150,100,0.1); }
 .cv-btn:disabled { opacity: 0.4; cursor: wait; }
 
+/* ── Dashboard compact cards ── */
+.dashboard-card {
+  padding: 0.4rem 0.7rem;
+  grid-template-columns: 1fr auto;
+  cursor: default;
+}
+.dashboard-card:hover {
+  transform: none;
+  box-shadow: none;
+}
+.dashboard-card .oferta-info h3 { font-size: 0.75rem; margin-bottom: 0; }
+.dashboard-card .oferta-meta {
+  font-size: 0.65rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
 /* ── Tracking ── */
 .tracking-status-select {
   font-family: 'JetBrains Mono', monospace;
