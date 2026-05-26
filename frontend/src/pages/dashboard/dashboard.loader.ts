@@ -11,7 +11,7 @@ export async function dashboardLoader({ request }: { request: Request }): Promis
   const [kwRes, jobsRes] = await Promise.all([
     fetchWithAuth('/api/keywords').then(r => r.json()),
     categoryId
-      ? fetchWithAuth(`/api/categories/${categoryId}/jobs?show_tracked=true`).then(r => r.json())
+      ? fetchWithAuth(`/api/categories/${categoryId}/jobs?showTracked=true`).then(r => r.json())
       : Promise.resolve({ success: true, data: [] }),
   ]);
 
