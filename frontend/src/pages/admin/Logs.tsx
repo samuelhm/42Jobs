@@ -1,5 +1,5 @@
-import { useState, Fragment } from 'react';
-import { useLoaderData, useSearchParams } from 'react-router';
+import { useState, Fragment, useEffect, useRef } from 'react';
+import { useLoaderData, useSearchParams, useRevalidator } from 'react-router';
 
 interface LogEntry {
   id: number;
@@ -85,6 +85,13 @@ export default function AdminLogs() {
   const { logs, actors, actions, filters } = useLoaderData() as LoaderData;
   const [, setSearchParams] = useSearchParams();
   const [modalJson, setModalJson] = useState<string | null>(null);
+  const revalidator = useRevalidator();
+  const pollRef = useRef<ReturnType<typeof setInterval>>(undefined);
+
+  useEffect(() => {
+    pollRef.current = setInterval(() => revalidator.revalidate(), 5000);
+    return () => clearInterval(pollRef.current);
+  }, [revalidator]);
 
   const groups = groupLogs(logs);
 
