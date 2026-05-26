@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using src.Models;
 
 namespace src.Controllers;
 
@@ -15,9 +16,15 @@ public partial class JobsController
 
         if (userJob is not null)
         {
-            _db.UserJobs.Remove(userJob);
-            await _db.SaveChangesAsync();
+            userJob.Status = "rechazado";
+            userJob.StatusUpdatedAt = DateTime.UtcNow;
         }
+        else
+        {
+            _db.UserJobs.Add(new UserJob { UserId = userId, JobId = id, Status = "rechazado" });
+        }
+
+        await _db.SaveChangesAsync();
 
         return Ok(new { success = true });
     }
