@@ -13,6 +13,7 @@
 
 - [Features](#features)
 - [Screenshots](#screenshots)
+- [Admin Panel](#admin-panel)
 - [Tech Stack](#tech-stack)
 - [Prerequisites](#prerequisites)
 - [Quick Start](#quick-start)
@@ -37,10 +38,9 @@
 
 ## Screenshots
 
-<!-- TODO: add screenshots of Dashboard, Offers, Profile, CV generation -->
 | Dashboard | Job Search | CV Generation |
 |-----------|------------|---------------|
-| _coming soon_ | _coming soon_ | _coming soon_ |
+| ![Dashboard](docs/images/Dashboard.png) | ![Job Search](docs/images/Jobs%20Search.png) | ![CV Generation](docs/images/Cv%20Generation.png) |
 
 ## Tech Stack
 
@@ -145,6 +145,26 @@ Job sources are pluggable. `JobFetchService` calls all enabled `IJobProvider` im
 
 → [Add a new job provider](docs/JobProvider.md)
 → [How API key encryption works](docs/Encryption.md)
+
+## Admin Panel
+
+The admin panel provides full control over the platform's AI and job provider configuration — no need to touch environment variables or restart containers.
+
+| Section | What you can do |
+|---------|----------------|
+| **AI Services** | Enable/disable AI providers (Google Gemini, OpenAI, DeepSeek). Set and encrypt API keys. Mark as free tier (shows a banner to users). |
+| **AI Models** | Manage available models per provider. Enable/disable specific models (e.g., `gemini-2.5-flash`, `gpt-4o`). |
+| **AI Prompts** | Edit system and user prompts for each AI functionality (filter jobs, extract keywords, dedup, generate CV, parse LinkedIn, analyze GitHub). Set the default model per functionality. |
+| **Job Providers** | Configure job portals (LinkedIn RapidAPI). Enable/disable, set API keys, base URLs, and provider-specific config as JSON. |
+| **CV Templates** | Create and manage HTML + CSS templates for CV generation. Templates are selected when regenerating a CV. |
+| **Utils** | One-click utilities: clean keywords (remove duplicates/normalize), dedup keywords (group synonyms via AI), clean up orphan keywords. |
+| **Logs** | Audit trail of every AI call and API provider request. Includes timestamps, actor, action, payload, and correlation IDs for tracing. |
+
+![AI Services](docs/images/admin-panel1.png)
+![AI Models & Prompts](docs/images/admin-panel2.png)
+![Job Providers & Templates](docs/images/admin-panel3.png)
+![Utils](docs/images/admin-panel4.png)
+![Audit Logs](docs/images/admin-panel5.png)
 
 ## Environment Variables
 
