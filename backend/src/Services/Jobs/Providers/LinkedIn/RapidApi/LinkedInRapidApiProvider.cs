@@ -15,7 +15,8 @@ public class LinkedInRapidApiProvider : IJobProvider
     private string? _configJson;
 
     private static readonly TimeSpan RateWindow = TimeSpan.FromMinutes(1);
-    private static readonly int MaxRequestsPerWindow = 50;
+    private static readonly int MaxRequestsPerWindow = 8;
+    private const int MaxRetries = 10;
     private readonly ConcurrentQueue<DateTime> _requestTimestamps = new();
     private readonly Lock _rateLock = new();
 
@@ -89,7 +90,7 @@ public class LinkedInRapidApiProvider : IJobProvider
 
     private async Task<HttpResponseMessage> GetWithRetryAsync(HttpClient http, string relativeUrl, string action, object? logData, string logInfo, string correlationId, CancellationToken ct)
     {
-        while (true)
+        for (var retry = 0; retry <= MaxRetries; retry++)
         {
             ct.ThrowIfCancellationRequested();
             await WaitForRateLimitAsync(ct);
@@ -105,12 +106,14 @@ public class LinkedInRapidApiProvider : IJobProvider
 
             if ((int)response.StatusCode == 429)
             {
-                var retryAfter = response.Headers.RetryAfter?.Delta ?? TimeSpan.FromSeconds(5);
+                var retryAfter = response.Headers.RetryAfter?.Delta
+                    ?? TimeSpan.FromSeconds(10 + retry * 5);
                 response.Dispose();
-                _logger.LogWarning("LinkedIn RapidAPI rate limited (429). Retrying after {DelayMs}ms...", retryAfter.TotalMilliseconds);
+                _logger.LogWarning("LinkedIn RapidAPI rate limited (429). Retry {Retry}/{Max} after {DelayMs}ms...",
+                    retry + 1, MaxRetries, retryAfter.TotalMilliseconds);
                 await _log.LogAsync("LinkedInRapidAPI", action,
-                    new { error = "429 rate limited", retry_after = retryAfter.ToString() },
-                    logInfo, "error:429, retrying", correlationId);
+                    new { error = "429 rate limited", retry_after = retryAfter.ToString(), attempt = retry + 1 },
+                    logInfo, $"error:429, retrying ({retry + 1}/{MaxRetries})", correlationId);
                 await Task.Delay(retryAfter, ct);
                 continue;
             }
@@ -121,6 +124,8 @@ public class LinkedInRapidApiProvider : IJobProvider
             response.EnsureSuccessStatusCode();
             return response;
         }
+
+        throw new HttpRequestException($"LinkedIn RapidAPI rate limited after {MaxRetries} retries");
     }
 
     public async Task<JobSearchResult> SearchAsync(JobSearchRequest request, CancellationToken ct)
