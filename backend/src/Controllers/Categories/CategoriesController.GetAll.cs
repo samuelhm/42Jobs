@@ -7,7 +7,7 @@ namespace src.Controllers;
 public partial class CategoriesController
 {
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAll([FromQuery] bool available = false)
     {
         var userId = GetUserId();
 
@@ -19,7 +19,9 @@ public partial class CategoriesController
             {
                 Id = uc.Category.Id,
                 Name = uc.Category.Name,
-                JobCount = uc.Category.Jobs.Count,
+                JobCount = available
+                    ? uc.Category.Jobs.Count(j => !j.UserJobs.Any(uj => uj.UserId == userId))
+                    : uc.Category.Jobs.Count,
                 LastFetchedAt = uc.Category.LastFetchedAt,
             })
             .OrderBy(c => c.Name)

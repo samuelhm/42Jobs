@@ -12,7 +12,7 @@ export function OffersRoute() {
   const refreshKey = searchParams.get('_r') || '0';
   return (
     <>
-      <CategoriesBar />
+      <CategoriesBar availableOnly />
       <OffersContent key={`${categoryId}_${refreshKey}`} />
     </>
   );

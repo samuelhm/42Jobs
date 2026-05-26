@@ -5,7 +5,7 @@ import { useToast } from '../../context';
 import { fetchWithAuth } from '../../utils';
 import type { Category } from '../../types';
 
-export default function CategoriesBar() {
+export default function CategoriesBar({ availableOnly }: { availableOnly?: boolean }) {
   const [searchParams, setSearchParams] = useSearchParams();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -26,7 +26,8 @@ export default function CategoriesBar() {
 
   const loadCategories = useCallback(async () => {
     try {
-      const res = await fetchWithAuth('/api/categories');
+      const url = availableOnly ? '/api/categories?available=true' : '/api/categories';
+      const res = await fetchWithAuth(url);
       const json = await res.json();
       if (json.success) {
         setCategories(json.data);
@@ -42,7 +43,7 @@ export default function CategoriesBar() {
     } finally {
       setLoading(false);
     }
-  }, [activeId, setSearchParams]);
+  }, [activeId, setSearchParams, availableOnly]);
 
   useEffect(() => {
     loadCategories();
