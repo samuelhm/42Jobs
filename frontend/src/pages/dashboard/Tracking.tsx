@@ -273,10 +273,7 @@ function JobCard({ job, userKeywords, onKwStatusChange, onJobStatusChange }: {
           jobId={job.job_id}
           jobTitle={job.title}
           onClose={() => setCvOpen(false)}
-          onGenerated={() => {
-            handleStatusChange('cv_enviado');
-            setCvOpen(false);
-          }}
+          onGenerated={() => setCvOpen(false)}
         />
       )}
     </>
