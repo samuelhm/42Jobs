@@ -98,12 +98,7 @@ public partial class ResumesController
             var userJob = await _db.UserJobs.FirstOrDefaultAsync(uj => uj.UserId == userId && uj.JobId == jobId);
             if (userJob is null)
             {
-                _db.UserJobs.Add(new UserJob { UserId = userId, JobId = jobId, Status = "cv_enviado", StatusUpdatedAt = DateTime.UtcNow });
-            }
-            else
-            {
-                userJob.Status = "cv_enviado";
-                userJob.StatusUpdatedAt = DateTime.UtcNow;
+                _db.UserJobs.Add(new UserJob { UserId = userId, JobId = jobId, Status = "saved", StatusUpdatedAt = DateTime.UtcNow });
             }
             await _db.SaveChangesAsync();
 
