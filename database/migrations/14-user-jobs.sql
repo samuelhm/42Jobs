@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS user_jobs (
     saved_at   TIMESTAMP DEFAULT NOW(),
     notes      TEXT,
     status            VARCHAR(30) NOT NULL DEFAULT 'saved'
-                      CHECK (status IN ('saved', 'cv_enviado', 'entrevista_conseguida', 'empleo_conseguido', 'rechazado')),
+                      CHECK (status IN ('saved', 'cv_enviado', 'entrevista_conseguida', 'empleo_conseguido', 'rechazado', 'oculto')),
     status_updated_at TIMESTAMP DEFAULT NOW(),
     PRIMARY KEY (user_id, job_id)
 );
