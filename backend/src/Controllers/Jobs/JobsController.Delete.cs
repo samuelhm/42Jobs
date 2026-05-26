@@ -16,12 +16,12 @@ public partial class JobsController
 
         if (userJob is not null)
         {
-            userJob.Status = "rechazado";
+            userJob.Status = "oculto";
             userJob.StatusUpdatedAt = DateTime.UtcNow;
         }
         else
         {
-            _db.UserJobs.Add(new UserJob { UserId = userId, JobId = id, Status = "rechazado" });
+            _db.UserJobs.Add(new UserJob { UserId = userId, JobId = id, Status = "oculto" });
         }
 
         await _db.SaveChangesAsync();

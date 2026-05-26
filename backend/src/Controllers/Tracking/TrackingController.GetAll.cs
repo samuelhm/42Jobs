@@ -11,7 +11,7 @@ public partial class TrackingController
         var userId = GetUserId();
 
         var jobs = await _db.UserJobs
-            .Where(uj => uj.UserId == userId)
+            .Where(uj => uj.UserId == userId && uj.Status != "oculto")
             .Include(uj => uj.Job)
             .ThenInclude(j => j.Company)
             .Include(uj => uj.Job)

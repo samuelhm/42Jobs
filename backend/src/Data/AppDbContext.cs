@@ -310,7 +310,7 @@ public class AppDbContext : DbContext
         {
             entity.ToTable("user_jobs", t => t.HasCheckConstraint(
                 "CK_user_jobs_status",
-                "status IN ('saved', 'cv_enviado', 'entrevista_conseguida', 'empleo_conseguido', 'rechazado')"));
+                "status IN ('saved', 'cv_enviado', 'entrevista_conseguida', 'empleo_conseguido', 'rechazado', 'oculto')"));
             entity.HasKey(u => new { u.UserId, u.JobId });
             entity.Property(u => u.SavedAt)
                   .HasDefaultValueSql("NOW()")
