@@ -4,10 +4,6 @@ interface Props {
 }
 
 export default function AiNotConfiguredModal({ message, onClose }: Props) {
-  const isKeyIssue = message.includes('no API key') || message.includes('AI Services');
-  const adminUrl = isKeyIssue ? '/admin/ai-services' : '/admin/ai-prompts';
-  const adminLabel = isKeyIssue ? 'Go to Admin > AI Services' : 'Go to Admin > AI Prompts';
-
   return (
     <div className="dialog-overlay" onClick={onClose}>
       <div className="dialog-box" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 440 }}>
