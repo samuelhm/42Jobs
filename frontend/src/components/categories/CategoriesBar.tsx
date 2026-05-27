@@ -9,6 +9,7 @@ export default function CategoriesBar({ availableOnly }: { availableOnly?: boole
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
+  const [showProcessing, setShowProcessing] = useState(false);
 
   const categoryId = searchParams.get('category');
   const activeId = categoryId ? Number(categoryId) : null;
@@ -46,6 +47,7 @@ export default function CategoriesBar({ availableOnly }: { availableOnly?: boole
     setShowAdd(false);
     await loadCategories();
     setSearchParams({ category: String(id) });
+    setShowProcessing(true);
   }
 
   async function handleSubscribed(id: number, _name: string) {
@@ -84,6 +86,17 @@ export default function CategoriesBar({ availableOnly }: { availableOnly?: boole
           onCreated={handleCreated}
           onSubscribed={handleSubscribed}
         />
+      )}
+      {showProcessing && (
+        <div className="dialog-overlay" onClick={() => setShowProcessing(false)}>
+          <div className="dialog-box" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 400, textAlign: 'center' }}>
+            <h3>Category created</h3>
+            <p style={{ margin: '0.75rem 0', color: 'var(--text-dim)', fontSize: '0.85rem', lineHeight: 1.5 }}>
+              Jobs are being processed with AI. They will appear here in a few minutes.
+            </p>
+            <button className="btn-confirm" onClick={() => setShowProcessing(false)}>Got it</button>
+          </div>
+        </div>
       )}
     </div>
   );
