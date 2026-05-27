@@ -37,6 +37,9 @@ public partial class CategoriesController
                 DatePosted = "past-week",
                 SortBy = "recent",
             });
+
+            category.LastFetchedAt = DateTime.UtcNow;
+            await _db.SaveChangesAsync();
         }
 
         var alreadyFollowing = await _db.UserCategories

@@ -128,6 +128,8 @@ public partial class JobFetchService : BackgroundService, IJobFetchService
 
         _logger.LogInformation("Scheduled fetch: processing {Count} categories at {Time} UTC", categories.Count, DateTime.UtcNow);
 
+        var now = DateTime.UtcNow;
+
         foreach (var category in categories)
         {
             if (ct.IsCancellationRequested) break;
@@ -139,7 +141,11 @@ public partial class JobFetchService : BackgroundService, IJobFetchService
                 DatePosted = "past-week",
                 SortBy = "recent",
             });
+
+            category.LastFetchedAt = now;
         }
+
+        await db.SaveChangesAsync(ct);
     }
 }
 
