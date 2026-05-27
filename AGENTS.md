@@ -22,7 +22,7 @@ Este es un proyecto **personal de aprendizaje**. El objetivo principal no es ent
 | Frontend | React + React Router (Vite) + TypeScript | Sin framework CSS, estilos propios |
 | Package manager | pnpm | Más seguro que npm, estricto en dependencias |
 | Infraestructura | Docker + Docker Compose | Dev y prod con override files |
-| APIs externas | LinkedIn RapidAPI, Google Gemini / OpenAI | Para búsqueda de empleos y generación de CV |
+| APIs externas | LinkedIn RapidAPI, Google Gemini / OpenAI / DeepSeek | Para búsqueda de empleos, filtrado IA y generación de CV |
 
 ## Estructura del proyecto
 
@@ -40,13 +40,13 @@ Este es un proyecto **personal de aprendizaje**. El objetivo principal no es ent
 │       ├── src.csproj              ← Proyecto .NET 10 con EF Core, Npgsql, JWT, BCrypt
 │       ├── Program.cs              ← Entry point (JWT, DbContext, servicios, JSON snake_case)
 │       ├── appsettings.json
-│       ├── Controllers/            ← 11 controladores (Users, Categories, Profile, CRUDs...)
-│       ├── Data/AppDbContext.cs    ← EF Core DbContext (Fluent API, 15 entidades)
-│       ├── Models/                 ← 15 modelos C# + DTOs
-│       ├── Services/               ← JWT, LinkedIn, Gemini, JobFetchOrchestrator
+│       ├── Controllers/            ← 14 controladores (partial classes, 78 archivos de endpoints)
+│       ├── Data/AppDbContext.cs    ← EF Core DbContext (Fluent API, 21 entidades)
+│       ├── Models/                 ← 21 modelos C# + 7 DTOs
+│       ├── Services/               ← IAiService, JobFetchService, GithubImportService, AiReadinessService, JWT, Encryption, AdminLog
 │       └── Utils/                  ← DatabaseUrlParser
 ├── database/
-│   └── migrations/            ← 17 archivos SQL (categorías, keywords, jobs, perfil, user_categories...)
+│   └── migrations/            ← 29 archivos SQL (categorías, keywords, jobs, perfil, user_categories...)
 ├── frontend/
 │   ├── Dockerfile              ← Multi-stage: dev (vite) + prod (nginx + build)
 │   ├── nginx.conf              ← Proxy /api -> backend, sirve estáticos de dist/
@@ -89,7 +89,7 @@ Este es un proyecto **personal de aprendizaje**. El objetivo principal no es ent
 │       │   ├── keywords/        ← KeywordsChart, KeywordTag, KeywordModal
 │       │   ├── layout/          ← AuthLayout, AdminLayout, FreeTierBanner
 │       │   ├── profile/         ← ProfileInfo, ProfileList, ProfileProjects, LinkedInImport
-│       │   └── ui/              ← ToastContainer
+│       │   └── ui/              ← ToastContainer, AiNotConfiguredModal
 │       └── pages/               ← Páginas organizadas por dominio con barrels
 │           ├── index.ts         ← Barrel raíz
 │           ├── auth/            ← Login, Register (+ login.action.ts, register.action.ts)
@@ -106,19 +106,23 @@ Este es un proyecto **personal de aprendizaje**. El objetivo principal no es ent
 
 ## Estado actual del proyecto
 
-1. **Base de datos:** ✅ Migraciones SQL con 17 archivos. Tablas: categorías, empresas, keywords, jobs, perfil de usuario, idiomas, certificaciones, educación, proyectos, experiencias, user_providers, user_jobs, user_categories, resumes, y tablas M2M (job_keywords, project_keywords, work_experience_keywords).
-2. **Backend:** ✅ Funcional. 11 controladores REST con autenticación JWT vía cookie (`42jobs_auth`). EF Core con snake_case naming convention. Servicios: LinkedIn RapidAPI, Gemini (filtro + keywords), background job queue con Channel<T> para fetch de trabajos con rate-limiting de 3h.
-3. **Frontend:** ✅ Funcional. React 19 + React Router 7 con Vite. Data router (`createBrowserRouter`) con loaders y actions. Barrel pattern en todas las carpetas. CSS modular (13 archivos). Hooks y utils compartidos. Tipos centralizados.
+1. **Base de datos:** ✅ Migraciones SQL con 29 archivos. Tablas: categorías, empresas, keywords, jobs, perfil de usuario, idiomas, certificaciones, educación, proyectos, experiencias, user_providers, user_jobs, user_categories, resumes, cv_templates, ai_services, ai_models, ai_prompts, admin_logs y tablas M2M (job_keywords, project_keywords, work_experience_keywords).
+2. **Backend:** ✅ Funcional. 14 controladores REST con autenticación JWT vía cookie (`42jobs_auth`). EF Core con snake_case naming convention. Servicios: LinkedIn RapidAPI, Gemini/OpenAI/DeepSeek (filtro + keywords + CV), background job queue con Channel<T> para fetch de trabajos con scheduler automático (8:00, 12:00, 16:00, 20:00 UTC). Pipeline de reintentos y validación de readiness.
+3. **Frontend:** ✅ Funcional. React 19 + React Router 7 con Vite. Data router (`createBrowserRouter`) con loaders y actions. Barrel pattern en todas las carpetas. CSS modular (13 archivos). Hooks y utils compartidos. Tipos centralizados. Modal AiNotConfiguredModal para errores de readiness.
 
 ## Próximos pasos (visión general)
 
 1. ✅ Backend .NET con API MVC funcional (controladores, modelos, servicios).
 2. ✅ Conexión a PostgreSQL vía Entity Framework Core.
 3. ✅ Autenticación de usuarios (JWT + cookies).
-4. ✅ Endpoints del frontend (17/19 implementados).
-5. ✅ React + React Router + Vite elegido. En construcción.
-6. ✅ APIs externas (LinkedIn RapidAPI + Gemini filtro/keywords).
+4. ✅ Endpoints del frontend (todos implementados).
+5. ✅ React + React Router + Vite. Frontend completo.
+6. ✅ APIs externas (LinkedIn RapidAPI + Gemini/OpenAI/DeepSeek).
 7. ✅ Frontend refactorizado (barrel pattern, CSS modules, data router, loaders/actions).
+8. ✅ Auto-update automático con scheduler, reintentos, validación de readiness.
+9. ⬚ Notificaciones por email de nuevos jobs.
+10. ⬚ Más providers de jobs (InfoJobs, Indeed).
+11. ⬚ Tests de UI con Playwright.
 
 ## Releases y deploy
 

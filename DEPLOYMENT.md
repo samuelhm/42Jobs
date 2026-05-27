@@ -70,7 +70,7 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
     psql -U 42jobs -d 42jobs -c "UPDATE users SET role = 'Admin' WHERE email = 'you@example.com';"
   ```
 - [ ] Log in, go to Admin panel
-- [ ] Configure **AI Services**: set API keys for Google and/or OpenAI
+- [ ] Configure **AI Services**: set API keys for Google, OpenAI and/or DeepSeek
 - [ ] Configure **Job Providers**: set RapidAPI host + API key
 - [ ] Set the default model for each operation in **Prompts**
 
@@ -79,7 +79,7 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 - [ ] Visit `https://42jobs.xyz` — should load the login page
 - [ ] Register, login, verify JWT cookie is set
 - [ ] Go to Admin panel, check all sections load
-- [ ] Test job fetch: add a category, click fetch
+- [ ] Create a search category — jobs will be fetched automatically (scheduler runs at 8:00, 12:00, 16:00, 20:00 UTC)
 - [ ] Check `docker compose ps` — all containers healthy
 
 ## Backup

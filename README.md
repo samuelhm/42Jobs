@@ -33,7 +33,7 @@
 - **GitHub import** — analyzes your repositories and creates project entries automatically
 - **Profile management** — education, experience, certifications, languages, skills
 - **Job tracking** — status pipeline: saved → CV sent → interview → hired / rejected
-- **Pluggable AI** — swap between Gemini and OpenAI, or add your own provider
+- **Pluggable AI** — swap between Gemini, OpenAI, and DeepSeek, or add your own provider
 - **Pluggable job sources** — LinkedIn today, more sources planned
 
 ## Screenshots
@@ -49,7 +49,7 @@
 | Backend     | .NET 10 (ASP.NET Core Web API), EF Core, JWT    |
 | Database    | PostgreSQL 16                                   |
 | Frontend    | React 19 + React Router 7 + TypeScript (Vite)   |
-| AI          | OpenAI / Google Gemini (pluggable providers)    |
+| AI          | OpenAI / Google Gemini / DeepSeek (pluggable providers) |
 | Auth        | JWT in HttpOnly cookies + BCrypt                |
 | Infra       | Docker + Docker Compose (dev & prod profiles)   |
 | Package mgr | pnpm                                            |
@@ -90,7 +90,7 @@ The app will be available at:
 2. Go to **Admin** panel (you'll need to promote your user to Admin in the DB first — see [CONTRIBUTING.md](CONTRIBUTING.md))
 3. Configure your AI provider (Gemini or OpenAI) with your API key
 4. Configure a job provider (LinkedIn RapidAPI) with your API key
-5. Create a search category (e.g. "React Developer") and hit **Fetch Jobs**
+5. Create a search category (e.g. "React Developer") — jobs will be fetched automatically
 
 ### Useful commands
 
@@ -129,7 +129,7 @@ make release         # create new version tag + trigger deploy
 │   ├── styles/           # 13 CSS modules by responsibility
 │   ├── components/       # Reusable components (7 domain folders + barrel)
 │   └── pages/            # Route pages with loaders (4 domain folders + barrel)
-├── database/migrations/  # 22 SQL migration + seed files
+├── database/migrations/  # 29 SQL migration + seed files
 └── docs/                # Provider guides, encryption docs
 ```
 

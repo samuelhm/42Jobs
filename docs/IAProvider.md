@@ -42,7 +42,10 @@ public class DeepSeekProvider : IAiProvider
         JsonElement schema,
         string model,
         string? apiKey,
-        CancellationToken ct)
+        string functionality,
+        CancellationToken ct,
+        bool useThinking = false,
+        string thinkingEffort = "high")
     {
         if (string.IsNullOrWhiteSpace(apiKey))
             throw new InvalidOperationException("DeepSeek API key not configured. Set it in Admin > AI Services.");
@@ -116,6 +119,10 @@ If your provider uses a non-standard schema format, add a new schema file for it
 
 API keys are managed exclusively through the **Admin panel** (`ai_services.api_key` in the database). The `apiKey` parameter passed to `CallAsync` comes from the DB. There is no env var fallback.
 
+### Thinking mode
+
+The `useThinking` and `thinkingEffort` parameters control whether the provider should use extended reasoning (chain-of-thought). Set `useThinking: false` for fast classification tasks (filter_jobs, clean_keywords) and `true` for complex generation (cv_generation, extract_keywords). Not all providers support thinking mode — check your provider's API docs.
+
 ## 2. Register the provider in DI
 
 In `backend/src/Program.cs`, add one line:
@@ -143,8 +150,8 @@ ON CONFLICT (name) DO NOTHING;
 
 -- Insert its models
 INSERT INTO ai_models (ai_service_id, name) VALUES
-    ((SELECT id FROM ai_services WHERE name = 'DeepSeek'), 'deepseek-chat'),
-    ((SELECT id FROM ai_services WHERE name = 'DeepSeek'), 'deepseek-reasoner')
+    ((SELECT id FROM ai_services WHERE name = 'DeepSeek'), 'deepseek-v4-flash'),
+    ((SELECT id FROM ai_services WHERE name = 'DeepSeek'), 'deepseek-v4-pro')
 ON CONFLICT (ai_service_id, name) DO NOTHING;
 ```
 
