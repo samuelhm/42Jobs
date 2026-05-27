@@ -1,8 +1,6 @@
 -- Add ATS Optimized + Photo template to existing production database
 -- Safe to run anytime — won't overwrite existing template with same name
 
-UPDATE cv_templates SET is_active = FALSE;
-
 INSERT INTO cv_templates (name, description, html_template, css, is_active) VALUES (
     'ATS Optimized + Photo',
     'ATS-friendly CV template with comma-separated skills, project dates, and profile photo embedded left of the title.',

@@ -52,5 +52,5 @@ INSERT INTO cv_templates (name, description, html_template, css, is_active) VALU
 </body>
 </html>',
     NULL,
-    FALSE
+    TRUE
 ) ON CONFLICT DO NOTHING;
