@@ -23,29 +23,19 @@ public partial class JobFetchService
 
         if (string.IsNullOrEmpty(job.ExternalId)) return "skipped";
 
-        var source = "linkedin"; // TODO: get from provider when multi-source
+        var source = "linkedin";
         var existingJob = await db.Jobs.FirstOrDefaultAsync(
             j => j.ExternalId == job.ExternalId && j.Source == source, ct);
         if (existingJob is not null) return "skipped";
 
-        JobDetailResult? details = null;
-        foreach (var provider in providers)
+        var details = await GetDetailsWithRetryAsync(providers, job, ct);
+        if (details is null)
         {
-            try
-            {
-                details = await provider.GetDetailsAsync(job.ExternalId, ct);
-                if (details is not null) break;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "Failed to get details for \"{Title}\" from {Provider}",
-                    job.Title, provider.ProviderName);
-            }
+            _logger.LogWarning("GetDetails failed after all retries for '{Title}', skipping", job.Title);
+            return "skipped";
         }
 
-        var description = details?.Description;
-        var (relevant, juniorFriendly) = await ai.FilterJobRelevanceAsync(
-            categoryName, job.Title, description, ct);
+        var (relevant, juniorFriendly) = await FilterWithRetryAsync(ai, categoryName, job.Title, details.Description, ct);
 
         if (relevant == "no")
         {
@@ -71,17 +61,13 @@ public partial class JobFetchService
             Salary = job.Salary,
             Benefits = job.Benefits,
             JobUrl = job.JobUrl,
+            Description = details.Description,
+            JobType = details.JobType,
+            ExperienceLevel = details.ExperienceLevel,
+            Industry = details.Industry,
+            JobFunction = details.JobFunction,
+            Applicants = details.Applicants,
         };
-
-        if (details is not null)
-        {
-            newJob.Description = details.Description;
-            newJob.JobType = details.JobType;
-            newJob.ExperienceLevel = details.ExperienceLevel;
-            newJob.Industry = details.Industry;
-            newJob.JobFunction = details.JobFunction;
-            newJob.Applicants = details.Applicants;
-        }
 
         db.Jobs.Add(newJob);
         await db.SaveChangesAsync(ct);
@@ -92,36 +78,124 @@ public partial class JobFetchService
 
         _logger.LogDebug("Job saved: \"{Title}\" (id={Id})", job.Title, newJob.Id);
 
-        try
-        {
-            var parts = new List<string?> { job.Title, job.Benefits, description };
-            var inputText = string.Join(". ", parts.Where(p => !string.IsNullOrWhiteSpace(p)));
-            var (skills, companyType) = await ai.ExtractKeywordsAsync(inputText, ct);
+        var parts = new List<string?> { job.Title, job.Benefits, details.Description };
+        var inputText = string.Join(". ", parts.Where(p => !string.IsNullOrWhiteSpace(p)));
+        await ExtractKeywordsWithRetryAsync(ai, db, newJob.Id, job, inputText, ct);
 
-            foreach (var rawName in skills)
+        return "inserted";
+    }
+
+    private async Task<JobDetailResult?> GetDetailsWithRetryAsync(
+        List<IJobProvider> providers, JobItem job, CancellationToken ct)
+    {
+        for (var retry = 0; retry < 10; retry++)
+        {
+            foreach (var provider in providers)
             {
-                var name = rawName.Trim().ToLowerInvariant();
-                if (string.IsNullOrEmpty(name)) continue;
-                var keywordId = await UpsertKeywordAsync(db, name, ct);
-                await LinkJobKeywordAsync(db, newJob.Id, keywordId, ct);
+                try
+                {
+                    var details = await provider.GetDetailsAsync(job.ExternalId, ct);
+                    if (details is not null && !string.IsNullOrEmpty(details.Description))
+                        return details;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "GetDetails attempt {Attempt} for \"{Title}\" from {Provider} failed",
+                        retry + 1, job.Title, provider.ProviderName);
+                }
             }
 
-            if (CompanyTypeMap.TryGetValue(companyType, out var mappedType))
+            if (retry < 9)
             {
-                var company = await db.Companies.FirstOrDefaultAsync(c => c.Name == job.CompanyName, ct);
-                if (company is not null && company.CompanyType is null)
+                var delay = (int)Math.Pow(2, retry) * 1200 + Random.Shared.Next(800);
+                _logger.LogWarning("GetDetails for \"{Title}\" returned no description, retry {Retry}/10 in {Delay}ms",
+                    job.Title, retry + 1, delay);
+                await Task.Delay(delay, ct);
+            }
+        }
+
+        return null;
+    }
+
+    private async Task<(string relevant, string juniorFriendly)> FilterWithRetryAsync(
+        IAiService ai, string categoryName, string title, string? description, CancellationToken ct)
+    {
+        for (var retry = 0; retry < 3; retry++)
+        {
+            try
+            {
+                var (relevant, juniorFriendly) = await ai.FilterJobRelevanceAsync(
+                    categoryName, title, description, ct);
+
+                if (relevant is "yes" or "no" && juniorFriendly is "yes" or "no")
+                    return (relevant, juniorFriendly);
+
+                _logger.LogWarning("AI filter returned unexpected values: relevant='{Relevant}' junior='{Junior}' for \"{Title}\", attempt {Attempt}",
+                    relevant, juniorFriendly, title, retry + 1);
+            }
+            catch (Exception ex)
+            {
+                if (retry < 2)
                 {
-                    company.CompanyType = mappedType;
-                    await db.SaveChangesAsync(ct);
+                    var delay = (int)Math.Pow(2, retry) * 2000 + Random.Shared.Next(1000);
+                    _logger.LogWarning(ex, "AI filter attempt {Attempt}/3 failed for \"{Title}\", retrying in {Delay}ms",
+                        retry + 1, title, delay);
+                    await Task.Delay(delay, ct);
+                }
+                else
+                {
+                    _logger.LogWarning(ex, "AI filter failed after 3 attempts for \"{Title}\", passing through", title);
                 }
             }
         }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "Keyword extraction failed for \"{Title}\"", job.Title);
-        }
 
-        return "inserted";
+        return ("yes", "yes");
+    }
+
+    private async Task ExtractKeywordsWithRetryAsync(
+        IAiService ai, AppDbContext db, int jobId, JobItem job, string inputText, CancellationToken ct)
+    {
+        for (var retry = 0; retry < 3; retry++)
+        {
+            try
+            {
+                var (skills, companyType) = await ai.ExtractKeywordsAsync(inputText, ct);
+
+                foreach (var rawName in skills)
+                {
+                    var name = rawName.Trim().ToLowerInvariant();
+                    if (string.IsNullOrEmpty(name)) continue;
+                    var keywordId = await UpsertKeywordAsync(db, name, ct);
+                    await LinkJobKeywordAsync(db, jobId, keywordId, ct);
+                }
+
+                if (CompanyTypeMap.TryGetValue(companyType, out var mappedType))
+                {
+                    var company = await db.Companies.FirstOrDefaultAsync(c => c.Name == job.CompanyName, ct);
+                    if (company is not null && company.CompanyType is null)
+                    {
+                        company.CompanyType = mappedType;
+                        await db.SaveChangesAsync(ct);
+                    }
+                }
+
+                return;
+            }
+            catch (Exception ex)
+            {
+                if (retry < 2)
+                {
+                    var delay = (int)Math.Pow(2, retry) * 2000 + Random.Shared.Next(1000);
+                    _logger.LogWarning(ex, "Keyword extraction attempt {Attempt}/3 failed for \"{Title}\", retrying in {Delay}ms",
+                        retry + 1, job.Title, delay);
+                    await Task.Delay(delay, ct);
+                }
+                else
+                {
+                    _logger.LogWarning(ex, "Keyword extraction failed after 3 attempts for \"{Title}\"", job.Title);
+                }
+            }
+        }
     }
 
     private static async Task<int> UpsertCompanyAsync(AppDbContext db, string name, string? websiteUrl, CancellationToken ct)

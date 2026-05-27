@@ -31,9 +31,7 @@ public partial class JobFetchService
 
                     while (true)
                     {
-                        var result = await provider.SearchAsync(
-                            new JobSearchRequest(request.CategoryName, request.Location, limit,
-                                request.DatePosted, request.SortBy, start), ct);
+                        var result = await SearchPageWithRetryAsync(provider, request, limit, start, ct);
 
                         allJobs.AddRange(result.Jobs);
                         _logger.LogDebug("Fetched {Count} jobs from {Portal}:{Provider} (start={Start})",
@@ -45,7 +43,7 @@ public partial class JobFetchService
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogWarning(ex, "Provider {Portal}:{Provider} search failed",
+                    _logger.LogWarning(ex, "Provider {Portal}:{Provider} search failed after retries",
                         provider.Portal, provider.ProviderName);
                 }
             }
@@ -70,6 +68,15 @@ public partial class JobFetchService
                         else if (result == "skipped") status.Skipped++;
                     }
                 }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Unexpected error processing job \"{Title}\"", job.Title);
+                    lock (status)
+                    {
+                        status.Processed++;
+                        status.Skipped++;
+                    }
+                }
                 finally { semaphore.Release(); }
             }, ct));
 
@@ -89,6 +96,34 @@ public partial class JobFetchService
         {
             _categoryInProgress.TryRemove(request.CategoryId, out _);
         }
+    }
+
+    private async Task<JobSearchResult> SearchPageWithRetryAsync(
+        IJobProvider provider, FetchRequest request, int limit, int start, CancellationToken ct)
+    {
+        for (var retry = 0; retry < 3; retry++)
+        {
+            try
+            {
+                return await provider.SearchAsync(
+                    new JobSearchRequest(request.CategoryName, request.Location, limit,
+                        request.DatePosted, request.SortBy, start), ct);
+            }
+            catch (Exception ex)
+            {
+                if (retry < 2)
+                {
+                    var delay = (int)Math.Pow(2, retry) * 1500 + Random.Shared.Next(1000);
+                    _logger.LogWarning(ex,
+                        "Search page failed at offset {Start} for {Provider}, retry {Retry}/3 in {Delay}ms",
+                        start, provider.ProviderName, retry + 1, delay);
+                    await Task.Delay(delay, ct);
+                }
+            }
+        }
+
+        throw new InvalidOperationException(
+            $"Search page at offset {start} failed after 3 retries for {provider.ProviderName}");
     }
 
     private async Task<List<IJobProvider>> GetEnabledProvidersAsync(AppDbContext db)
