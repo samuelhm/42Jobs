@@ -52,7 +52,7 @@ public partial class JobFetchService
             status.Total = uniqueJobs.Count;
             _logger.LogInformation("Fetch {JobId}: {Total} unique jobs", request.JobId, status.Total);
 
-            var semaphore = new SemaphoreSlim(50);
+            var semaphore = new SemaphoreSlim(10);
             var tasks = uniqueJobs.Select(job => Task.Run(async () =>
             {
                 try
