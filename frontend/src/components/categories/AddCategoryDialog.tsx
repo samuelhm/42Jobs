@@ -5,7 +5,7 @@ import AiNotConfiguredModal from '../ui/AiNotConfiguredModal';
 interface Props {
   onClose: () => void;
   onCreated: (id: number) => void;
-  onSubscribed: (id: number, name: string) => void;
+  onSubscribed: (id: number, name: string, location?: string) => void;
 }
 
 interface AvailableCategory {
@@ -66,7 +66,7 @@ export default function AddCategoryDialog({ onClose, onCreated, onSubscribed }: 
       });
       const data = await res.json();
       if (res.ok) {
-        onSubscribed(id, categoryName);
+        onSubscribed(id, categoryName, data.location || undefined);
       } else {
         setError(data.error || 'Could not subscribe');
       }

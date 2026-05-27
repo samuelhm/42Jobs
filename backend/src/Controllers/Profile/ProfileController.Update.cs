@@ -13,6 +13,8 @@ public partial class ProfileController
         var user = await _db.Users.FindAsync(userId);
         if (user is null) return NotFound(new { error = "User not found" });
 
+        var oldLocation = user.PreferredLocation;
+
         if (body.Name is not null) user.Name = body.Name;
         if (body.LastName is not null) user.LastName = body.LastName;
         if (body.Phone is not null) user.Phone = body.Phone;
@@ -26,6 +28,31 @@ public partial class ProfileController
 
         user.UpdatedAt = DateTime.UtcNow;
         await _db.SaveChangesAsync();
+
+        var newLocation = user.PreferredLocation;
+        int categoriesFetched = 0;
+
+        if (body.PreferredLocation is not null
+            && !string.IsNullOrEmpty(newLocation)
+            && !string.Equals(oldLocation, newLocation, StringComparison.OrdinalIgnoreCase))
+        {
+            var followedCategories = await _db.UserCategories
+                .Where(uc => uc.UserId == userId)
+                .Include(uc => uc.Category)
+                .ToListAsync();
+
+            foreach (var uc in followedCategories)
+            {
+                _fetchService.Enqueue(uc.CategoryId, uc.Category.Name, new FetchRequestDto
+                {
+                    Location = newLocation,
+                    Limit = 10,
+                    DatePosted = "past-week",
+                    SortBy = "recent",
+                });
+                categoriesFetched++;
+            }
+        }
 
         return Ok(new
         {
@@ -47,7 +74,10 @@ public partial class ProfileController
                 Role = user.Role,
                 PreferredLocation = user.PreferredLocation,
                 CreatedAt = user.CreatedAt,
-            }
+            },
+            fetch_triggered = categoriesFetched > 0,
+            categories_fetched = categoriesFetched,
+            location = newLocation,
         });
     }
 }

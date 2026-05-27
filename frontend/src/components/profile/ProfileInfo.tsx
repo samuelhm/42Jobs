@@ -62,7 +62,16 @@ export default function ProfileInfo({ profile, onSave }: Props) {
       body: JSON.stringify(form),
     });
     const data = await res.json();
-    if (data.success) { setMsg('Saved'); setTimeout(() => setMsg(''), 2000); onSave(); }
+    if (data.success) {
+      if (data.fetch_triggered) {
+        setMsg(`Saved. Fetching jobs for ${data.categories_fetched} categories in ${data.location} — may take a few minutes.`);
+        setTimeout(() => setMsg(''), 6000);
+      } else {
+        setMsg('Saved');
+        setTimeout(() => setMsg(''), 2000);
+      }
+      onSave();
+    }
     else { setMsg('Error'); }
     setSaving(false);
   }

@@ -10,6 +10,8 @@ export default function CategoriesBar({ availableOnly }: { availableOnly?: boole
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
   const [showProcessing, setShowProcessing] = useState(false);
+  const [processingTitle, setProcessingTitle] = useState('Category created');
+  const [processingMsg, setProcessingMsg] = useState('Searching for jobs and processing with AI. New offers will appear automatically here.');
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const categoryId = searchParams.get('category');
@@ -48,6 +50,8 @@ export default function CategoriesBar({ availableOnly }: { availableOnly?: boole
     setShowAdd(false);
     await loadCategories();
     setSearchParams({ category: String(id) });
+    setProcessingTitle('Category created');
+    setProcessingMsg('Searching for jobs and processing with AI. New offers will appear automatically here.');
     setShowProcessing(true);
 
     if (pollingRef.current) clearInterval(pollingRef.current);
@@ -79,10 +83,45 @@ export default function CategoriesBar({ availableOnly }: { availableOnly?: boole
     }, 5000);
   }
 
-  async function handleSubscribed(id: number, _name: string) {
+  async function handleSubscribed(id: number, _name: string, location?: string) {
     setShowAdd(false);
     await loadCategories();
     setSearchParams({ category: String(id) });
+
+    if (location) {
+      setProcessingTitle(`Subscribed to ${_name}`);
+      setProcessingMsg(`First scan for ${location} in progress. Searching and filtering with AI. New offers will appear here in a few minutes.`);
+      setShowProcessing(true);
+
+      if (pollingRef.current) clearInterval(pollingRef.current);
+
+      let attempts = 0;
+      pollingRef.current = setInterval(async () => {
+        attempts++;
+        try {
+          const res = await fetchWithAuth('/api/categories');
+          const json = await res.json();
+          if (json.success) {
+            const cat = json.data.find((c: Category) => c.id === id);
+            if (cat?.job_count && cat.job_count > 0) {
+              clearInterval(pollingRef.current!);
+              pollingRef.current = null;
+              setShowProcessing(false);
+              setSearchParams((prev) => {
+                prev.set('_r', String(parseInt(prev.get('_r') || '0') + 1));
+                return prev;
+              }, { replace: true });
+            }
+          }
+        } catch { /* ignore polling errors */ }
+
+        if (attempts >= 24) {
+          clearInterval(pollingRef.current!);
+          pollingRef.current = null;
+          setShowProcessing(false);
+        }
+      }, 5000);
+    }
   }
 
   async function handleUnfollow(id: number, e: React.MouseEvent) {
@@ -119,9 +158,9 @@ export default function CategoriesBar({ availableOnly }: { availableOnly?: boole
       {showProcessing && (
         <div className="dialog-overlay" onClick={() => { setShowProcessing(false); if (pollingRef.current) { clearInterval(pollingRef.current); pollingRef.current = null; } }}>
           <div className="dialog-box" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 400, textAlign: 'center' }}>
-            <h3>Category created</h3>
+            <h3>{processingTitle}</h3>
             <p style={{ margin: '0.75rem 0', color: 'var(--text-dim)', fontSize: '0.85rem', lineHeight: 1.5 }}>
-              Searching for jobs and processing with AI. New offers will appear automatically here.
+              {processingMsg}
             </p>
             <button className="btn-confirm" onClick={() => { setShowProcessing(false); if (pollingRef.current) { clearInterval(pollingRef.current); pollingRef.current = null; } }}>Got it</button>
           </div>

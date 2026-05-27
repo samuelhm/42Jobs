@@ -7,4 +7,5 @@ public interface IJobFetchService
     Guid? Enqueue(int categoryId, string categoryName, FetchRequestDto dto);
     FetchStatusDto? GetStatus(Guid jobId);
     Task FetchAllCategoriesAsync();
+    bool IsFetchAllRunning { get; }
 }

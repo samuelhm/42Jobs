@@ -17,6 +17,7 @@ public partial class JobFetchService : BackgroundService, IJobFetchService
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly EncryptionService _encryption;
     private readonly ILogger<JobFetchService> _logger;
+    private int _fetchAllRunning;
 
     private static readonly Dictionary<string, string> CompanyTypeMap = new()
     {
@@ -69,6 +70,8 @@ public partial class JobFetchService : BackgroundService, IJobFetchService
         _statuses.TryGetValue(jobId, out var status);
         return status;
     }
+
+    public bool IsFetchAllRunning => Volatile.Read(ref _fetchAllRunning) == 1;
 
     public Task FetchAllCategoriesAsync() => FetchAllCategoriesWithTokenAsync(CancellationToken.None);
 
@@ -123,11 +126,19 @@ public partial class JobFetchService : BackgroundService, IJobFetchService
 
     private async Task FetchAllCategoriesWithTokenAsync(CancellationToken ct)
     {
-        using var scope = _scopeFactory.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        var readiness = scope.ServiceProvider.GetRequiredService<IAiReadinessService>();
+        if (Interlocked.CompareExchange(ref _fetchAllRunning, 1, 0) != 0)
+        {
+            _logger.LogWarning("Fetch all already running, skipping");
+            return;
+        }
 
-        var fetchErrors = new List<string>();
+        try
+        {
+            using var scope = _scopeFactory.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var readiness = scope.ServiceProvider.GetRequiredService<IAiReadinessService>();
+
+            var fetchErrors = new List<string>();
         foreach (var fn in new[] { "filter_jobs", "extract_keywords" })
             fetchErrors.AddRange(await readiness.CheckAsync(fn, ct));
 
@@ -189,6 +200,11 @@ public partial class JobFetchService : BackgroundService, IJobFetchService
                     _logger.LogWarning("Scheduler: failed to enqueue category {Category}", category.Name);
                 }
             }
+        }
+        }
+        finally
+        {
+            Interlocked.Exchange(ref _fetchAllRunning, 0);
         }
     }
 }

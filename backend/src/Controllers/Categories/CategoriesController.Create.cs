@@ -18,10 +18,24 @@ public partial class CategoriesController
         var existing = allCategories.FirstOrDefault(c => NormalizeName(c.Name) == normalizedInput);
 
         Category category;
+        string? enqueueLocation = null;
+        bool fetchTriggered = false;
+
         if (existing is not null)
         {
             category = existing;
             _logger.LogInformation("Category '{Name}' normalizes to existing '{Existing}', reusing id={Id}", body.Name, existing.Name, category.Id);
+
+            var user = await _db.Users.FindAsync(userId);
+            enqueueLocation = !string.IsNullOrEmpty(user?.PreferredLocation) ? user.PreferredLocation : "Barcelona";
+            _fetchService.Enqueue(category.Id, category.Name, new FetchRequestDto
+            {
+                Location = enqueueLocation,
+                Limit = 10,
+                DatePosted = "past-week",
+                SortBy = "recent",
+            });
+            fetchTriggered = true;
         }
         else
         {
@@ -38,9 +52,10 @@ public partial class CategoriesController
             _logger.LogInformation("Category '{Name}' created with id={Id}", body.Name, category.Id);
 
             var user = await _db.Users.FindAsync(userId);
+            enqueueLocation = !string.IsNullOrEmpty(user?.PreferredLocation) ? user.PreferredLocation : "Barcelona";
             var jobId = _fetchService.Enqueue(category.Id, category.Name, new FetchRequestDto
             {
-                Location = !string.IsNullOrEmpty(user?.PreferredLocation) ? user.PreferredLocation : "Barcelona",
+                Location = enqueueLocation,
                 Limit = 10,
                 DatePosted = "past-week",
                 SortBy = "recent",
@@ -50,6 +65,7 @@ public partial class CategoriesController
             {
                 category.LastFetchedAt = DateTime.UtcNow;
                 await _db.SaveChangesAsync();
+                fetchTriggered = true;
             }
             else
             {
@@ -88,6 +104,8 @@ public partial class CategoriesController
         {
             id = category.Id,
             name = category.Name,
+            fetch_triggered = fetchTriggered,
+            location = fetchTriggered ? enqueueLocation : null,
         });
     }
 
