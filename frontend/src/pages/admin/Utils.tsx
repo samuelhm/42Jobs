@@ -17,6 +17,7 @@ export default function AdminUtils() {
       <p className="text-muted">Dangerous operations — use with caution.</p>
       <DedupSection />
       <CleanSection />
+      <FetchAllSection />
       <CategorySection />
     </div>
   );
@@ -82,6 +83,39 @@ function CleanSection() {
       </button>
       {msg && <div style={{ marginTop: '0.75rem', padding: '0.75rem', background: 'var(--bg)', borderRadius: 'var(--radius)', border: '1px solid var(--border)', fontSize: '0.75rem' }}>{msg}</div>}
       {aiError && <AiNotConfiguredModal message={aiError} onClose={() => setAiError('')} />}
+    </div>
+  );
+}
+
+function FetchAllSection() {
+  const [msg, setMsg] = useState('');
+  const [running, setRunning] = useState(false);
+
+  async function runFetchAll() {
+    setRunning(true);
+    setMsg('Triggering fetch for all categories...');
+    try {
+      const res = await post<{ message: string }>('/api/admin/fetch-all-categories', {});
+      setMsg(res.success ? res.data.message : (res.error || 'Error'));
+    } catch {
+      setMsg('Connection error');
+    }
+    setRunning(false);
+    setTimeout(() => setMsg(''), 8000);
+  }
+
+  return (
+    <div className="service-card" style={{ marginBottom: '1rem' }}>
+      <h3>Fetch All Categories</h3>
+      <p className="text-muted" style={{ marginBottom: '0.75rem' }}>Manually trigger a full fetch across all categories × all user locations, same as the 4x daily scheduler (8h, 12h, 16h, 20h UTC).</p>
+      <button className="admin-btn" onClick={runFetchAll} disabled={running}>
+        {running ? 'Fetching...' : 'Fetch All'}
+      </button>
+      {msg && (
+        <div style={{ marginTop: '0.75rem', padding: '0.75rem', background: 'var(--bg)', borderRadius: 'var(--radius)', border: '1px solid var(--border)', fontSize: '0.75rem' }}>
+          {msg}
+        </div>
+      )}
     </div>
   );
 }

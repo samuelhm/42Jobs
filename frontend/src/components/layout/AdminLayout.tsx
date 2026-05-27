@@ -8,6 +8,7 @@ const adminNav = [
   { to: '/admin/templates', label: 'CV Templates' },
   { to: '/admin/job-providers', label: 'Job Providers' },
   { to: '/admin/utils', label: 'Utils' },
+  { to: '/admin/discarded-jobs', label: 'Discarded' },
   { to: '/admin/logs', label: 'Logs' },
 ];
 

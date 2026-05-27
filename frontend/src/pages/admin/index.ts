@@ -5,4 +5,5 @@ export { default as AiPrompts } from './AiPrompts';
 export { default as Templates } from './Templates';
 export { default as JobProviders } from './JobProviders';
 export { default as Utils } from './Utils';
+export { default as DiscardedJobs } from './DiscardedJobs';
 export { default as Logs } from './Logs';

@@ -25,6 +25,7 @@ public class AppDbContext : DbContext
     public DbSet<AiPrompt> AiPrompts => Set<AiPrompt>();
     public DbSet<CvTemplate> CvTemplates => Set<CvTemplate>();
     public DbSet<JobProvider> JobProviders => Set<JobProvider>();
+    public DbSet<DiscardedJob> DiscardedJobs => Set<DiscardedJob>();
     public DbSet<AdminLog> AdminLogs => Set<AdminLog>();
 
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
@@ -539,6 +540,34 @@ public class AppDbContext : DbContext
             entity.Property(p => p.UpdatedAt)
                   .HasDefaultValueSql("NOW()")
                   .ValueGeneratedOnAddOrUpdate();
+        });
+
+        // ── DiscardedJob ──────────────────────────────────────
+        modelBuilder.Entity<DiscardedJob>(entity =>
+        {
+            entity.ToTable("discarded_jobs");
+            entity.HasKey(d => d.Id);
+            entity.Property(d => d.Id).ValueGeneratedOnAdd();
+            entity.Property(d => d.ExternalId).IsRequired().HasMaxLength(100);
+            entity.Property(d => d.Source).IsRequired().HasMaxLength(50).HasDefaultValue("linkedin");
+            entity.HasIndex(d => new { d.ExternalId, d.Source }).IsUnique();
+            entity.Property(d => d.Title).HasMaxLength(500);
+            entity.Property(d => d.CompanyName).HasMaxLength(500);
+            entity.Property(d => d.Location).HasMaxLength(500);
+            entity.Property(d => d.Salary).HasMaxLength(200);
+            entity.Property(d => d.Benefits).HasColumnType("text");
+            entity.Property(d => d.JobUrl).HasColumnType("text");
+            entity.Property(d => d.Description).HasColumnType("text");
+            entity.Property(d => d.JobType).HasMaxLength(200);
+            entity.Property(d => d.ExperienceLevel).HasMaxLength(200);
+            entity.Property(d => d.Industry).HasMaxLength(200);
+            entity.Property(d => d.JobFunction).HasMaxLength(200);
+            entity.Property(d => d.Applicants).HasMaxLength(100);
+            entity.Property(d => d.FilterReasons).HasColumnType("text");
+            entity.Property(d => d.RawData).HasColumnType("jsonb");
+            entity.Property(d => d.CreatedAt)
+                  .HasDefaultValueSql("NOW()")
+                  .ValueGeneratedOnAdd();
         });
 
         // ── AdminLog ───────────────────────────────────────────

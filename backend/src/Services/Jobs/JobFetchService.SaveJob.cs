@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
@@ -28,6 +29,14 @@ public partial class JobFetchService
             j => j.ExternalId == job.ExternalId && j.Source == source, ct);
         if (existingJob is not null) return "skipped";
 
+        var discarded = await db.DiscardedJobs.FirstOrDefaultAsync(
+            d => d.ExternalId == job.ExternalId && d.Source == source, ct);
+        if (discarded is not null)
+        {
+            _logger.LogDebug("Job \"{Title}\" already discarded, skipping", job.Title);
+            return "skipped";
+        }
+
         var details = await GetDetailsWithRetryAsync(providers, job, ct);
         if (details is null)
         {
@@ -37,14 +46,46 @@ public partial class JobFetchService
 
         var (relevant, juniorFriendly) = await FilterWithRetryAsync(ai, categoryName, job.Title, details.Description, ct);
 
-        if (relevant == "no")
+        if (relevant == "no" || juniorFriendly == "no")
         {
-            _logger.LogDebug("Job \"{Title}\" skipped: not relevant", job.Title);
-            return "skipped";
-        }
-        if (juniorFriendly == "no")
-        {
-            _logger.LogDebug("Job \"{Title}\" skipped: senior only", job.Title);
+            var reasons = JsonSerializer.Serialize(new { relevant, juniorFriendly });
+            var rawData = JsonSerializer.Serialize(new
+            {
+                search = new
+                {
+                    job.ExternalId, job.Title, job.CompanyName, job.CompanyUrl,
+                    job.Location, job.PostedDate, job.Salary, job.Benefits, job.JobUrl
+                },
+                details = new
+                {
+                    details.Description, details.JobType, details.ExperienceLevel,
+                    details.Industry, details.JobFunction, details.Applicants
+                }
+            });
+
+            db.DiscardedJobs.Add(new DiscardedJob
+            {
+                ExternalId = job.ExternalId,
+                Source = source,
+                Title = job.Title,
+                CompanyName = job.CompanyName,
+                Location = job.Location,
+                PostedDate = job.PostedDate,
+                Salary = job.Salary,
+                Benefits = job.Benefits,
+                JobUrl = job.JobUrl,
+                Description = details.Description,
+                JobType = details.JobType,
+                ExperienceLevel = details.ExperienceLevel,
+                Industry = details.Industry,
+                JobFunction = details.JobFunction,
+                Applicants = details.Applicants,
+                FilterReasons = reasons,
+                RawData = rawData,
+            });
+            await db.SaveChangesAsync(ct);
+
+            _logger.LogDebug("Job \"{Title}\" discarded: relevant={Relevant}, junior={Junior}", job.Title, relevant, juniorFriendly);
             return "skipped";
         }
 

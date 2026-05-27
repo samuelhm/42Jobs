@@ -70,6 +70,8 @@ public partial class JobFetchService : BackgroundService, IJobFetchService
         return status;
     }
 
+    public Task FetchAllCategoriesAsync() => FetchAllCategoriesWithTokenAsync(CancellationToken.None);
+
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         _logger.LogInformation("JobFetchService background service started");
@@ -113,13 +115,13 @@ public partial class JobFetchService : BackgroundService, IJobFetchService
 
             if (ct.IsCancellationRequested) break;
 
-            await FetchAllCategoriesAsync(ct);
+            await FetchAllCategoriesWithTokenAsync(ct);
 
             await Task.Delay(TimeSpan.FromMinutes(1), ct);
         }
     }
 
-    private async Task FetchAllCategoriesAsync(CancellationToken ct)
+    private async Task FetchAllCategoriesWithTokenAsync(CancellationToken ct)
     {
         using var scope = _scopeFactory.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
