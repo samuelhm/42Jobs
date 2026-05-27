@@ -24,6 +24,3 @@ CREATE TABLE IF NOT EXISTS discarded_jobs (
     raw_data         JSONB,                       -- complete job_details response
     created_at       TIMESTAMP DEFAULT NOW()
 );
-
-CREATE UNIQUE INDEX IF NOT EXISTS idx_discarded_jobs_external_source
-    ON discarded_jobs(external_id, source, category_name);
