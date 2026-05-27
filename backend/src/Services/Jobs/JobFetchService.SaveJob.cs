@@ -30,7 +30,7 @@ public partial class JobFetchService
         if (existingJob is not null) return "skipped";
 
         var discarded = await db.DiscardedJobs.FirstOrDefaultAsync(
-            d => d.ExternalId == job.ExternalId && d.Source == source, ct);
+            d => d.ExternalId == job.ExternalId && d.Source == source && d.CategoryName == categoryName, ct);
         if (discarded is not null)
         {
             _logger.LogDebug("Job \"{Title}\" already discarded, skipping", job.Title);

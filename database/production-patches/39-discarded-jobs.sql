@@ -26,4 +26,4 @@ CREATE TABLE IF NOT EXISTS discarded_jobs (
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS idx_discarded_jobs_external_source
-    ON discarded_jobs(external_id, source);
+    ON discarded_jobs(external_id, source, category_name);

@@ -550,7 +550,7 @@ public class AppDbContext : DbContext
             entity.Property(d => d.Id).ValueGeneratedOnAdd();
             entity.Property(d => d.ExternalId).IsRequired().HasMaxLength(100);
             entity.Property(d => d.Source).IsRequired().HasMaxLength(50).HasDefaultValue("linkedin");
-            entity.HasIndex(d => new { d.ExternalId, d.Source }).IsUnique();
+            entity.HasIndex(d => new { d.ExternalId, d.Source, d.CategoryName }).IsUnique();
             entity.Property(d => d.Title).HasMaxLength(500);
             entity.Property(d => d.CompanyName).HasMaxLength(500);
             entity.Property(d => d.Location).HasMaxLength(500);
