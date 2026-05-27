@@ -7,7 +7,7 @@ COMPOSE_PROD := docker compose -f docker-compose.yml -f docker-compose.prod.yml
 .PHONY: help \
         dev-up dev-down dev-build dev-restart dev-logs dev-ps dev-shell \
         prod-up prod-down prod-build prod-restart prod-logs prod-ps \
-        switch-prod switch-dev install clean logs-clean users release
+        switch-prod switch-dev install clean logs-clean users db-patch release
 
 # ─── Default ───────────────────────────────────────────────
 help:
@@ -39,6 +39,7 @@ help:
 	@echo "    make clean          Down + eliminar volúmenes"
 	@echo "    make logs-clean     Truncar tabla admin_logs"
 	@echo "    make users          Contar usuarios registrados"
+	@echo "    make db-patch       Aplicar parches de producción a la BD"
 	@echo "    make release        Crear nuevo tag y disparar deploy"
 
 # ═══════════════════════════════════════════════════════════
@@ -120,3 +121,6 @@ users:
 
 release:
 	@bash scripts/release.sh
+
+db-patch:
+	@bash scripts/apply-production-patches.sh
