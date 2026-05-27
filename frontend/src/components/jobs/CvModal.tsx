@@ -2,6 +2,13 @@ import { useState, useEffect } from 'react';
 import { fetchWithAuth } from '../../utils/fetchWithAuth';
 import { useAuth } from '../../context';
 
+interface Template {
+  id: number;
+  name: string;
+  description: string;
+  isActive: boolean;
+}
+
 interface Props {
   jobId: number;
   jobTitle: string;
@@ -27,6 +34,8 @@ export default function CvModal({ jobId, jobTitle, onClose }: Props) {
   const [error, setError] = useState('');
   const [model, setModel] = useState('');
   const [exists, setExists] = useState(false);
+  const [templates, setTemplates] = useState<Template[]>([]);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<number | null>(null);
 
   useEffect(() => {
     checkExisting();
@@ -34,13 +43,21 @@ export default function CvModal({ jobId, jobTitle, onClose }: Props) {
 
   async function checkExisting() {
     try {
-      const res = await fetchWithAuth(`/api/resumes/job/${jobId}`);
+      const [res, tRes] = await Promise.all([
+        fetchWithAuth(`/api/resumes/job/${jobId}`),
+        fetchWithAuth('/api/resumes/templates'),
+      ]);
+      if (tRes.ok) {
+        const tData = await tRes.json();
+        if (tData.data) setTemplates(tData.data);
+      }
       if (res.ok) {
         const data = await res.json();
         if (data.html) {
           setHtml(sanitizeHtml(data.html));
           setModel(data.model || '');
           setExists(true);
+          if (data.templateId != null) setSelectedTemplateId(data.templateId);
         }
       }
     } catch { /* no CV yet */ }
@@ -75,11 +92,14 @@ export default function CvModal({ jobId, jobTitle, onClose }: Props) {
     try {
       const res = await fetchWithAuth(`/api/resumes/${jobId}/regenerate`, {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ templateId: selectedTemplateId }),
       });
       const data = await res.json();
       if (data.html) {
         setHtml(sanitizeHtml(data.html));
         setModel(data.model || '');
+        if (data.templateId != null) setSelectedTemplateId(data.templateId);
         setExists(true);
       } else {
         setError(data.error || 'Regeneration failed');
@@ -147,6 +167,24 @@ export default function CvModal({ jobId, jobTitle, onClose }: Props) {
         {!loading && !error && exists && (
           <>
             <div className="cv-content" dangerouslySetInnerHTML={{ __html: html }} />
+            {templates.length > 0 && (
+              <div style={{ padding: '0.5rem 1.5rem', borderTop: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '0.5rem', justifyContent: 'center' }}>
+                <label className="form-label" style={{ margin: 0 }}>Template</label>
+                <select
+                  className="input"
+                  style={{ width: 'auto', minWidth: 180, fontSize: '0.75rem', padding: '0.3rem 0.5rem' }}
+                  value={selectedTemplateId ?? ''}
+                  onChange={(e) => setSelectedTemplateId(e.target.value ? Number(e.target.value) : null)}
+                >
+                  <option value="">Active template (default)</option>
+                  {templates.map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.name}{t.isActive ? ' (active)' : ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
             <div style={{ padding: '0.75rem 1.5rem', borderTop: '1px solid var(--border)', textAlign: 'center', display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
               <button className="btn-cancel" style={{ fontSize: '0.75rem' }} onClick={() => { setExists(false); setHtml(''); regenerateCv(); }}>
                 Regenerate CV
