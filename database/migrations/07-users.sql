@@ -17,6 +17,5 @@ CREATE TABLE IF NOT EXISTS users (
     created_at      TIMESTAMP DEFAULT NOW(),
     updated_at      TIMESTAMP DEFAULT NOW(),
     last_github_import_at TIMESTAMPTZ,
-    preferred_location      VARCHAR(200),
-    preferred_date_posted   VARCHAR(20)
+    preferred_location      VARCHAR(200)
 );
