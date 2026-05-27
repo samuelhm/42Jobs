@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useLoaderData } from 'react-router';
-import { CategoriesBar, KeywordsChart } from '../../components';
+import { CategoriesBar, KeywordsChart, CompanyTypesChart } from '../../components';
 import { getMatchPct, getMatchClass, isRecent } from '../../utils';
 import type { DashboardData } from './dashboard.types';
 
@@ -58,6 +58,11 @@ export default function Dashboard() {
             <h2>Keywords</h2>
           </div>
           <KeywordsChart categoryId={categoryId} onHover={setHighlightKw} />
+          <div className="section-label" style={{ marginTop: '1.5rem' }}>
+            <span className="indicator" style={{ background: 'var(--amber)', boxShadow: '0 0 8px rgba(230,168,69,0.4)' }} />
+            <h2>Company types</h2>
+          </div>
+          <CompanyTypesChart categoryId={categoryId} />
         </div>
       </main>
     </>
