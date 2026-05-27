@@ -51,5 +51,5 @@ DECISION RULE: "Would a recruiter or ATS search for this exact term when looking
 
 Keywords to analyze:
 {{keywords}}',
-  (SELECT id FROM ai_models WHERE name = 'deepseek-v4-pro')
+  (SELECT id FROM ai_models WHERE name = 'deepseek-v4-flash')
 ) ON CONFLICT (functionality) DO NOTHING;

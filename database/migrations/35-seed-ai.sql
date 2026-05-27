@@ -61,7 +61,7 @@ JUNIOR PROFILE CRITERIA (junior_friendly):
 
 Offer: "{{title}}"
 Description: "{{description}}"',
-(SELECT id FROM ai_models WHERE name = 'gemini-3.1-flash-lite')),
+(SELECT id FROM ai_models WHERE name = 'deepseek-v4-pro')),
 
 ('extract_keywords', 'Extract keywords from job offers', 'Extracts technologies, tools, hard skills and soft skills from a job description for ATS matching',
 'You are a job offer keyword extractor for an ATS (Applicant Tracking System). The keywords you extract will be used to match candidate profiles against job offers. Every keyword must be useful for candidate matching and filtering.',
@@ -80,7 +80,7 @@ IMPORTANT RULES:
 - Limit to truly relevant keywords. More is not always better — quality over quantity.
 
 Offer: "{{text}}"',
-(SELECT id FROM ai_models WHERE name = 'gemini-3.1-flash-lite')),
+(SELECT id FROM ai_models WHERE name = 'deepseek-v4-flash')),
 
 ('analyze_github', 'Analyze GitHub repositories', 'Extracts structured project information from GitHub repos for ATS profile matching',
 'You are a GitHub project analyzer for an ATS (Applicant Tracking System). Your task is to analyze a user''s repositories and extract structured information that will help match their profile to job offers. The keywords you extract will be used by recruiters and ATS systems to find candidates.',
@@ -99,7 +99,7 @@ KEYWORD RULES:
 
 Projects to analyze:
 {{input}}',
-(SELECT id FROM ai_models WHERE name = 'gemini-3.1-flash-lite')),
+(SELECT id FROM ai_models WHERE name = 'deepseek-v4-pro')),
 
 ('dedup_keywords', 'Deduplicate keywords', 'Groups equivalent/similar keywords into clusters',
 'You are a technical keyword deduplicator for an ATS. Group keywords that represent IDENTICAL technologies into clusters. The first item in each group will be kept; the rest will be merged into it.',
@@ -144,7 +144,7 @@ Projects to analyze:
 
 Keywords to analyze:
 {{keywords}}',
-(SELECT id FROM ai_models WHERE name = 'gemini-3.1-flash-lite')),
+(SELECT id FROM ai_models WHERE name = 'deepseek-v4-flash')),
 
 ('clean_keywords', 'Clean low-quality keywords', 'Identifies keywords that should be permanently removed from the system',
 'You are a keyword quality filter for an ATS (Applicant Tracking System). Your task is to identify keywords that should be REMOVED because they do not represent concrete, recruiter-searchable professional skills.',
@@ -168,7 +168,7 @@ DECISION RULE: "Would a recruiter or ATS search for this exact term when looking
 
 Keywords to analyze:
 {{keywords}}',
-(SELECT id FROM ai_models WHERE name = 'deepseek-v4-pro')),
+(SELECT id FROM ai_models WHERE name = 'deepseek-v4-flash')),
 
 ('parse_experience', 'Parse LinkedIn experience', 'Extracts structured work experience from LinkedIn raw text',
 'You are a LinkedIn data extractor. You convert work experience text to structured JSON.',
@@ -183,7 +183,7 @@ Months: ene=01 feb=02 mar=03 abr=04 may=05 jun=06 jul=07 ago=08 sept=09 oct=10 n
 Fields: company, position, start_date, end_date, description
 
 {{raw_text}}',
-(SELECT id FROM ai_models WHERE name = 'gemini-3.1-flash-lite')),
+(SELECT id FROM ai_models WHERE name = 'deepseek-v4-flash')),
 
 ('parse_education', 'Parse LinkedIn education', 'Extracts structured education from LinkedIn raw text',
 'You are a LinkedIn data extractor. You convert education text to structured JSON.',
@@ -197,7 +197,7 @@ Fields: institution, degree, start_year, end_year.
 Ignore "Aptitudes:", "Actividades y grupos:".
 
 {{raw_text}}',
-(SELECT id FROM ai_models WHERE name = 'gemini-3.1-flash-lite')),
+(SELECT id FROM ai_models WHERE name = 'deepseek-v4-flash')),
 
 ('cv_generation', 'Generate CV', 'Generates structured CV content tailored to a job offer',
 'You are an expert CV/resume writer specialized in ATS optimization and recruiter-friendly positioning.
