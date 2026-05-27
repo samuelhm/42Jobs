@@ -8,7 +8,7 @@ namespace src.Controllers;
 public partial class ResumesController
 {
     [HttpPost("{jobId:int}/regenerate")]
-    public async Task<IActionResult> Regenerate([FromRoute] int jobId)
+    public async Task<IActionResult> Regenerate([FromRoute] int jobId, [FromBody] RegenerateRequest? body)
     {
         var userId = GetUserId();
 
@@ -35,17 +35,33 @@ public partial class ResumesController
             .OrderByDescending(e => e.StartYear)
             .ToListAsync();
 
-        var template = await _db.Set<CvTemplate>()
-            .FirstOrDefaultAsync(t => t.IsActive);
+        CvTemplate? template;
+
+        if (body?.TemplateId is not null)
+        {
+            template = await _db.CvTemplates.FindAsync(body.TemplateId);
+            if (template is null)
+                return BadRequest(new { error = $"Template {body.TemplateId} not found" });
+        }
+        else
+        {
+            template = await _db.Set<CvTemplate>().FirstOrDefaultAsync(t => t.IsActive);
+        }
 
         var aiData = JsonDocument.Parse(existing.JsonData).RootElement;
         var html = RenderTemplate(template?.HtmlTemplate, user, job, aiData, educations);
 
         existing.CvData = html;
+        existing.TemplateId = template?.Id;
         existing.Model = existing.Model;
         existing.UpdatedAt = DateTime.UtcNow;
         await _db.SaveChangesAsync();
 
-        return Ok(new { success = true, id = existing.Id, html = existing.CvData, model = existing.Model });
+        return Ok(new { success = true, id = existing.Id, html = existing.CvData, model = existing.Model, templateId = existing.TemplateId });
     }
+}
+
+public class RegenerateRequest
+{
+    public int? TemplateId { get; set; }
 }

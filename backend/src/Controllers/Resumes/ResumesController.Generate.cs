@@ -90,6 +90,7 @@ public partial class ResumesController
                 Model = modelName,
                 CvData = html,
                 JsonData = fullJson,
+                TemplateId = template?.Id,
             };
 
             _db.Resumes.Add(resume);

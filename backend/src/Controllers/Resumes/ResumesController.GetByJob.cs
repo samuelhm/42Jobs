@@ -12,6 +12,6 @@ public partial class ResumesController
         var resume = await _db.Resumes.FirstOrDefaultAsync(r => r.UserId == userId && r.JobId == jobId);
         if (resume is null) return NotFound(new { error = "No CV generated for this job" });
 
-        return Ok(new { success = true, id = resume.Id, html = resume.CvData, model = resume.Model });
+        return Ok(new { success = true, id = resume.Id, html = resume.CvData, model = resume.Model, templateId = resume.TemplateId });
     }
 }
