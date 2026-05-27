@@ -20,10 +20,36 @@ interface Props {
   onSave: () => void;
 }
 
+function resizePhoto(file: File, maxDim: number): Promise<string> {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        let w = img.width;
+        let h = img.height;
+        if (w > maxDim || h > maxDim) {
+          const ratio = Math.min(maxDim / w, maxDim / h);
+          w = Math.round(w * ratio);
+          h = Math.round(h * ratio);
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        canvas.getContext('2d')!.drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL(file.type || 'image/jpeg', 0.85));
+      };
+      img.src = reader.result as string;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
 export default function ProfileInfo({ profile, onSave }: Props) {
   const [form, setForm] = useState<ProfileData>({});
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState('');
+  const [photoUploading, setPhotoUploading] = useState(false);
 
   useEffect(() => { setForm(profile); }, [profile]);
 
@@ -41,9 +67,81 @@ export default function ProfileInfo({ profile, onSave }: Props) {
     setSaving(false);
   }
 
+  async function handlePhotoSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setPhotoUploading(true);
+    try {
+      const dataUrl = await resizePhoto(file, 300);
+      const res = await fetchWithAuth('/api/profile/photo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ photo: dataUrl }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setForm((prev) => ({ ...prev, photo: dataUrl }));
+        setMsg('Photo updated');
+        setTimeout(() => setMsg(''), 2000);
+      } else {
+        setMsg(data.error || 'Photo upload failed');
+      }
+    } catch {
+      setMsg('Photo upload failed');
+    } finally {
+      setPhotoUploading(false);
+    }
+  }
+
+  async function handlePhotoRemove() {
+    setPhotoUploading(true);
+    try {
+      const res = await fetchWithAuth('/api/profile/photo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ photo: null }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setForm((prev) => ({ ...prev, photo: undefined }));
+        setMsg('Photo removed');
+        setTimeout(() => setMsg(''), 2000);
+      } else {
+        setMsg(data.error || 'Failed to remove photo');
+      }
+    } catch {
+      setMsg('Failed to remove photo');
+    } finally {
+      setPhotoUploading(false);
+    }
+  }
+
+  const currentPhoto = form.photo || profile.photo;
+
   return (
     <form onSubmit={handleSubmit} className="profile-form">
       <h2>Personal Information</h2>
+
+      <div className="photo-section" style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+        {currentPhoto ? (
+          <img src={currentPhoto} alt="Profile" style={{ width: 80, height: 80, borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--border)' }} />
+        ) : (
+          <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'var(--bg-dim)', border: '2px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-dim)', fontSize: '0.75rem' }}>No photo</div>
+        )}
+        <div>
+          <label className="btn-cancel" style={{ cursor: 'pointer', fontSize: '0.8rem', padding: '0.35rem 0.75rem' }}>
+            {photoUploading ? 'Uploading...' : 'Choose photo'}
+            <input type="file" accept="image/jpeg,image/png,image/webp" onChange={handlePhotoSelect} style={{ display: 'none' }} disabled={photoUploading} />
+          </label>
+          {currentPhoto && (
+            <button type="button" className="btn-cancel" style={{ fontSize: '0.8rem', padding: '0.35rem 0.75rem', marginLeft: '0.5rem' }} onClick={handlePhotoRemove} disabled={photoUploading}>
+              Remove
+            </button>
+          )}
+        </div>
+      </div>
+
       <div className="form-grid">
         <div className="form-field">
           <label>Name</label>

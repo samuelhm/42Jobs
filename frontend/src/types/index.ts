@@ -24,6 +24,7 @@ export interface ProfileData {
   junior?: boolean;
   presentation?: string;
   preferred_location?: string;
+  photo?: string;
 }
 
 export interface Job {

@@ -36,6 +36,7 @@ public partial class ProfileController
             AvatarUrl = user.AvatarUrl,
             Role = user.Role,
             PreferredLocation = user.PreferredLocation,
+            Photo = user.Photo,
             CreatedAt = user.CreatedAt,
             Languages = user.Languages.Select(l => new LanguageDto
             {

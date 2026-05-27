@@ -80,6 +80,7 @@ public class ProfileResponseDto
     public string? AvatarUrl { get; set; }
     public string Role { get; set; } = "User";
     public string? PreferredLocation { get; set; }
+    public string? Photo { get; set; }
     public DateTime CreatedAt { get; set; }
 
     public List<LanguageDto> Languages { get; set; } = [];
@@ -186,4 +187,9 @@ public class LinkedInEducationParsed
     public string? Institution { get; set; }
     public int? StartYear { get; set; }
     public int? EndYear { get; set; }
+}
+
+public class UpdatePhotoDto
+{
+    public string? Photo { get; set; }
 }

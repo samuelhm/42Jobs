@@ -130,6 +130,7 @@ public partial class ResumesController
             ["linkedin"] = user.LinkedinUrl ?? "",
             ["github"] = user.GithubUrl ?? "",
             ["location"] = user.Address ?? "",
+            ["photo"] = string.IsNullOrEmpty(user.Photo) ? "" : $"<img class=\"cv-photo\" src=\"{user.Photo}\" />",
             ["profile"] = aiData.TryGetProperty("profile", out var p) ? p.GetString() ?? "" : "",
             ["experiences"] = RenderExperiences(aiData),
             ["projects"] = RenderProjects(aiData),

@@ -17,5 +17,6 @@ CREATE TABLE IF NOT EXISTS users (
     created_at      TIMESTAMP DEFAULT NOW(),
     updated_at      TIMESTAMP DEFAULT NOW(),
     last_github_import_at TIMESTAMPTZ,
-    preferred_location      VARCHAR(200)
+    preferred_location      VARCHAR(200),
+    photo                   TEXT
 );
