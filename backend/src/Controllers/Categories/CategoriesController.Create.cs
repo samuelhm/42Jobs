@@ -18,7 +18,6 @@ public partial class CategoriesController
         var existing = allCategories.FirstOrDefault(c => NormalizeName(c.Name) == normalizedInput);
 
         Category category;
-        List<string> readinessErrors = [];
         if (existing is not null)
         {
             category = existing;
@@ -26,33 +25,29 @@ public partial class CategoriesController
         }
         else
         {
+            var fetchErrors = new List<string>();
+            foreach (var fn in new[] { "filter_jobs", "extract_keywords" })
+                fetchErrors.AddRange(await _readiness.CheckAsync(fn));
+
+            if (fetchErrors.Count > 0)
+                return StatusCode(503, new { error = string.Join("; ", fetchErrors) });
+
             category = new Category { Name = body.Name };
             _db.Categories.Add(category);
             await _db.SaveChangesAsync();
             _logger.LogInformation("Category '{Name}' created with id={Id}", body.Name, category.Id);
 
-            var fetchErrors = new List<string>();
-            foreach (var fn in new[] { "filter_jobs", "extract_keywords" })
-                fetchErrors.AddRange(await _readiness.CheckAsync(fn));
-            readinessErrors = fetchErrors;
-            if (readinessErrors.Count > 0)
+            var user = await _db.Users.FindAsync(userId);
+            _fetchService.Enqueue(category.Id, category.Name, new FetchRequestDto
             {
-                _logger.LogWarning("Category {Id} created but fetch skipped: {Errors}", category.Id, string.Join("; ", readinessErrors));
-            }
-            else
-            {
-                var user = await _db.Users.FindAsync(userId);
-                _fetchService.Enqueue(category.Id, category.Name, new FetchRequestDto
-                {
-                    Location = !string.IsNullOrEmpty(user?.PreferredLocation) ? user.PreferredLocation : "Barcelona",
-                    Limit = 10,
-                    DatePosted = "past-week",
-                    SortBy = "recent",
-                });
+                Location = !string.IsNullOrEmpty(user?.PreferredLocation) ? user.PreferredLocation : "Barcelona",
+                Limit = 10,
+                DatePosted = "past-week",
+                SortBy = "recent",
+            });
 
-                category.LastFetchedAt = DateTime.UtcNow;
-                await _db.SaveChangesAsync();
-            }
+            category.LastFetchedAt = DateTime.UtcNow;
+            await _db.SaveChangesAsync();
         }
 
         var alreadyFollowing = await _db.UserCategories
@@ -86,7 +81,6 @@ public partial class CategoriesController
         {
             id = category.Id,
             name = category.Name,
-            warnings = readinessErrors.Count > 0 ? readinessErrors : null,
         });
     }
 
