@@ -29,6 +29,14 @@ public partial class CategoriesController
             _db.Categories.Add(category);
             await _db.SaveChangesAsync();
             _logger.LogInformation("Category '{Name}' created with id={Id}", body.Name, category.Id);
+
+            _fetchService.Enqueue(category.Id, category.Name, new FetchRequestDto
+            {
+                Location = "Barcelona",
+                Limit = 10,
+                DatePosted = "past-week",
+                SortBy = "recent",
+            });
         }
 
         var alreadyFollowing = await _db.UserCategories

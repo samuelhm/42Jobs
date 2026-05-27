@@ -2,7 +2,6 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using src.Data;
-using src.Services;
 using src.Services.Jobs;
 
 namespace src.Controllers;

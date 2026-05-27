@@ -73,9 +73,72 @@ public partial class JobFetchService : BackgroundService, IJobFetchService
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         _logger.LogInformation("JobFetchService background service started");
+
+        _ = RunSchedulerAsync(stoppingToken);
+
         await foreach (var request in _channel.Reader.ReadAllAsync(stoppingToken))
         {
             _ = Task.Run(() => ProcessFetchAsync(request, stoppingToken), stoppingToken);
+        }
+    }
+
+    private async Task RunSchedulerAsync(CancellationToken ct)
+    {
+        var targetHours = new[] { 8, 12, 16, 20 };
+
+        while (!ct.IsCancellationRequested)
+        {
+            var now = DateTime.UtcNow;
+            var nextRun = now.Date;
+
+            foreach (var hour in targetHours)
+            {
+                var candidate = now.Date.AddHours(hour);
+                if (candidate > now)
+                {
+                    nextRun = candidate;
+                    break;
+                }
+            }
+
+            if (nextRun <= now)
+                nextRun = now.Date.AddDays(1).AddHours(targetHours[0]);
+
+            var delay = nextRun - now;
+            if (delay > TimeSpan.Zero)
+            {
+                _logger.LogInformation("Scheduler: next run at {NextRun} UTC (in {Delay})", nextRun, delay);
+                await Task.Delay(delay, ct);
+            }
+
+            if (ct.IsCancellationRequested) break;
+
+            await FetchAllCategoriesAsync(ct);
+
+            await Task.Delay(TimeSpan.FromMinutes(1), ct);
+        }
+    }
+
+    private async Task FetchAllCategoriesAsync(CancellationToken ct)
+    {
+        using var scope = _scopeFactory.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        var categories = await db.Categories.ToListAsync(ct);
+
+        _logger.LogInformation("Scheduled fetch: processing {Count} categories at {Time} UTC", categories.Count, DateTime.UtcNow);
+
+        foreach (var category in categories)
+        {
+            if (ct.IsCancellationRequested) break;
+
+            Enqueue(category.Id, category.Name, new FetchRequestDto
+            {
+                Location = "Barcelona",
+                Limit = 10,
+                DatePosted = "past-week",
+                SortBy = "recent",
+            });
         }
     }
 }

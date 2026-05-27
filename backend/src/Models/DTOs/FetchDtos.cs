@@ -8,13 +8,6 @@ public class FetchRequestDto
     public string? SortBy { get; set; }
 }
 
-public class FetchJobResponseDto
-{
-    public Guid JobId { get; set; }
-    public string Status { get; set; } = string.Empty;
-    public string StatusUrl { get; set; } = string.Empty;
-}
-
 public class FetchStatusDto
 {
     public string Status { get; set; } = string.Empty;
