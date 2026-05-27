@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useLoaderData, useSearchParams } from 'react-router';
+import { useLoaderData } from 'react-router';
 import { CategoriesBar, NotesModal, KeywordTag, CvModal } from '../../components';
 import { fetchWithAuth, formatDescription, getMatchPct, getMatchClass, isRecent } from '../../utils';
 import { useToast } from '../../context';
@@ -7,13 +7,10 @@ import type { Job, UserKeyword } from '../../types';
 import type { OffersData } from './offers.loader';
 
 export function OffersRoute() {
-  const [searchParams] = useSearchParams();
-  const categoryId = searchParams.get('category') || 'none';
-  const refreshKey = searchParams.get('_r') || '0';
   return (
     <>
       <CategoriesBar availableOnly />
-      <OffersContent key={`${categoryId}_${refreshKey}`} />
+      <OffersContent />
     </>
   );
 }
@@ -47,24 +44,6 @@ function OffersContent() {
     const res = await fetchWithAuth(`/api/jobs/${job.id}`, { method: 'DELETE' });
     const data = await res.json();
     if (data.success) setJobs((prev) => prev.filter((j) => j.id !== job.id));
-  }
-
-  async function handleRefresh(job: Job) {
-    toast(`refresh-${job.id}`, 'Refreshing job details...', 'info');
-    try {
-      const res = await fetchWithAuth(`/api/jobs/${job.id}/refresh`, { method: 'PATCH' });
-      const data = await res.json();
-      if (data.status === 'rate-limited') {
-        toast(`refresh-${job.id}`, data.message, 'error');
-      } else if (data.success) {
-        setJobs((prev) => prev.map((j) => j.id === job.id
-          ? { ...j, description: data.data.description, keywords: data.data.keywords }
-          : j));
-        toast(`refresh-${job.id}`, `Updated with ${data.data.keywords.length} keywords`, 'success');
-      }
-    } catch {
-      toast(`refresh-${job.id}`, 'Refresh failed', 'error');
-    }
   }
 
   async function saveTitle() {
@@ -157,7 +136,7 @@ function OffersContent() {
 
                 <div className="card-controls">
                   <span className={`match-badge ${matchClass}`}>{pct}%</span>
-                  <JobCardButtons job={job} onCvClick={setCvJob} onNotesClick={setNotesJob} onDelete={handleDelete} onRefresh={handleRefresh} onTrack={handleTrack} />
+                  <JobCardButtons job={job} onCvClick={setCvJob} onNotesClick={setNotesJob} onDelete={handleDelete} onTrack={handleTrack} />
                 </div>
 
                 <JobAccordion job={job} userKeywords={userKeywords} onStatusChange={handleKwStatusChange} />
@@ -189,12 +168,11 @@ function OffersContent() {
   );
 }
 
-function JobCardButtons({ job, onCvClick, onNotesClick, onDelete, onRefresh, onTrack }: {
+function JobCardButtons({ job, onCvClick, onNotesClick, onDelete, onTrack }: {
   job: Job;
   onCvClick: (j: Job) => void;
   onNotesClick: (j: Job) => void;
   onDelete: (j: Job) => void;
-  onRefresh: (j: Job) => void;
   onTrack: (j: Job) => void;
 }) {
   return (
@@ -210,11 +188,6 @@ function JobCardButtons({ job, onCvClick, onNotesClick, onDelete, onRefresh, onT
       {job.job_url && (
         <a className="oferta-link" href={job.job_url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>ver</a>
       )}
-      <button className="notes-btn refresh-btn" title="Refresh" onClick={(e) => { e.stopPropagation(); onRefresh(job); }}>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="12" height="12">
-          <polyline points="23 4 23 10 17 10" /><polyline points="1 20 1 14 7 14" /><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
-        </svg>
-      </button>
       <button className="notes-btn" title="Notes" onClick={(e) => { e.stopPropagation(); onNotesClick(job); }}>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="12" height="12">
           <path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />

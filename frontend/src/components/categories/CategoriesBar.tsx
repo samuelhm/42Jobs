@@ -1,7 +1,6 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router';
 import AddCategoryDialog from './AddCategoryDialog';
-import { useToast } from '../../context';
 import { fetchWithAuth } from '../../utils';
 import type { Category } from '../../types';
 
@@ -10,16 +9,6 @@ export default function CategoriesBar({ availableOnly }: { availableOnly?: boole
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
-  const [updating, setUpdating] = useState(false);
-  const [fetchStatus, setFetchStatus] = useState<{
-    message: string;
-    type: 'info' | 'success' | 'error';
-    processed?: number;
-    total?: number;
-  } | null>(null);
-  const { toast } = useToast();
-  const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const statusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const categoryId = searchParams.get('category');
   const activeId = categoryId ? Number(categoryId) : null;
@@ -53,128 +42,16 @@ export default function CategoriesBar({ availableOnly }: { availableOnly?: boole
     setSearchParams({ category: String(id) });
   }
 
-  async function triggerFetch(categoryId: number): Promise<boolean> {
-    let location = 'Barcelona';
-    let datePosted = 'past-week';
-    let missingPrefs = false;
-    try {
-      const prefsRes = await fetchWithAuth('/api/profile/preferences');
-      const prefsData = await prefsRes.json();
-      if (prefsData.success) {
-        if (prefsData.data.preferred_location) {
-          location = prefsData.data.preferred_location;
-        } else {
-          missingPrefs = true;
-        }
-        if (prefsData.data.preferred_date_posted) {
-          datePosted = prefsData.data.preferred_date_posted;
-        } else {
-          missingPrefs = true;
-        }
-      }
-    } catch {}
-
-    if (missingPrefs) {
-      toast('prefs-warning', 'Configure your preferred location and date filter in Profile > Personal for better results.', 'info');
-    }
-
-    const res = await fetchWithAuth(`/api/categories/${categoryId}/fetch`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ location, limit: 10, datePosted, sortBy: 'recent' }),
-    });
-    const data = await res.json();
-
-    if (data.status === 'fresh') {
-      toast(`fresh-${categoryId}`, 'Already up to date (fetched within 4 hours)', 'success');
-      return false;
-    }
-
-    const jobId = data.job_id || data.jobId;
-    if (!jobId) {
-      setFetchStatus({ message: 'Failed to start fetch', type: 'error' });
-      clearStatusAfter(4000);
-      return false;
-    }
-
-    setFetchStatus({ message: 'Searching LinkedIn...', type: 'info' });
-
-    await new Promise<void>((resolve) => {
-      pollingRef.current = setInterval(async () => {
-        try {
-          const r = await fetchWithAuth(`/api/categories/${categoryId}/fetch/${jobId}`);
-          const d = await r.json();
-          if (d.status === 'completed' || d.status === 'done') {
-            clearInterval(pollingRef.current!);
-            pollingRef.current = null;
-            setFetchStatus({ message: `${d.total} found, ${d.skipped} discarded, ${d.inserted} new offers`, type: 'success' });
-            clearStatusAfter(12000);
-            resolve();
-          } else if (d.status === 'failed' || d.error) {
-            clearInterval(pollingRef.current!);
-            pollingRef.current = null;
-            setFetchStatus({ message: d.error || 'Fetch failed', type: 'error' });
-            clearStatusAfter(4000);
-            resolve();
-          } else if (d.status === 'running') {
-            const total = d.total || 0;
-            const processed = d.processed || 0;
-            if (total > 0) {
-              setFetchStatus({
-                message: `Processing... ${processed}/${total}`,
-                type: 'info',
-                processed,
-                total,
-              });
-            }
-          }
-        } catch {
-          clearInterval(pollingRef.current!);
-          pollingRef.current = null;
-          setFetchStatus({ message: 'Connection lost', type: 'error' });
-          clearStatusAfter(4000);
-          resolve();
-        }
-      }, 2000);
-    });
-
-    return true;
-  }
-
-  function clearStatusAfter(ms: number) {
-    if (statusTimerRef.current) clearTimeout(statusTimerRef.current);
-    statusTimerRef.current = setTimeout(() => setFetchStatus(null), ms);
-  }
-
   async function handleCreated(id: number) {
     setShowAdd(false);
     await loadCategories();
     setSearchParams({ category: String(id) });
-    await fetchAndReload(id);
   }
 
   async function handleSubscribed(id: number, _name: string) {
     setShowAdd(false);
     await loadCategories();
     setSearchParams({ category: String(id) });
-    await fetchAndReload(id);
-  }
-
-  async function fetchAndReload(id: number) {
-    setUpdating(true);
-    try {
-      const ok = await triggerFetch(id);
-      if (ok) {
-        await loadCategories();
-        setSearchParams((prev) => {
-          const r = parseInt(prev.get('_r') || '0');
-          prev.set('_r', String(r + 1));
-          return prev;
-        }, { replace: true });
-      }
-    } finally {
-      setUpdating(false);
-    }
   }
 
   async function handleUnfollow(id: number, e: React.MouseEvent) {
@@ -183,70 +60,31 @@ export default function CategoriesBar({ availableOnly }: { availableOnly?: boole
     await loadCategories();
   }
 
-  async function handleUpdate() {
-    if (!activeId) return;
-    setUpdating(true);
-    try {
-      const ok = await triggerFetch(activeId);
-      if (ok) {
-        await loadCategories();
-        setSearchParams((prev) => {
-          const r = parseInt(prev.get('_r') || '0');
-          prev.set('_r', String(r + 1));
-          return prev;
-        }, { replace: true });
-      }
-    } catch {
-      setFetchStatus({ message: 'Connection error', type: 'error' });
-      clearStatusAfter(4000);
-    } finally {
-      setUpdating(false);
-    }
-  }
-
   if (loading) return null;
 
   return (
-    <>
-      <div className="categories-bar">
-        <div className="tabs-scroll">
-          {categories.map((c) => (
-            <button
-              key={c.id}
-              className={`tab-btn${c.id === activeId ? ' active' : ''}`}
-              onClick={() => select(c.id)}
-            >
-              {c.name}
-              <span className="tab-count">{c.job_count}</span>
-              <span className="tab-close" onClick={(e) => handleUnfollow(c.id, e)} title="Unfollow">x</span>
-            </button>
-          ))}
-          <button className="tab-btn tab-add" onClick={() => setShowAdd(true)}>+</button>
-        </div>
-        <button className="update-btn" onClick={handleUpdate} disabled={updating || !activeId}>
-          {updating ? '...' : 'Update'}
-        </button>
-        {showAdd && (
-          <AddCategoryDialog
-            onClose={() => setShowAdd(false)}
-            onCreated={handleCreated}
-            onSubscribed={handleSubscribed}
-          />
-        )}
+    <div className="categories-bar">
+      <div className="tabs-scroll">
+        {categories.map((c) => (
+          <button
+            key={c.id}
+            className={`tab-btn${c.id === activeId ? ' active' : ''}`}
+            onClick={() => select(c.id)}
+          >
+            {c.name}
+            <span className="tab-count">{c.job_count}</span>
+            <span className="tab-close" onClick={(e) => handleUnfollow(c.id, e)} title="Unfollow">x</span>
+          </button>
+        ))}
+        <button className="tab-btn tab-add" onClick={() => setShowAdd(true)}>+</button>
       </div>
-      {fetchStatus && (
-        <div className={`fetch-banner fetch-${fetchStatus.type}`}>
-          <span>{fetchStatus.message}</span>
-          {fetchStatus.processed !== undefined && fetchStatus.total !== undefined && fetchStatus.total > 0 && (
-            <div className="fetch-progress">
-              <div
-                className="fetch-progress-fill"
-                style={{ width: `${Math.round((fetchStatus.processed / fetchStatus.total) * 100)}%` }}
-              />
-            </div>
-          )}
-        </div>
+      {showAdd && (
+        <AddCategoryDialog
+          onClose={() => setShowAdd(false)}
+          onCreated={handleCreated}
+          onSubscribed={handleSubscribed}
+        />
       )}
-    </>
+    </div>
   );
 }

@@ -229,22 +229,6 @@
 .delete-btn { border-color: rgba(212,114,106,0.15); }
 .delete-btn:hover { border-color: var(--red); color: var(--red); background: rgba(212,114,106,0.1); }
 
-.update-btn {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.62rem; font-weight: 600;
-  padding: 0.2rem 0.5rem;
-  border: 1px solid var(--teal-dim);
-  border-radius: 4px;
-  background: rgba(77,184,160,0.1);
-  color: var(--teal);
-  cursor: pointer;
-  transition: all 0.2s;
-  white-space: nowrap;
-  margin-left: 0.5rem;
-}
-.update-btn:hover { background: rgba(77,184,160,0.2); border-color: var(--teal); color: #6dd8c0; }
-.update-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-
 .recent-badge {
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.58rem;
