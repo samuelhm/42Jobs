@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams } from 'react-router';
 import AddCategoryDialog from './AddCategoryDialog';
 import { fetchWithAuth } from '../../utils';
@@ -10,6 +10,7 @@ export default function CategoriesBar({ availableOnly }: { availableOnly?: boole
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
   const [showProcessing, setShowProcessing] = useState(false);
+  const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const categoryId = searchParams.get('category');
   const activeId = categoryId ? Number(categoryId) : null;
@@ -48,6 +49,34 @@ export default function CategoriesBar({ availableOnly }: { availableOnly?: boole
     await loadCategories();
     setSearchParams({ category: String(id) });
     setShowProcessing(true);
+
+    if (pollingRef.current) clearInterval(pollingRef.current);
+
+    let attempts = 0;
+    pollingRef.current = setInterval(async () => {
+      attempts++;
+      try {
+        const res = await fetchWithAuth('/api/categories');
+        const json = await res.json();
+        if (json.success) {
+          const cat = json.data.find((c: Category) => c.id === id);
+          if (cat?.job_count && cat.job_count > 0) {
+            clearInterval(pollingRef.current!);
+            pollingRef.current = null;
+            setShowProcessing(false);
+            setSearchParams((prev) => {
+              prev.set('_r', String(parseInt(prev.get('_r') || '0') + 1));
+              return prev;
+            }, { replace: true });
+          }
+        }
+      } catch { /* ignore polling errors */ }
+
+      if (attempts >= 24) {
+        clearInterval(pollingRef.current!);
+        pollingRef.current = null;
+      }
+    }, 5000);
   }
 
   async function handleSubscribed(id: number, _name: string) {
@@ -88,13 +117,13 @@ export default function CategoriesBar({ availableOnly }: { availableOnly?: boole
         />
       )}
       {showProcessing && (
-        <div className="dialog-overlay" onClick={() => setShowProcessing(false)}>
+        <div className="dialog-overlay" onClick={() => { setShowProcessing(false); if (pollingRef.current) { clearInterval(pollingRef.current); pollingRef.current = null; } }}>
           <div className="dialog-box" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 400, textAlign: 'center' }}>
             <h3>Category created</h3>
             <p style={{ margin: '0.75rem 0', color: 'var(--text-dim)', fontSize: '0.85rem', lineHeight: 1.5 }}>
-              Jobs are being processed with AI. They will appear here in a few minutes.
+              Searching for jobs and processing with AI. New offers will appear automatically here.
             </p>
-            <button className="btn-confirm" onClick={() => setShowProcessing(false)}>Got it</button>
+            <button className="btn-confirm" onClick={() => { setShowProcessing(false); if (pollingRef.current) { clearInterval(pollingRef.current); pollingRef.current = null; } }}>Got it</button>
           </div>
         </div>
       )}
