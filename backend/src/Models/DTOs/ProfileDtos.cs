@@ -80,7 +80,6 @@ public class ProfileResponseDto
     public string? AvatarUrl { get; set; }
     public string Role { get; set; } = "User";
     public string? PreferredLocation { get; set; }
-    public string? PreferredDatePosted { get; set; }
     public DateTime CreatedAt { get; set; }
 
     public List<LanguageDto> Languages { get; set; } = [];
@@ -102,7 +101,6 @@ public class UpdateProfileDto
     public bool? Junior { get; set; }
     public string? Presentation { get; set; }
     public string? PreferredLocation { get; set; }
-    public string? PreferredDatePosted { get; set; }
 }
 
 public class KeywordResponseDto

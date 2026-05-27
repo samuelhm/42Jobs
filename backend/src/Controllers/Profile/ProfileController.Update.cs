@@ -23,7 +23,6 @@ public partial class ProfileController
         if (body.Junior.HasValue) user.Junior = body.Junior.Value;
         if (body.Presentation is not null) user.Presentation = body.Presentation;
         if (body.PreferredLocation is not null) user.PreferredLocation = body.PreferredLocation;
-        if (body.PreferredDatePosted is not null) user.PreferredDatePosted = body.PreferredDatePosted;
 
         user.UpdatedAt = DateTime.UtcNow;
         await _db.SaveChangesAsync();
@@ -47,7 +46,6 @@ public partial class ProfileController
                 AvatarUrl = user.AvatarUrl,
                 Role = user.Role,
                 PreferredLocation = user.PreferredLocation,
-                PreferredDatePosted = user.PreferredDatePosted,
                 CreatedAt = user.CreatedAt,
             }
         });

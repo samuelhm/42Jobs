@@ -2,6 +2,19 @@ import { useState, useEffect } from 'react';
 import { fetchWithAuth } from '../../utils';
 import type { ProfileData } from '../../types';
 
+const SPANISH_CITIES = [
+  'Madrid', 'Barcelona', 'Valencia', 'Sevilla', 'Zaragoza', 'Málaga',
+  'Murcia', 'Palma', 'Las Palmas de Gran Canaria', 'Bilbao', 'Alicante',
+  'Córdoba', 'Valladolid', 'Vigo', 'Gijón', 'Hospitalet de Llobregat',
+  'Vitoria-Gasteiz', 'A Coruña', 'Granada', 'Elche', 'Oviedo', 'Badalona',
+  'Cartagena', 'Terrassa', 'Jerez de la Frontera', 'Sabadell', 'Móstoles',
+  'Santa Cruz de Tenerife', 'Pamplona', 'Almería', 'San Sebastián',
+  'Burgos', 'Santander', 'Castellón de la Plana', 'Albacete',
+  'Alcalá de Henares', 'Getafe', 'Logroño', 'San Cristóbal de La Laguna',
+  'Huelva', 'Badajoz', 'Tarragona', 'Lleida', 'Marbella', 'León',
+  'Cádiz', 'Jaén', 'Ourense', 'Girona', 'Lugo', 'Toledo',
+];
+
 interface Props {
   profile: ProfileData;
   onSave: () => void;
@@ -79,13 +92,11 @@ export default function ProfileInfo({ profile, onSave }: Props) {
       <div className="form-grid">
         <div className="form-field">
           <label>Preferred Location</label>
-          <input value={form.preferred_location || ''} onChange={(e) => setForm({ ...form, preferred_location: e.target.value })} placeholder="e.g. Barcelona" />
-        </div>
-        <div className="form-field">
-          <label>Date Filter</label>
-          <select value={form.preferred_date_posted || 'past-week'} onChange={(e) => setForm({ ...form, preferred_date_posted: e.target.value })}>
-            <option value="past-week">Past Week</option>
-            <option value="past-24h">Past 24 Hours</option>
+          <select value={form.preferred_location || ''} onChange={(e) => setForm({ ...form, preferred_location: e.target.value })}>
+            <option value="">-- Select a city --</option>
+            {SPANISH_CITIES.map((city) => (
+              <option key={city} value={city}>{city}</option>
+            ))}
           </select>
         </div>
       </div>

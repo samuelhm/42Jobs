@@ -20,7 +20,6 @@ public class User
     public DateTime UpdatedAt { get; set; }
     public DateTime? LastGithubImportAt { get; set; }
     public string? PreferredLocation { get; set; }
-    public string? PreferredDatePosted { get; set; }
 
     public List<Language> Languages { get; set; } = [];
     public List<Certification> Certifications { get; set; } = [];

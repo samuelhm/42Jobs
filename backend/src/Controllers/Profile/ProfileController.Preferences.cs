@@ -14,8 +14,7 @@ public partial class ProfileController
             .Where(u => u.Id == userId)
             .Select(u => new
             {
-                u.PreferredLocation,
-                u.PreferredDatePosted
+                u.PreferredLocation
             })
             .FirstOrDefaultAsync();
 
@@ -26,8 +25,7 @@ public partial class ProfileController
             success = true,
             data = new
             {
-                preferred_location = user.PreferredLocation,
-                preferred_date_posted = user.PreferredDatePosted
+                preferred_location = user.PreferredLocation
             }
         });
     }
