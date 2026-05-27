@@ -16,7 +16,7 @@ export function OffersRoute() {
 }
 
 function OffersContent() {
-  const { userKeywords: initialKeywords, jobs: initialJobs, categoryId } = useLoaderData() as OffersData;
+  const { userKeywords: initialKeywords, jobs: initialJobs, categoryId, lastFetchedAt } = useLoaderData() as OffersData;
 
   const [userKeywords, setUserKeywords] = useState<Record<string, UserKeyword>>(initialKeywords);
   const [jobs, setJobs] = useState<Job[]>(initialJobs);
@@ -86,6 +86,12 @@ function OffersContent() {
           <h2>Job offers</h2>
           <span className="count">{jobs.length} offers</span>
         </div>
+
+        {lastFetchedAt && (
+          <p className="last-fetched" style={{ fontSize: '0.72rem', color: 'var(--text-dim)', marginBottom: '0.75rem' }}>
+            Last updated {formatLastFetched(lastFetchedAt)}
+          </p>
+        )}
 
         <div id="ofertas-list">
           {jobs.map((job) => {
@@ -237,5 +243,20 @@ function JobAccordion({ job, userKeywords, onStatusChange }: {
       </div>
     </div>
   );
+}
+
+function formatLastFetched(iso: string): string {
+  const d = new Date(iso);
+  const now = new Date();
+  const diffMs = now.getTime() - d.getTime();
+  const diffMin = Math.floor(diffMs / 60000);
+  if (diffMin < 1) return 'just now';
+  if (diffMin < 60) return `${diffMin}m ago`;
+  const diffH = Math.floor(diffMin / 60);
+  if (diffH < 24) return `${diffH}h ago`;
+  const diffD = Math.floor(diffH / 24);
+  if (diffD === 1) return 'yesterday';
+  if (diffD < 7) return `${diffD}d ago`;
+  return d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 

@@ -55,6 +55,7 @@ export interface Category {
   id: number;
   name: string;
   job_count: number;
+  last_fetched_at: string | null;
 }
 
 export interface ApiResponse<T> {
