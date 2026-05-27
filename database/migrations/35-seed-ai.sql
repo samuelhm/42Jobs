@@ -6,7 +6,7 @@
 -- AI Services
 -- ═══════════════════════════════════════════════════════════
 INSERT INTO ai_services (name, is_free_tier) VALUES
-    ('Google', TRUE),
+    ('Google', FALSE),
     ('OpenAI', FALSE)
 ON CONFLICT (name) DO NOTHING;
 
