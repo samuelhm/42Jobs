@@ -27,6 +27,20 @@ export default function Tracking() {
   const { jobs: rawJobs, userKeywords: initialKeywords } = useLoaderData() as TrackingData;
   const [jobs, setJobs] = useState(rawJobs);
   const [userKeywords, setUserKeywords] = useState<Record<string, UserKeyword>>(initialKeywords);
+  const [collapsed, setCollapsed] = useState<Set<string>>(() => {
+    const c = new Set(SECTIONS.map(s => s.status));
+    c.delete('saved');
+    return c;
+  });
+
+  function toggleSection(status: string) {
+    setCollapsed(prev => {
+      const next = new Set(prev);
+      if (next.has(status)) next.delete(status);
+      else next.add(status);
+      return next;
+    });
+  }
 
   function handleJobStatusChange(jobId: number, newStatus: string) {
     setJobs(prev => prev.map(j => j.job_id === jobId ? { ...j, status: newStatus as TrackingJob['status'] } : j));
@@ -65,22 +79,24 @@ export default function Tracking() {
       )}
 
       {nonEmpty.map(s => (
-        <TrackingSection key={s.status} section={s} jobs={grouped[s.status]} userKeywords={userKeywords} onKwStatusChange={handleKwStatusChange} onJobStatusChange={handleJobStatusChange} />
+        <TrackingSection key={s.status} section={s} jobs={grouped[s.status]} userKeywords={userKeywords} onKwStatusChange={handleKwStatusChange} onJobStatusChange={handleJobStatusChange} collapsed={collapsed.has(s.status)} onToggle={() => toggleSection(s.status)} />
       ))}
     </div>
   );
 }
 
-function TrackingSection({ section, jobs, userKeywords, onKwStatusChange, onJobStatusChange }: {
+function TrackingSection({ section, jobs, userKeywords, onKwStatusChange, onJobStatusChange, collapsed, onToggle }: {
   section: typeof SECTIONS[0];
   jobs: TrackingJob[];
   userKeywords: Record<string, UserKeyword>;
   onKwStatusChange: (kwId: number, status: string) => void;
   onJobStatusChange: (jobId: number, status: string) => void;
+  collapsed: boolean;
+  onToggle: () => void;
 }) {
   return (
-    <div style={{ marginBottom: '2rem' }}>
-      <div className="section-label" style={{ marginBottom: '0.5rem' }}>
+    <div style={{ marginBottom: '1.25rem' }}>
+      <div className="section-label" style={{ marginBottom: '0.5rem', cursor: 'pointer' }} onClick={onToggle}>
         <span className="indicator" style={{
           background: section.status === 'entrevista_conseguida' ? 'var(--amber)' :
                       section.status === 'cv_enviado' ? 'var(--teal)' :
@@ -90,15 +106,20 @@ function TrackingSection({ section, jobs, userKeywords, onKwStatusChange, onJobS
         }} />
         <h2>{section.label}</h2>
         <span className="count">{jobs.length}</span>
+        <span style={{ marginLeft: 'auto', fontSize: '0.7rem', color: 'var(--text-dim)', transition: 'transform 0.2s', transform: collapsed ? 'rotate(-90deg)' : 'rotate(0deg)' }}>▼</span>
       </div>
-      <p className="text-dim" style={{ fontSize: '0.7rem', marginBottom: '0.5rem', fontStyle: 'italic' }}>
-        {section.desc}
-      </p>
-      <div id="ofertas-list">
-        {jobs.map(job => (
-          <JobCard key={job.job_id} job={job} userKeywords={userKeywords} onKwStatusChange={onKwStatusChange} onJobStatusChange={onJobStatusChange} />
-        ))}
-      </div>
+      {!collapsed && (
+        <>
+          <p className="text-dim" style={{ fontSize: '0.7rem', marginBottom: '0.5rem', fontStyle: 'italic' }}>
+            {section.desc}
+          </p>
+          <div id="ofertas-list">
+            {jobs.map(job => (
+              <JobCard key={job.job_id} job={job} userKeywords={userKeywords} onKwStatusChange={onKwStatusChange} onJobStatusChange={onJobStatusChange} />
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 }
