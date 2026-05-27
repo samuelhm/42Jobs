@@ -7,7 +7,8 @@
 -- ═══════════════════════════════════════════════════════════
 INSERT INTO ai_services (name, is_free_tier) VALUES
     ('Google', FALSE),
-    ('OpenAI', FALSE)
+    ('OpenAI', FALSE),
+    ('DeepSeek', FALSE)
 ON CONFLICT (name) DO NOTHING;
 
 -- ═══════════════════════════════════════════════════════════
@@ -33,7 +34,10 @@ INSERT INTO ai_models (ai_service_id, name) VALUES
     ((SELECT id FROM ai_services WHERE name = 'OpenAI'), 'gpt-4.1-mini'),
     ((SELECT id FROM ai_services WHERE name = 'OpenAI'), 'gpt-4.1-nano'),
     ((SELECT id FROM ai_services WHERE name = 'OpenAI'), 'gpt-4o'),
-    ((SELECT id FROM ai_services WHERE name = 'OpenAI'), 'gpt-4o-mini')
+    ((SELECT id FROM ai_services WHERE name = 'OpenAI'), 'gpt-4o-mini'),
+    -- DeepSeek
+    ((SELECT id FROM ai_services WHERE name = 'DeepSeek'), 'deepseek-v4-flash'),
+    ((SELECT id FROM ai_services WHERE name = 'DeepSeek'), 'deepseek-v4-pro')
 ON CONFLICT (ai_service_id, name) DO NOTHING;
 
 -- ═══════════════════════════════════════════════════════════
