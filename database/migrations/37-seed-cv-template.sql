@@ -40,7 +40,7 @@ INSERT INTO cv_templates (name, description, html_template, css, is_active) VALU
 <body>
 <header>
   <h1>{{name}}</h1>
-  <div class="subtitle">{{job_title}} &mdash; {{company}}</div>
+  <div class="subtitle">{{job_title}}</div>
   <div class="contact">{{email}} | {{phone}} | <a href="{{linkedin}}">{{linkedin}}</a> | <a href="{{github}}">{{github}}</a> | {{location}}</div>
 </header>
 <section><h2>Professional Profile</h2><p class="profile-text">{{profile}}</p></section>
