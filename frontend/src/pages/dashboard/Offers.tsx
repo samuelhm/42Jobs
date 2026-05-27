@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLoaderData } from 'react-router';
 import { CategoriesBar, NotesModal, KeywordTag, CvModal } from '../../components';
 import { fetchWithAuth, formatDescription, getMatchPct, getMatchClass, isRecent } from '../../utils';
@@ -21,6 +21,11 @@ function OffersContent() {
   const [userKeywords, setUserKeywords] = useState<Record<string, UserKeyword>>(initialKeywords);
   const [jobs, setJobs] = useState<Job[]>(initialJobs);
   const [expandedId, setExpandedId] = useState<number | null>(null);
+
+  useEffect(() => {
+    setUserKeywords(initialKeywords);
+    setJobs(initialJobs);
+  }, [initialKeywords, initialJobs]);
   const [notesJob, setNotesJob] = useState<Job | null>(null);
   const [editingTitle, setEditingTitle] = useState<{ jobId: number; title: string } | null>(null);
   const [cvJob, setCvJob] = useState<Job | null>(null);
