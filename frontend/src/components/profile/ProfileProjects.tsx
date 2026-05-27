@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { fetchWithAuth } from '../../utils';
+import AiNotConfiguredModal from '../ui/AiNotConfiguredModal';
 
 interface Project {
   id: number;
@@ -18,6 +19,7 @@ export default function ProfileProjects() {
   const [ghToken, setGhToken] = useState('');
   const [importing, setImporting] = useState(false);
   const [importStatus, setImportStatus] = useState<{ message: string; type: 'info' | 'success' | 'error'; processed?: number; total?: number } | null>(null);
+  const [aiError, setAiError] = useState('');
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const activeJobRef = useRef<string | null>(null);
 
@@ -85,6 +87,13 @@ export default function ProfileProjects() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, token: ghToken || null }),
       });
+      if (res.status === 503) {
+        const data = await res.json();
+        setAiError(data.error || 'AI not configured');
+        setImporting(false);
+        setImportStatus(null);
+        return;
+      }
       const data = await res.json();
 
       const jobId = data.job_id;
@@ -249,6 +258,7 @@ export default function ProfileProjects() {
           {editingId && <button type="button" className="btn-cancel" onClick={resetForm}>Cancel</button>}
         </div>
       </form>
+      {aiError && <AiNotConfiguredModal message={aiError} onClose={() => setAiError('')} />}
     </div>
   );
 }

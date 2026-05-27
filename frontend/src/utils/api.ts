@@ -3,8 +3,13 @@ import { fetchWithAuth } from './fetchWithAuth';
 
 async function api<T>(url: string, options?: RequestInit): Promise<ApiResponse<T>> {
   const res = await fetchWithAuth(url, { headers: { 'Content-Type': 'application/json' }, ...options });
-  if (res.status === 204) return { success: true, data: null as T };
-  try { return await res.json(); } catch { return { success: false, data: null as T, error: `HTTP ${res.status}` }; }
+  if (res.status === 204) return { success: true, status: 204, data: null as T };
+  try {
+    const json = await res.json();
+    return { ...json, status: res.status };
+  } catch {
+    return { success: false, status: res.status, data: null as T, error: `HTTP ${res.status}` };
+  }
 }
 
 export async function get<T>(url: string) { return api<T>(url); }

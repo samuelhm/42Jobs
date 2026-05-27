@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router';
 import AddCategoryDialog from './AddCategoryDialog';
 import { fetchWithAuth } from '../../utils';
+import { useToast } from '../../context';
 import type { Category } from '../../types';
 
 export default function CategoriesBar({ availableOnly }: { availableOnly?: boolean }) {
@@ -10,6 +11,7 @@ export default function CategoriesBar({ availableOnly }: { availableOnly?: boole
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
   const [showProcessing, setShowProcessing] = useState(false);
+  const { toast } = useToast();
 
   const categoryId = searchParams.get('category');
   const activeId = categoryId ? Number(categoryId) : null;
@@ -43,10 +45,13 @@ export default function CategoriesBar({ availableOnly }: { availableOnly?: boole
     setSearchParams({ category: String(id) });
   }
 
-  async function handleCreated(id: number) {
+  async function handleCreated(id: number, warnings?: string[]) {
     setShowAdd(false);
     await loadCategories();
     setSearchParams({ category: String(id) });
+    if (warnings && warnings.length > 0) {
+      warnings.forEach((w) => toast(`warn-${id}-${w.slice(0, 20)}`, w, 'info'));
+    }
     setShowProcessing(true);
   }
 

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { fetchWithAuth } from '../../utils/fetchWithAuth';
+import AiNotConfiguredModal from '../ui/AiNotConfiguredModal';
 import { useAuth } from '../../context';
 
 interface Template {
@@ -36,6 +37,7 @@ export default function CvModal({ jobId, jobTitle, onClose }: Props) {
   const [exists, setExists] = useState(false);
   const [templates, setTemplates] = useState<Template[]>([]);
   const [selectedTemplateId, setSelectedTemplateId] = useState<number | null>(null);
+  const [aiError, setAiError] = useState('');
 
   useEffect(() => {
     checkExisting();
@@ -71,6 +73,12 @@ export default function CvModal({ jobId, jobTitle, onClose }: Props) {
       const res = await fetchWithAuth(`/api/resumes/${jobId}`, {
         method: 'POST',
       });
+      if (res.status === 503) {
+        const data = await res.json();
+        setAiError(data.error || 'AI not configured');
+        setLoading(false);
+        return;
+      }
       const data = await res.json();
       if (data.html) {
         setHtml(sanitizeHtml(data.html));
@@ -198,6 +206,7 @@ export default function CvModal({ jobId, jobTitle, onClose }: Props) {
           </>
         )}
       </div>
+      {aiError && <AiNotConfiguredModal message={aiError} onClose={() => setAiError('')} />}
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { fetchWithAuth } from '../../utils';
+import AiNotConfiguredModal from '../ui/AiNotConfiguredModal';
 
 interface Props {
   endpoint: string;
@@ -11,6 +12,7 @@ export default function LinkedInImport({ endpoint, placeholder, onImported }: Pr
   const [text, setText] = useState('');
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState('');
+  const [aiError, setAiError] = useState('');
 
   async function handleImport() {
     const raw = text.trim();
@@ -23,6 +25,12 @@ export default function LinkedInImport({ endpoint, placeholder, onImported }: Pr
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ raw_text: raw }),
       });
+      if (res.status === 503) {
+        const data = await res.json();
+        setAiError(data.error || 'AI not configured');
+        setLoading(false);
+        return;
+      }
       const data = await res.json();
       if (data.success) {
         setMsg(`${data.imported} entries imported`);
@@ -59,6 +67,7 @@ export default function LinkedInImport({ endpoint, placeholder, onImported }: Pr
         </button>
         {msg && <span className="linkedin-import-msg">{msg}</span>}
       </div>
+      {aiError && <AiNotConfiguredModal message={aiError} onClose={() => setAiError('')} />}
     </div>
   );
 }

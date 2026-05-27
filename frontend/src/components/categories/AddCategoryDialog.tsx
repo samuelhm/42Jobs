@@ -3,7 +3,7 @@ import { fetchWithAuth } from '../../utils';
 
 interface Props {
   onClose: () => void;
-  onCreated: (id: number) => void;
+  onCreated: (id: number, warnings?: string[]) => void;
   onSubscribed: (id: number, name: string) => void;
 }
 
@@ -41,7 +41,7 @@ export default function AddCategoryDialog({ onClose, onCreated, onSubscribed }: 
       });
       const data = await res.json();
       if (res.ok) {
-        onCreated(data.id);
+        onCreated(data.id, data.warnings);
       } else {
         setError(data.error || 'Could not create category');
       }

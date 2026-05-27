@@ -4,4 +4,4 @@ export { CategoriesBar, AddCategoryDialog } from './categories';
 export { NotesModal, CvModal } from './jobs';
 export { KeywordsChart, KeywordTag, KeywordModal } from './keywords';
 export { ProfileInfo, ProfileList, ProfileProjects, LinkedInImport } from './profile';
-export { ToastContainer } from './ui';
+export { ToastContainer, AiNotConfiguredModal } from './ui';

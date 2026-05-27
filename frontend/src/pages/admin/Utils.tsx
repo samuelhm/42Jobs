@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { get, post, del } from '../../utils';
+import { AiNotConfiguredModal } from '../../components';
 
 interface CategoryInfo {
   id: number;
@@ -24,11 +25,18 @@ export default function AdminUtils() {
 function DedupSection() {
   const [msg, setMsg] = useState('');
   const [running, setRunning] = useState(false);
+  const [aiError, setAiError] = useState('');
 
   async function runDedup() {
     setRunning(true);
     setMsg('Running dedup...');
     const res = await post<{ message: string; merged: number }>('/api/admin/dedup-keywords', {});
+    if (res.status === 503) {
+      setAiError(res.error || 'AI not configured');
+      setRunning(false);
+      setMsg('');
+      return;
+    }
     setMsg(res.success ? res.data.message : 'Error');
     setRunning(false);
   }
@@ -41,6 +49,7 @@ function DedupSection() {
         {running ? 'Running...' : 'Run Dedup'}
       </button>
       {msg && <div style={{ marginTop: '0.75rem', padding: '0.75rem', background: 'var(--bg)', borderRadius: 'var(--radius)', border: '1px solid var(--border)', fontSize: '0.75rem' }}>{msg}</div>}
+      {aiError && <AiNotConfiguredModal message={aiError} onClose={() => setAiError('')} />}
     </div>
   );
 }
@@ -48,11 +57,18 @@ function DedupSection() {
 function CleanSection() {
   const [msg, setMsg] = useState('');
   const [running, setRunning] = useState(false);
+  const [aiError, setAiError] = useState('');
 
   async function runClean() {
     setRunning(true);
     setMsg('Running cleanup...');
     const res = await post<{ message: string; removed: number }>('/api/admin/clean-keywords', {});
+    if (res.status === 503) {
+      setAiError(res.error || 'AI not configured');
+      setRunning(false);
+      setMsg('');
+      return;
+    }
     setMsg(res.success ? res.data.message : 'Error');
     setRunning(false);
   }
@@ -65,6 +81,7 @@ function CleanSection() {
         {running ? 'Running...' : 'Run Clean'}
       </button>
       {msg && <div style={{ marginTop: '0.75rem', padding: '0.75rem', background: 'var(--bg)', borderRadius: 'var(--radius)', border: '1px solid var(--border)', fontSize: '0.75rem' }}>{msg}</div>}
+      {aiError && <AiNotConfiguredModal message={aiError} onClose={() => setAiError('')} />}
     </div>
   );
 }
