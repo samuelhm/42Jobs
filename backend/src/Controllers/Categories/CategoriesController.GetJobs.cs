@@ -15,12 +15,18 @@ public partial class CategoriesController
         if (!follows)
             return NotFound(new { error = "Category not found" });
 
+        var user = await _db.Users.FindAsync(userId);
+
         var query = _db.Jobs
             .Where(j => j.Categories.Any(c => c.Id == id)
                 && !j.Resumes.Any(r => r.UserId == userId));
 
         if (!showTracked)
             query = query.Where(j => !j.UserJobs.Any(uj => uj.UserId == userId));
+
+        var loc = user?.PreferredLocation;
+        if (!string.IsNullOrEmpty(loc))
+            query = query.Where(j => j.Location != null && EF.Functions.ILike(j.Location, $"%{loc}%"));
 
         var jobs = await query
             .Include(j => j.Company)

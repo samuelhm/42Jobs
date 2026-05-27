@@ -10,6 +10,9 @@ public partial class CategoriesController
     public async Task<IActionResult> GetAll([FromQuery] bool available = false)
     {
         var userId = GetUserId();
+        var user = await _db.Users.FindAsync(userId);
+        var loc = user?.PreferredLocation;
+        var hasLocation = !string.IsNullOrEmpty(loc);
 
         var categories = await _db.UserCategories
             .Where(uc => uc.UserId == userId)
@@ -20,8 +23,11 @@ public partial class CategoriesController
                 Id = uc.Category.Id,
                 Name = uc.Category.Name,
                 JobCount = available
-                    ? uc.Category.Jobs.Count(j => !j.UserJobs.Any(uj => uj.UserId == userId))
-                    : uc.Category.Jobs.Count,
+                    ? uc.Category.Jobs.Count(j =>
+                        !j.UserJobs.Any(uj => uj.UserId == userId)
+                        && (!hasLocation || (j.Location != null && EF.Functions.ILike(j.Location, $"%{loc}%"))))
+                    : uc.Category.Jobs.Count(j =>
+                        !hasLocation || (j.Location != null && EF.Functions.ILike(j.Location, $"%{loc}%"))),
                 LastFetchedAt = uc.Category.LastFetchedAt,
             })
             .OrderBy(c => c.Name)

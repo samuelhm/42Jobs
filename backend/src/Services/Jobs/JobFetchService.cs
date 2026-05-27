@@ -137,39 +137,55 @@ public partial class JobFetchService : BackgroundService, IJobFetchService
 
         var categories = await db.Categories.ToListAsync(ct);
 
-        _logger.LogInformation("Scheduled fetch: processing {Count} categories at {Time} UTC", categories.Count, DateTime.UtcNow);
+        var locations = await db.Users
+            .Where(u => !string.IsNullOrEmpty(u.PreferredLocation))
+            .Select(u => u.PreferredLocation)
+            .Distinct()
+            .ToListAsync(ct);
 
-        foreach (var category in categories)
+        if (locations.Count == 0)
+            locations.Add("Barcelona");
+
+        _logger.LogInformation("Scheduled fetch: {Categories} categories × {Locations} locations at {Time} UTC",
+            categories.Count, locations.Count, DateTime.UtcNow);
+
+        foreach (var location in locations)
         {
             if (ct.IsCancellationRequested) break;
 
-            var jobId = Enqueue(category.Id, category.Name, new FetchRequestDto
+            foreach (var category in categories)
             {
-                Location = "Barcelona",
-                Limit = 10,
-                DatePosted = "past-week",
-                SortBy = "recent",
-            });
+                if (ct.IsCancellationRequested) break;
 
-            if (jobId is not null)
-            {
-                while (true)
+                var safeLocation = location!;
+                var jobId = Enqueue(category.Id, category.Name, new FetchRequestDto
                 {
-                    if (ct.IsCancellationRequested) break;
+                    Location = safeLocation,
+                    Limit = 10,
+                    DatePosted = "past-24h",
+                    SortBy = "recent",
+                });
 
-                    var fetchStatus = GetStatus(jobId.Value);
-                    if (fetchStatus is null || fetchStatus.Status is "completed" or "failed")
-                        break;
+                if (jobId is not null)
+                {
+                    while (true)
+                    {
+                        if (ct.IsCancellationRequested) break;
 
-                    await Task.Delay(TimeSpan.FromSeconds(5), ct);
+                        var fetchStatus = GetStatus(jobId.Value);
+                        if (fetchStatus is null || fetchStatus.Status is "completed" or "failed")
+                            break;
+
+                        await Task.Delay(TimeSpan.FromSeconds(5), ct);
+                    }
+
+                    category.LastFetchedAt = DateTime.UtcNow;
+                    await db.SaveChangesAsync(ct);
                 }
-
-                category.LastFetchedAt = DateTime.UtcNow;
-                await db.SaveChangesAsync(ct);
-            }
-            else
-            {
-                _logger.LogWarning("Scheduler: failed to enqueue category {Category}", category.Name);
+                else
+                {
+                    _logger.LogWarning("Scheduler: failed to enqueue category {Category}", category.Name);
+                }
             }
         }
     }
