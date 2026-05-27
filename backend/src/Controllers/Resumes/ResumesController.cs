@@ -14,13 +14,15 @@ public partial class ResumesController : ControllerBase
     private readonly AppDbContext _db;
     private readonly IAiService _ai;
     private readonly IAiReadinessService _readiness;
+    private readonly CvGenerationTracker _cvTracker;
     private readonly ILogger<ResumesController> _logger;
 
-    public ResumesController(AppDbContext db, IAiService ai, IAiReadinessService readiness, ILogger<ResumesController> logger)
+    public ResumesController(AppDbContext db, IAiService ai, IAiReadinessService readiness, CvGenerationTracker cvTracker, ILogger<ResumesController> logger)
     {
         _db = db;
         _ai = ai;
         _readiness = readiness;
+        _cvTracker = cvTracker;
         _logger = logger;
     }
 

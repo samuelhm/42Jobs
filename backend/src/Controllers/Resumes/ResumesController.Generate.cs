@@ -77,6 +77,9 @@ public partial class ResumesController
                 .Select(uk => uk.Keyword.Name)),
         };
 
+        if (!_cvTracker.TryStart(userId, jobId, out var lockKey))
+            return StatusCode(409, new { error = "CV generation already in progress" });
+
         try
         {
             var cvErrors = await _readiness.CheckAsync("cv_generation");
@@ -113,6 +116,10 @@ public partial class ResumesController
         {
             _logger.LogError(ex, "Failed to generate CV for job {JobId}", jobId);
             return StatusCode(500, new { error = "CV generation failed" });
+        }
+        finally
+        {
+            _cvTracker.Complete(lockKey);
         }
     }
 

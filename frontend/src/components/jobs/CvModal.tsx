@@ -73,10 +73,13 @@ export default function CvModal({ jobId, jobTitle, onClose }: Props) {
       const res = await fetchWithAuth(`/api/resumes/${jobId}`, {
         method: 'POST',
       });
+      if (res.status === 409) {
+        setError('CV generation already in progress');
+        return;
+      }
       if (res.status === 503) {
         const data = await res.json();
         setAiError(data.error || 'AI not configured');
-        setLoading(false);
         return;
       }
       const data = await res.json();
