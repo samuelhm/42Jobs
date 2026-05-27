@@ -15,12 +15,14 @@ public partial class ExperiencesController : ControllerBase
     private readonly ILogger<ExperiencesController> _logger;
     private readonly AppDbContext _db;
     private readonly IAiService _ai;
+    private readonly IAiReadinessService _readiness;
 
-    public ExperiencesController(ILogger<ExperiencesController> logger, AppDbContext db, IAiService ai)
+    public ExperiencesController(ILogger<ExperiencesController> logger, AppDbContext db, IAiService ai, IAiReadinessService readiness)
     {
         _logger = logger;
         _db = db;
         _ai = ai;
+        _readiness = readiness;
     }
 
     private async Task SyncExperienceKeywords(int expId, List<int> keywordIds)

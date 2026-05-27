@@ -13,6 +13,10 @@ public partial class EducationController
         if (string.IsNullOrWhiteSpace(body.RawText))
             return BadRequest(new { error = "Raw text is required" });
 
+        var parseErrors = await _readiness.CheckAsync("parse_education");
+        if (parseErrors.Count > 0)
+            return StatusCode(503, new { error = string.Join("; ", parseErrors) });
+
         var (parsed, error) = await _ai.ParseLinkedInEducationAsync(body.RawText);
         if (error is not null)
             return Ok(new { success = false, error, imported = 0 });

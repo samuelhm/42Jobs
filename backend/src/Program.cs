@@ -54,6 +54,7 @@ builder.Services.AddSingleton<IAiProvider, GeminiProvider>();
 builder.Services.AddSingleton<IAiProvider, OpenAiProvider>();
 builder.Services.AddSingleton<IAiProvider, DeepSeekProvider>();
 builder.Services.AddScoped<IAiService, AiService>();
+builder.Services.AddScoped<IAiReadinessService, AiReadinessService>();
 
 builder.Services.AddSingleton<IJobFetchService, JobFetchService>();
 builder.Services.AddHostedService(sp => (JobFetchService)sp.GetRequiredService<IJobFetchService>());

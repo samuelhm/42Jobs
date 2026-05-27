@@ -13,13 +13,15 @@ public partial class AdminController : ControllerBase
     private readonly AppDbContext _db;
     private readonly IAiService _ai;
     private readonly EncryptionService _encryption;
+    private readonly IAiReadinessService _readiness;
     private readonly ILogger<AdminController> _logger;
 
-    public AdminController(AppDbContext db, IAiService ai, EncryptionService encryption, ILogger<AdminController> logger)
+    public AdminController(AppDbContext db, IAiService ai, EncryptionService encryption, IAiReadinessService readiness, ILogger<AdminController> logger)
     {
         _db = db;
         _ai = ai;
         _encryption = encryption;
+        _readiness = readiness;
         _logger = logger;
     }
 }

@@ -17,12 +17,14 @@ public partial class ProjectsController : ControllerBase
     private readonly ILogger<ProjectsController> _logger;
     private readonly AppDbContext _db;
     private readonly GithubImportService _githubImport;
+    private readonly IAiReadinessService _readiness;
 
-    public ProjectsController(ILogger<ProjectsController> logger, AppDbContext db, GithubImportService githubImport)
+    public ProjectsController(ILogger<ProjectsController> logger, AppDbContext db, GithubImportService githubImport, IAiReadinessService readiness)
     {
         _logger = logger;
         _db = db;
         _githubImport = githubImport;
+        _readiness = readiness;
     }
 
     private async Task SyncProjectKeywords(int projectId, List<int> keywordIds)

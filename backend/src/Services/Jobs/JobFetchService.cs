@@ -123,6 +123,17 @@ public partial class JobFetchService : BackgroundService, IJobFetchService
     {
         using var scope = _scopeFactory.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var readiness = scope.ServiceProvider.GetRequiredService<IAiReadinessService>();
+
+        var fetchErrors = new List<string>();
+        foreach (var fn in new[] { "filter_jobs", "extract_keywords" })
+            fetchErrors.AddRange(await readiness.CheckAsync(fn, ct));
+
+        if (fetchErrors.Count > 0)
+        {
+            _logger.LogWarning("Scheduled fetch skipped: {Errors}", string.Join("; ", fetchErrors));
+            return;
+        }
 
         var categories = await db.Categories.ToListAsync(ct);
 

@@ -31,7 +31,10 @@ public partial class CategoriesController
             await _db.SaveChangesAsync();
             _logger.LogInformation("Category '{Name}' created with id={Id}", body.Name, category.Id);
 
-            readinessErrors = await GetFetchReadinessErrorsAsync();
+            var fetchErrors = new List<string>();
+            foreach (var fn in new[] { "filter_jobs", "extract_keywords" })
+                fetchErrors.AddRange(await _readiness.CheckAsync(fn));
+            readinessErrors = fetchErrors;
             if (readinessErrors.Count > 0)
             {
                 _logger.LogWarning("Category {Id} created but fetch skipped: {Errors}", category.Id, string.Join("; ", readinessErrors));
@@ -89,46 +92,5 @@ public partial class CategoriesController
     private static string NormalizeName(string name)
     {
         return Regex.Replace(name.ToLowerInvariant(), @"[^a-z0-9]", "");
-    }
-
-    private async Task<List<string>> GetFetchReadinessErrorsAsync()
-    {
-        var errors = new List<string>();
-
-        var required = new[] { "filter_jobs", "extract_keywords" };
-        var prompts = await _db.AiPrompts
-            .Where(p => required.Contains(p.Functionality) && p.IsActive)
-            .ToListAsync();
-
-        foreach (var prompt in prompts)
-        {
-            if (prompt.DefaultModelId is null)
-            {
-                errors.Add($"'{prompt.Functionality}' has no model assigned (Admin > AI Prompts)");
-                continue;
-            }
-
-            var model = await _db.AiModels
-                .Include(m => m.AiService)
-                .FirstOrDefaultAsync(m => m.Id == prompt.DefaultModelId && m.IsActive && m.AiService.IsActive);
-
-            if (model is null)
-            {
-                errors.Add($"'{prompt.Functionality}' model (id={prompt.DefaultModelId}) is inactive or missing");
-                continue;
-            }
-
-            if (string.IsNullOrEmpty(model.AiService.ApiKey))
-            {
-                errors.Add($"'{prompt.Functionality}' service '{model.AiService.Name}' has no API key (Admin > AI Services)");
-            }
-        }
-
-        if (prompts.Count == 0)
-        {
-            errors.Add("No active prompts found for filter_jobs or extract_keywords");
-        }
-
-        return errors;
     }
 }

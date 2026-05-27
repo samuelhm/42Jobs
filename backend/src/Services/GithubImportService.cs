@@ -152,6 +152,16 @@ public class GithubImportService : BackgroundService
                 using (var aiScope = _scopeFactory.CreateScope())
                 {
                     var ai = aiScope.ServiceProvider.GetRequiredService<IAiService>();
+                    var readiness = aiScope.ServiceProvider.GetRequiredService<IAiReadinessService>();
+
+                    var ghErrors = await readiness.CheckAsync("analyze_github", ct);
+                    if (ghErrors.Count > 0)
+                    {
+                        status.Status = "failed";
+                        status.Error = string.Join("; ", ghErrors);
+                        return;
+                    }
+
                     var batchText = string.Join("\n\n---\n\n", batchItems.Select((t, i) => $"PROJECT {i}: {t.name}\n{t.text}"));
                     (batchProjects, error) = await ai.AnalyzeGithubProjectsAsync(batchText, ct);
                 }

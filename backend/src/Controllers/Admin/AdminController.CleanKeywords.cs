@@ -10,6 +10,10 @@ public partial class AdminController
     [HttpPost("clean-keywords")]
     public async Task<IActionResult> CleanKeywords()
     {
+        var cleanErrors = await _readiness.CheckAsync("clean_keywords");
+        if (cleanErrors.Count > 0)
+            return StatusCode(503, new { error = string.Join("; ", cleanErrors) });
+
         var allNames = await _db.Keywords.OrderBy(k => k.Name).Select(k => k.Name).ToListAsync();
         if (allNames.Count == 0)
             return Ok(new { message = "No keywords to clean", removed = 0 });

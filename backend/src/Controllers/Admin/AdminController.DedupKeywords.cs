@@ -11,6 +11,10 @@ public partial class AdminController
     [HttpPost("dedup-keywords")]
     public async Task<IActionResult> DedupKeywords()
     {
+        var dedupErrors = await _readiness.CheckAsync("dedup_keywords");
+        if (dedupErrors.Count > 0)
+            return StatusCode(503, new { error = string.Join("; ", dedupErrors) });
+
         var allKeywords = await _db.Keywords.OrderBy(k => k.Name).ToListAsync();
         if (allKeywords.Count < 2)
             return Ok(new { message = "Not enough keywords to deduplicate", merged = 0 });

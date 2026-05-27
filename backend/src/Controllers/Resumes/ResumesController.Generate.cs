@@ -79,6 +79,10 @@ public partial class ResumesController
 
         try
         {
+            var cvErrors = await _readiness.CheckAsync("cv_generation");
+            if (cvErrors.Count > 0)
+                return StatusCode(503, new { error = string.Join("; ", cvErrors) });
+
             var (result, modelName) = await _ai.GenerateCvAsync(context);
             var fullJson = result.GetRawText();
             var html = RenderTemplate(template?.HtmlTemplate, user, job, result, educations);

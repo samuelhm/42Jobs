@@ -14,12 +14,14 @@ public partial class EducationController : ControllerBase
     private readonly ILogger<EducationController> _logger;
     private readonly AppDbContext _db;
     private readonly IAiService _ai;
+    private readonly IAiReadinessService _readiness;
 
-    public EducationController(ILogger<EducationController> logger, AppDbContext db, IAiService ai)
+    public EducationController(ILogger<EducationController> logger, AppDbContext db, IAiService ai, IAiReadinessService readiness)
     {
         _logger = logger;
         _db = db;
         _ai = ai;
+        _readiness = readiness;
     }
 
     private Guid GetUserId() =>
