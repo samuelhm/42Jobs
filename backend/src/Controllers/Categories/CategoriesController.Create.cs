@@ -41,9 +41,10 @@ public partial class CategoriesController
             }
             else
             {
+                var user = await _db.Users.FindAsync(userId);
                 _fetchService.Enqueue(category.Id, category.Name, new FetchRequestDto
                 {
-                    Location = "Barcelona",
+                    Location = !string.IsNullOrEmpty(user?.PreferredLocation) ? user.PreferredLocation : "Barcelona",
                     Limit = 10,
                     DatePosted = "past-week",
                     SortBy = "recent",
