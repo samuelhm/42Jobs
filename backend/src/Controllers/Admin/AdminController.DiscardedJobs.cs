@@ -20,6 +20,7 @@ public partial class AdminController
                 d.PostedDate,
                 d.Description,
                 d.FilterReasons,
+                d.CategoryName,
                 d.CreatedAt,
             })
             .ToListAsync();

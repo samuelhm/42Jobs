@@ -19,6 +19,7 @@ public class DiscardedJob
     public string? JobFunction { get; set; }
     public string? Applicants { get; set; }
     public string? FilterReasons { get; set; }
+    public string? CategoryName { get; set; }
     public string? RawData { get; set; }
     public DateTime CreatedAt { get; set; }
 }

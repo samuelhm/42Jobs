@@ -564,6 +564,7 @@ public class AppDbContext : DbContext
             entity.Property(d => d.JobFunction).HasMaxLength(200);
             entity.Property(d => d.Applicants).HasMaxLength(100);
             entity.Property(d => d.FilterReasons).HasColumnType("text");
+            entity.Property(d => d.CategoryName).HasMaxLength(100);
             entity.Property(d => d.RawData).HasColumnType("jsonb");
             entity.Property(d => d.CreatedAt)
                   .HasDefaultValueSql("NOW()")

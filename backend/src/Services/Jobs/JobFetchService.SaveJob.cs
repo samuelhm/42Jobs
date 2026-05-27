@@ -81,6 +81,7 @@ public partial class JobFetchService
                 JobFunction = details.JobFunction,
                 Applicants = details.Applicants,
                 FilterReasons = reasons,
+                CategoryName = categoryName,
                 RawData = rawData,
             });
             await db.SaveChangesAsync(ct);

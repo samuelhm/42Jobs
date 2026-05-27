@@ -19,7 +19,8 @@ CREATE TABLE IF NOT EXISTS discarded_jobs (
     industry         VARCHAR(200),
     job_function     VARCHAR(200),
     applicants       VARCHAR(100),
-    filter_reasons   TEXT,                         -- JSON: {"relevant":"no","junior_friendly":"yes"}
+    filter_reasons   TEXT,                         -- JSON: {"relevant":"no","juniorFriendly":"no"}
+    category_name    VARCHAR(100),                 -- category that triggered the discard
     raw_data         JSONB,                       -- complete job_details response
     created_at       TIMESTAMP DEFAULT NOW()
 );

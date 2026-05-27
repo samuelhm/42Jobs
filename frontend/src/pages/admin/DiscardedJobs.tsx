@@ -10,6 +10,7 @@ interface DiscardedJob {
   posted_date: string | null;
   description: string | null;
   filter_reasons: string | null;
+  category_name: string | null;
   created_at: string;
 }
 
@@ -57,9 +58,11 @@ export default function DiscardedJobs() {
                   </div>
                   <div style={{ display: 'flex', gap: '0.4rem', flexShrink: 0 }}>
                     {reasons.relevant === 'no' && (
-                      <span style={{ background: 'rgba(239,68,68,0.12)', color: 'var(--red)', padding: '0.15rem 0.5rem', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 600 }}>Not relevant</span>
+                      <span style={{ background: 'rgba(239,68,68,0.12)', color: 'var(--red)', padding: '0.15rem 0.5rem', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 600 }}>
+                        Not relevant{job.category_name ? ` for ${job.category_name}` : ''}
+                      </span>
                     )}
-                    {reasons.junior_friendly === 'no' && (
+                    {reasons.juniorFriendly === 'no' && (
                       <span style={{ background: 'rgba(245,158,11,0.12)', color: 'var(--amber)', padding: '0.15rem 0.5rem', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 600 }}>Senior only</span>
                     )}
                   </div>
