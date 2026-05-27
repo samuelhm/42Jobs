@@ -139,13 +139,11 @@ public partial class JobFetchService : BackgroundService, IJobFetchService
 
         _logger.LogInformation("Scheduled fetch: processing {Count} categories at {Time} UTC", categories.Count, DateTime.UtcNow);
 
-        var now = DateTime.UtcNow;
-
         foreach (var category in categories)
         {
             if (ct.IsCancellationRequested) break;
 
-            Enqueue(category.Id, category.Name, new FetchRequestDto
+            var jobId = Enqueue(category.Id, category.Name, new FetchRequestDto
             {
                 Location = "Barcelona",
                 Limit = 10,
@@ -153,10 +151,27 @@ public partial class JobFetchService : BackgroundService, IJobFetchService
                 SortBy = "recent",
             });
 
-            category.LastFetchedAt = now;
-        }
+            if (jobId is not null)
+            {
+                while (true)
+                {
+                    if (ct.IsCancellationRequested) break;
 
-        await db.SaveChangesAsync(ct);
+                    var fetchStatus = GetStatus(jobId.Value);
+                    if (fetchStatus is null || fetchStatus.Status is "completed" or "failed")
+                        break;
+
+                    await Task.Delay(TimeSpan.FromSeconds(5), ct);
+                }
+
+                category.LastFetchedAt = DateTime.UtcNow;
+                await db.SaveChangesAsync(ct);
+            }
+            else
+            {
+                _logger.LogWarning("Scheduler: failed to enqueue category {Category}", category.Name);
+            }
+        }
     }
 }
 
