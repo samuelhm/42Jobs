@@ -59,7 +59,7 @@ export default function CvModal({ jobId, jobTitle, onClose }: Props) {
           setHtml(sanitizeHtml(data.html));
           setModel(data.model || '');
           setExists(true);
-          if (data.templateId != null) setSelectedTemplateId(data.templateId);
+          if (data.template_id != null) setSelectedTemplateId(data.template_id);
         }
       }
     } catch { /* no CV yet */ }
@@ -104,13 +104,13 @@ export default function CvModal({ jobId, jobTitle, onClose }: Props) {
       const res = await fetchWithAuth(`/api/resumes/${jobId}/regenerate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ templateId: selectedTemplateId }),
+        body: JSON.stringify({ template_id: selectedTemplateId }),
       });
       const data = await res.json();
       if (data.html) {
         setHtml(sanitizeHtml(data.html));
         setModel(data.model || '');
-        if (data.templateId != null) setSelectedTemplateId(data.templateId);
+        if (data.template_id != null) setSelectedTemplateId(data.template_id);
         setExists(true);
       } else {
         setError(data.error || 'Regeneration failed');
