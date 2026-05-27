@@ -11,8 +11,8 @@ INSERT INTO cv_templates (name, description, html_template, css, is_active) VALU
 <style>
   * { margin:0;padding:0;box-sizing:border-box }
   body { font-family:''''Helvetica Neue'''',Arial,sans-serif;font-size:10pt;line-height:1.55;color:#1a1a1a;max-width:720px;margin:0 auto;padding:1.8rem 2rem }
-  header { display:grid;grid-template-columns:80px 1fr 80px;align-items:center;margin-bottom:1.4rem;padding-bottom:.9rem;border-bottom:2.5px solid #2c3e50 }
-  .cv-photo { width:80px;height:80px;border-radius:50%;object-fit:cover;border:2px solid #2c3e50 }
+  header { display:grid;grid-template-columns:120px 1fr 120px;align-items:center;margin-bottom:1.4rem;padding-bottom:.9rem;border-bottom:2.5px solid #2c3e50 }
+  .cv-photo { width:120px;height:120px;border-radius:50%;object-fit:cover;border:2px solid #2c3e50 }
   .header-text { text-align:center }
   h1 { font-size:1.5rem;font-weight:700;margin-bottom:.1rem;color:#2c3e50 }
   .subtitle { font-size:.9rem;color:#555;margin-bottom:.3rem;font-weight:500 }
