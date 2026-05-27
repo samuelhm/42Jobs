@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { fetchWithAuth } from '../../utils';
+import AiNotConfiguredModal from '../ui/AiNotConfiguredModal';
 
 interface Props {
   onClose: () => void;
-  onCreated: (id: number, warnings?: string[]) => void;
+  onCreated: (id: number) => void;
   onSubscribed: (id: number, name: string) => void;
 }
 
@@ -18,6 +19,7 @@ export default function AddCategoryDialog({ onClose, onCreated, onSubscribed }: 
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [aiError, setAiError] = useState<string | null>(null);
   const [available, setAvailable] = useState<AvailableCategory[]>([]);
 
   useEffect(() => {
@@ -40,8 +42,10 @@ export default function AddCategoryDialog({ onClose, onCreated, onSubscribed }: 
         body: JSON.stringify({ name: trimmed }),
       });
       const data = await res.json();
-      if (res.ok) {
-        onCreated(data.id, data.warnings);
+      if (res.status === 503) {
+        setAiError(data.error || 'AI not configured');
+      } else if (res.ok) {
+        onCreated(data.id);
       } else {
         setError(data.error || 'Could not create category');
       }
@@ -109,6 +113,7 @@ export default function AddCategoryDialog({ onClose, onCreated, onSubscribed }: 
           </button>
         </div>
       </div>
+      {aiError && <AiNotConfiguredModal message={aiError} onClose={() => setAiError(null)} />}
     </div>
   );
 }
