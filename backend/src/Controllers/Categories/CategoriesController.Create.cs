@@ -38,7 +38,7 @@ public partial class CategoriesController
             _logger.LogInformation("Category '{Name}' created with id={Id}", body.Name, category.Id);
 
             var user = await _db.Users.FindAsync(userId);
-            _fetchService.Enqueue(category.Id, category.Name, new FetchRequestDto
+            var jobId = _fetchService.Enqueue(category.Id, category.Name, new FetchRequestDto
             {
                 Location = !string.IsNullOrEmpty(user?.PreferredLocation) ? user.PreferredLocation : "Barcelona",
                 Limit = 10,
@@ -46,8 +46,15 @@ public partial class CategoriesController
                 SortBy = "recent",
             });
 
-            category.LastFetchedAt = DateTime.UtcNow;
-            await _db.SaveChangesAsync();
+            if (jobId is not null)
+            {
+                category.LastFetchedAt = DateTime.UtcNow;
+                await _db.SaveChangesAsync();
+            }
+            else
+            {
+                _logger.LogWarning("Category {Id} created but fetch not enqueued (channel full)", category.Id);
+            }
         }
 
         var alreadyFollowing = await _db.UserCategories
