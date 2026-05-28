@@ -29,7 +29,10 @@ textarea.input { resize: vertical; font-family: 'JetBrains Mono', monospace; fon
 .btn-delete:hover { border-color: var(--red); color: var(--red); }
 
 /* ── Available list ── */
-.available-list { display: flex; flex-direction: column; gap: 0.3rem; margin-bottom: 0.5rem; }
+.available-list { display: flex; flex-direction: column; gap: 0.3rem; margin-bottom: 0.5rem; max-height: 220px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+.available-list::-webkit-scrollbar { width: 4px; }
+.available-list::-webkit-scrollbar-track { background: transparent; }
+.available-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 999px; }
 .available-item {
   display: flex; justify-content: space-between; align-items: center;
   padding: 0.4rem 0.6rem; background: var(--bg); border: 1px solid var(--border);
