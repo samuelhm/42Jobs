@@ -73,8 +73,8 @@ public partial class JobFetchService : BackgroundService, IJobFetchService
 
     public bool IsFetchAllRunning => Volatile.Read(ref _fetchAllRunning) == 1;
 
-    public Task FetchAllCategoriesAsync(string? datePosted = null)
-        => FetchAllCategoriesWithTokenAsync(CancellationToken.None, datePosted);
+    public Task FetchAllCategoriesAsync(string? datePosted = null, string? location = null)
+        => FetchAllCategoriesWithTokenAsync(CancellationToken.None, datePosted, location);
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -109,7 +109,7 @@ public partial class JobFetchService : BackgroundService, IJobFetchService
         }
     }
 
-    private async Task FetchAllCategoriesWithTokenAsync(CancellationToken ct, string? datePosted = null)
+    private async Task FetchAllCategoriesWithTokenAsync(CancellationToken ct, string? datePosted = null, string? forcedLocation = null)
     {
         var effectiveDatePosted = datePosted ?? "past-24h";
 
@@ -137,14 +137,22 @@ public partial class JobFetchService : BackgroundService, IJobFetchService
 
         var categories = await db.Categories.ToListAsync(ct);
 
-        var locations = await db.Users
-            .Where(u => !string.IsNullOrEmpty(u.PreferredLocation))
-            .Select(u => u.PreferredLocation)
-            .Distinct()
-            .ToListAsync(ct);
+        List<string?> locations;
+        if (!string.IsNullOrEmpty(forcedLocation))
+        {
+            locations = new List<string?> { forcedLocation };
+        }
+        else
+        {
+            locations = await db.Users
+                .Where(u => !string.IsNullOrEmpty(u.PreferredLocation))
+                .Select(u => u.PreferredLocation)
+                .Distinct()
+                .ToListAsync(ct);
 
-        if (locations.Count == 0)
-            locations.Add("Barcelona");
+            if (locations.Count == 0)
+                locations.Add("Barcelona");
+        }
 
         _logger.LogInformation("Scheduled fetch: {Categories} categories × {Locations} locations at {Time} UTC",
             categories.Count, locations.Count, DateTime.UtcNow);

@@ -91,12 +91,15 @@ function CleanSection() {
 function FetchAllSection() {
   const [msg, setMsg] = useState('');
   const [running, setRunning] = useState(false);
+  const [location, setLocation] = useState('');
 
   async function runFetchAll() {
     setRunning(true);
-    setMsg('Triggering fetch for all categories...');
+    setMsg(location ? `Fetching all categories for ${location}...` : 'Fetching all categories for all locations...');
     try {
-      const res = await post<{ message: string }>('/api/admin/fetch-all-categories', {});
+      const body: { location?: string } = {};
+      if (location) body.location = location;
+      const res = await post<{ message: string }>('/api/admin/fetch-all-categories', body);
       setMsg(res.success ? res.data.message : (res.error || 'Error'));
     } catch {
       setMsg('Connection error');
@@ -108,10 +111,22 @@ function FetchAllSection() {
   return (
     <div className="service-card" style={{ marginBottom: '1rem' }}>
       <h3>Fetch All Categories</h3>
-      <p className="text-muted" style={{ marginBottom: '0.75rem' }}>Manually trigger a full fetch across all categories × all user locations, same as the 4x daily scheduler (8h, 12h, 16h, 20h UTC).</p>
-      <button className="admin-btn" onClick={runFetchAll} disabled={running}>
-        {running ? 'Fetching...' : 'Fetch All'}
-      </button>
+      <p className="text-muted" style={{ marginBottom: '0.75rem' }}>Manually trigger a full fetch across all categories. Choose a specific location or fetch all user locations.</p>
+      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem', flexWrap: 'wrap' }}>
+        <select
+          value={location}
+          onChange={(e) => setLocation(e.target.value)}
+          style={{ background: 'var(--bg)', color: 'var(--text)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '0.3rem 0.5rem', fontSize: '0.8rem', fontFamily: 'inherit', maxWidth: '200px' }}
+        >
+          <option value="">All locations</option>
+          {SPANISH_CITIES.map((city) => (
+            <option key={city} value={city}>{city}</option>
+          ))}
+        </select>
+        <button className="admin-btn" onClick={runFetchAll} disabled={running}>
+          {running ? 'Fetching...' : 'Fetch All'}
+        </button>
+      </div>
       {msg && (
         <div style={{ marginTop: '0.75rem', padding: '0.75rem', background: 'var(--bg)', borderRadius: 'var(--radius)', border: '1px solid var(--border)', fontSize: '0.75rem' }}>
           {msg}
@@ -120,6 +135,19 @@ function FetchAllSection() {
     </div>
   );
 }
+
+const SPANISH_CITIES = [
+  'Madrid', 'Barcelona', 'Valencia', 'Sevilla', 'Zaragoza', 'Málaga',
+  'Murcia', 'Palma', 'Las Palmas de Gran Canaria', 'Bilbao', 'Alicante',
+  'Córdoba', 'Valladolid', 'Vigo', 'Gijón', 'Hospitalet de Llobregat',
+  'Vitoria-Gasteiz', 'A Coruña', 'Granada', 'Elche', 'Oviedo', 'Badalona',
+  'Cartagena', 'Terrassa', 'Jerez de la Frontera', 'Sabadell', 'Móstoles',
+  'Santa Cruz de Tenerife', 'Pamplona', 'Almería', 'San Sebastián',
+  'Burgos', 'Santander', 'Castellón de la Plana', 'Albacete',
+  'Alcalá de Henares', 'Getafe', 'Logroño', 'San Cristóbal de La Laguna',
+  'Huelva', 'Badajoz', 'Tarragona', 'Lleida', 'Marbella', 'León',
+  'Cádiz', 'Jaén', 'Ourense', 'Girona', 'Lugo', 'Toledo',
+];
 
 function CategorySection() {
   const [categories, setCategories] = useState<CategoryInfo[]>([]);
