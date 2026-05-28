@@ -9,13 +9,13 @@ public partial class AiService
     {
         try
         {
-            var (systemPrompt, userTemplate, defaultModelId) = await LoadPromptAsync("clean_keywords");
+            var (systemPrompt, userTemplate, defaultModelId, useReasoning, reasoningEffort) = await LoadPromptAsync("clean_keywords");
             var keywordsList = string.Join("\n", keywords.Select(k => $"- {k}"));
             var userPrompt = FillTemplate(userTemplate, new() { ["keywords"] = keywordsList });
 
             var resolved = await ResolveModelAsync(defaultModelId);
             var schema = LoadSchema("clean_keywords", resolved.Provider.ServiceName);
-            var result = await CallWithRetryAsync(resolved, systemPrompt, userPrompt, schema, "clean_keywords", ct, useThinking: false);
+            var result = await CallWithRetryAsync(resolved, systemPrompt, userPrompt, schema, "clean_keywords", ct, useThinking: useReasoning, thinkingEffort: reasoningEffort);
 
             if (result.TryGetProperty("error", out var err) && err.ValueKind != JsonValueKind.Null)
             {

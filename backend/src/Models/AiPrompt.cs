@@ -10,6 +10,8 @@ public class AiPrompt
     public string UserPromptTemplate { get; set; } = string.Empty;
     public int? DefaultModelId { get; set; }
     public bool IsActive { get; set; } = true;
+    public bool UseReasoning { get; set; }
+    public string? ReasoningEffort { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 

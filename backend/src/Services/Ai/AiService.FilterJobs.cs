@@ -7,7 +7,7 @@ public partial class AiService
     public async Task<(string relevant, string juniorFriendly)> FilterJobRelevanceAsync(
         string keyword, string title, string? description, CancellationToken ct = default)
     {
-        var (systemPrompt, userTemplate, defaultModelId) = await LoadPromptAsync("filter_jobs");
+        var (systemPrompt, userTemplate, defaultModelId, useReasoning, reasoningEffort) = await LoadPromptAsync("filter_jobs");
         var userPrompt = FillTemplate(userTemplate, new()
         {
             ["keyword"] = keyword,
@@ -18,7 +18,7 @@ public partial class AiService
         var resolved = await ResolveModelAsync(defaultModelId);
         var schema = LoadSchema("filter_jobs", resolved.Provider.ServiceName);
         var result = await CallWithRetryAsync(resolved, systemPrompt, userPrompt, schema,
-            "filter_jobs", ct, useThinking: false);
+            "filter_jobs", ct, useThinking: useReasoning, thinkingEffort: reasoningEffort);
 
         if (result.TryGetProperty("error", out var err) && err.ValueKind != JsonValueKind.Null)
         {

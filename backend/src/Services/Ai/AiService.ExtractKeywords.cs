@@ -7,13 +7,13 @@ public partial class AiService
     public async Task<(List<string> skills, string companyType)> ExtractKeywordsAsync(
         string text, CancellationToken ct = default)
     {
-        var (systemPrompt, userTemplate, defaultModelId) = await LoadPromptAsync("extract_keywords");
+        var (systemPrompt, userTemplate, defaultModelId, useReasoning, reasoningEffort) = await LoadPromptAsync("extract_keywords");
         var userPrompt = FillTemplate(userTemplate, new() { ["text"] = text });
 
         var resolved = await ResolveModelAsync(defaultModelId);
         var schema = LoadSchema("extract_keywords", resolved.Provider.ServiceName);
         var result = await CallWithRetryAsync(resolved, systemPrompt, userPrompt, schema,
-            "extract_keywords", ct, useThinking: true);
+            "extract_keywords", ct, useThinking: useReasoning, thinkingEffort: reasoningEffort);
 
         if (result.TryGetProperty("error", out var err) && err.ValueKind != JsonValueKind.Null)
         {

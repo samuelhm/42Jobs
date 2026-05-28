@@ -13,7 +13,7 @@ public partial class AdminController
         var prompts = await _db.AiPrompts.Include(p => p.DefaultModel).AsNoTracking().ToListAsync();
         return Ok(new { success = true, data = models.Select(m => new
         {
-            m.Id, m.Name, m.IsActive,
+            m.Id, m.Name, m.IsActive, m.SupportsReasoning,
             ai_service_name = m.AiService.Name,
             m.AiServiceId,
             used_by = prompts.Where(p => p.DefaultModelId == m.Id).Select(p => p.Functionality).ToList()
@@ -23,7 +23,7 @@ public partial class AdminController
     [HttpPost("ai-models")]
     public async Task<IActionResult> CreateAiModel([FromBody] AiModelDto body)
     {
-        var model = new AiModel { AiServiceId = body.AiServiceId, Name = body.Name, IsActive = body.IsActive };
+        var model = new AiModel { AiServiceId = body.AiServiceId, Name = body.Name, IsActive = body.IsActive, SupportsReasoning = body.SupportsReasoning };
         _db.AiModels.Add(model);
         await _db.SaveChangesAsync();
         return Ok(new { success = true, data = model });
@@ -37,6 +37,7 @@ public partial class AdminController
         model.Name = body.Name;
         model.AiServiceId = body.AiServiceId;
         model.IsActive = body.IsActive;
+        model.SupportsReasoning = body.SupportsReasoning;
         await _db.SaveChangesAsync();
         return Ok(new { success = true, data = model });
     }
@@ -57,4 +58,5 @@ public class AiModelDto
     public int AiServiceId { get; set; }
     public string Name { get; set; } = "";
     public bool IsActive { get; set; } = true;
+    public bool SupportsReasoning { get; set; }
 }

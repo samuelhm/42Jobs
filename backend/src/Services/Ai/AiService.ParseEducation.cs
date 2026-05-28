@@ -10,12 +10,12 @@ public partial class AiService
     {
         try
         {
-            var (systemPrompt, userTemplate, defaultModelId) = await LoadPromptAsync("parse_education");
+            var (systemPrompt, userTemplate, defaultModelId, useReasoning, reasoningEffort) = await LoadPromptAsync("parse_education");
             var userPrompt = FillTemplate(userTemplate, new() { ["raw_text"] = rawText });
 
             var resolved = await ResolveModelAsync(defaultModelId);
             var schema = LoadSchema("parse_education", resolved.Provider.ServiceName);
-            var result = await CallWithRetryAsync(resolved, systemPrompt, userPrompt, schema, "parse_education", ct, useThinking: false);
+            var result = await CallWithRetryAsync(resolved, systemPrompt, userPrompt, schema, "parse_education", ct, useThinking: useReasoning, thinkingEffort: reasoningEffort);
 
             if (result.TryGetProperty("error", out var err) && err.ValueKind != JsonValueKind.Null)
             {

@@ -14,7 +14,7 @@ public partial class AdminController
         {
             p.Id, p.Functionality, p.Name, p.Description,
             p.SystemPrompt, p.UserPromptTemplate,
-            p.IsActive,
+            p.IsActive, p.UseReasoning, p.ReasoningEffort,
             p.DefaultModelId,
             default_model_name = p.DefaultModel?.Name,
             default_model_service = p.DefaultModel?.AiService.Name,
@@ -31,6 +31,8 @@ public partial class AdminController
         prompt.UserPromptTemplate = body.UserPromptTemplate;
         prompt.IsActive = body.IsActive;
         prompt.DefaultModelId = body.DefaultModelId;
+        prompt.UseReasoning = body.UseReasoning;
+        prompt.ReasoningEffort = body.ReasoningEffort;
         prompt.UpdatedAt = DateTime.UtcNow;
         await _db.SaveChangesAsync();
         return Ok(new { success = true, data = prompt });
@@ -43,4 +45,6 @@ public class AiPromptDto
     public string UserPromptTemplate { get; set; } = "";
     public bool IsActive { get; set; } = true;
     public int? DefaultModelId { get; set; }
+    public bool UseReasoning { get; set; }
+    public string? ReasoningEffort { get; set; }
 }

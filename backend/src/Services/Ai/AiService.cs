@@ -25,7 +25,7 @@ public partial class AiService : IAiService
         _env = env;
     }
 
-    private async Task<(string systemPrompt, string userPromptTemplate, int? defaultModelId)> LoadPromptAsync(
+    private async Task<(string systemPrompt, string userPromptTemplate, int? defaultModelId, bool useReasoning, string? reasoningEffort)> LoadPromptAsync(
         string functionality)
     {
         using var scope = _scopeFactory.CreateScope();
@@ -35,7 +35,7 @@ public partial class AiService : IAiService
             .FirstOrDefaultAsync(p => p.Functionality == functionality && p.IsActive)
             ?? throw new InvalidOperationException($"No active prompt for functionality '{functionality}'");
 
-        return (prompt.SystemPrompt, prompt.UserPromptTemplate, prompt.DefaultModelId);
+        return (prompt.SystemPrompt, prompt.UserPromptTemplate, prompt.DefaultModelId, prompt.UseReasoning, prompt.ReasoningEffort);
     }
 
     private async Task<ResolvedModel> ResolveModelAsync(int? defaultModelId)

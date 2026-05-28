@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { get, post, patch, del } from '../../utils';
 
-interface AiModel { id: number; name: string; ai_service_name: string; ai_service_id: number; is_active: boolean; used_by: string[]; }
+interface AiModel { id: number; name: string; ai_service_name: string; ai_service_id: number; is_active: boolean; supports_reasoning: boolean; used_by: string[]; }
 interface AiService { id: number; name: string; }
 interface PromptOp { id: number; functionality: string; default_model_id: number | null; }
 
@@ -12,6 +12,7 @@ export default function AdminAiModels() {
   const [loading, setLoading] = useState(true);
   const [newName, setNewName] = useState('');
   const [newServiceId, setNewServiceId] = useState<number | null>(null);
+  const [newReasoning, setNewReasoning] = useState(false);
   const [dragOver, setDragOver] = useState<number | null>(null);
 
   async function load() {
@@ -33,8 +34,9 @@ export default function AdminAiModels() {
 
   async function addModel() {
     if (!newName.trim() || !newServiceId) return;
-    await post('/api/admin/ai-models', { name: newName.trim(), ai_service_id: newServiceId, is_active: true });
+    await post('/api/admin/ai-models', { name: newName.trim(), ai_service_id: newServiceId, is_active: true, supports_reasoning: newReasoning });
     setNewName('');
+    setNewReasoning(false);
     load();
   }
 
@@ -99,6 +101,10 @@ export default function AdminAiModels() {
           <input className="input" style={{ maxWidth: 250 }} placeholder="Model name (e.g. gpt-5.4)"
             value={newName} onChange={e => setNewName(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && addModel()} />
+          <label style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.75rem', color: 'var(--text-dim)', whiteSpace: 'nowrap' }}>
+            <input type="checkbox" checked={newReasoning} onChange={e => setNewReasoning(e.target.checked)} />
+            Reasoning
+          </label>
           <button className="admin-btn" onClick={addModel}>Add</button>
         </div>
       </div>
@@ -141,6 +147,7 @@ export default function AdminAiModels() {
                 >
                   <div className="model-info">
                     <span className="model-name">{m.name}</span>
+                    {m.supports_reasoning && <span style={{ fontSize: '0.6rem', color: 'var(--teal)', marginLeft: '0.5rem', border: '1px solid rgba(77,184,160,0.25)', borderRadius: '3px', padding: '0.1rem 0.35rem' }}>R</span>}
                     {!m.is_active && <span style={{ fontSize: '0.6rem', color: 'var(--red)', marginLeft: '0.5rem' }}>inactive</span>}
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flex: 1, justifyContent: 'flex-end' }}>

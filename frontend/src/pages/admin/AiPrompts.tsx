@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import { get, put } from '../../utils';
 
-interface Prompt { id: number; functionality: string; name: string; description: string | null; system_prompt: string; user_prompt_template: string; is_active: boolean; default_model_id: number | null; default_model_name: string | null; default_model_service: string | null; }
+interface Prompt { id: number; functionality: string; name: string; description: string | null; system_prompt: string; user_prompt_template: string; is_active: boolean; use_reasoning: boolean; reasoning_effort: string | null; default_model_id: number | null; default_model_name: string | null; default_model_service: string | null; }
 
 function PromptCard({ p }: { p: Prompt }) {
   const [system, setSystem] = useState(p.system_prompt);
   const [user, setUser] = useState(p.user_prompt_template);
+  const [useReasoning, setUseReasoning] = useState(p.use_reasoning);
+  const [reasoningEffort, setReasoningEffort] = useState(p.reasoning_effort ?? '');
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
@@ -15,6 +17,8 @@ function PromptCard({ p }: { p: Prompt }) {
     await put(`/api/admin/ai-prompts/${p.id}`, {
       system_prompt: system, user_prompt_template: user, is_active: p.is_active,
       default_model_id: p.default_model_id,
+      use_reasoning: useReasoning,
+      reasoning_effort: reasoningEffort || null,
     });
     setSaving(false);
     setSaved(true);
@@ -45,6 +49,22 @@ function PromptCard({ p }: { p: Prompt }) {
           {saving ? 'Saving...' : 'Save'}
         </button>
         {saved && <span className="apikey-saved">Saved</span>}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginLeft: '1rem' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.72rem', color: 'var(--text-dim)', cursor: 'pointer' }}>
+            <input type="checkbox" checked={useReasoning} onChange={e => setUseReasoning(e.target.checked)} />
+            Reasoning
+          </label>
+          {useReasoning && (
+            <select className="input" style={{ maxWidth: 100, fontSize: '0.7rem', padding: '0.15rem 0.4rem' }}
+              value={reasoningEffort} onChange={e => setReasoningEffort(e.target.value)}>
+              <option value="">default</option>
+              <option value="low">low</option>
+              <option value="medium">medium</option>
+              <option value="high">high</option>
+              <option value="xhigh">xhigh</option>
+            </select>
+          )}
+        </div>
       </div>
     </div>
   );

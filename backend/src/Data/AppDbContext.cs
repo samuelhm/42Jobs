@@ -486,8 +486,10 @@ public class AppDbContext : DbContext
             entity.Property(p => p.Name).IsRequired().HasMaxLength(200);
             entity.Property(p => p.Description).HasColumnType("text");
             entity.Property(p => p.SystemPrompt).IsRequired().HasColumnType("text");
-            entity.Property(p => p.UserPromptTemplate).IsRequired().HasColumnType("text");
+                entity.Property(p => p.UserPromptTemplate).IsRequired().HasColumnType("text");
             entity.Property(p => p.IsActive).HasDefaultValue(true);
+            entity.Property(p => p.UseReasoning).HasDefaultValue(false);
+            entity.Property(p => p.ReasoningEffort).HasMaxLength(20);
             entity.Property(p => p.CreatedAt)
                   .HasDefaultValueSql("NOW()")
                   .ValueGeneratedOnAdd();
