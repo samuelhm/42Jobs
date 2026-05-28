@@ -157,7 +157,17 @@ public partial class JobFetchService
         };
 
         db.Jobs.Add(newJob);
-        await db.SaveChangesAsync(ct);
+        try
+        {
+            await db.SaveChangesAsync(ct);
+        }
+        catch (DbUpdateException ex)
+            when (ex.InnerException is Npgsql.PostgresException pgEx && pgEx.SqlState == "23505")
+        {
+            db.ChangeTracker.Clear();
+            _logger.LogDebug("Job \"{Title}\" already exists (race), skipping", job.Title);
+            return "skipped";
+        }
 
         await db.Database.ExecuteSqlRawAsync(
             "INSERT INTO job_categories (job_id, category_id) VALUES ({0}, {1}) ON CONFLICT DO NOTHING",
