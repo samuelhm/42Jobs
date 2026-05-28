@@ -21,7 +21,7 @@ public class GeminiProvider : IAiProvider
     }
 
     public async Task<JsonElement> CallAsync(
-        string systemPrompt, string userPrompt, JsonElement schema, string model, string? apiKey, string functionality, CancellationToken ct, bool useThinking = false, string thinkingEffort = "high")
+        string systemPrompt, string userPrompt, JsonElement schema, string model, string? apiKey, string functionality, CancellationToken ct, bool useThinking = false, string? thinkingEffort = null)
     {
         var correlationId = Guid.NewGuid().ToString("N");
         var combinedPrompt = $"{systemPrompt}\n\n{userPrompt}";
@@ -35,7 +35,7 @@ public class GeminiProvider : IAiProvider
             ["response_schema"] = schema,
             ["temperature"] = 0.1
         };
-        if (useThinking)
+        if (useThinking && thinkingEffort is not null)
             generationConfig["thinkingConfig"] = new { thinkingLevel = thinkingEffort.ToUpperInvariant() };
 
         var requestBody = new

@@ -65,7 +65,7 @@ public partial class AiService : IAiService
 
     private async Task<JsonElement> CallWithRetryAsync(
         IAiProvider provider, string systemPrompt, string userPrompt,
-        JsonElement schema, string model, string? apiKey, string functionality, bool isFreeTier, CancellationToken ct, bool useThinking = false, string thinkingEffort = "high")
+        JsonElement schema, string model, string? apiKey, string functionality, bool isFreeTier, CancellationToken ct, bool useThinking = false, string? thinkingEffort = null)
     {
         if (isFreeTier)
             await Task.Delay(6000 + Random.Shared.Next(1500), ct);

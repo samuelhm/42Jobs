@@ -9,5 +9,5 @@ public interface IAiProvider
         string systemPrompt, string userPrompt,
         JsonElement schema, string model, string? apiKey,
         string functionality, CancellationToken ct,
-        bool useThinking = false, string thinkingEffort = "high");
+        bool useThinking = false, string? thinkingEffort = null);
 }
