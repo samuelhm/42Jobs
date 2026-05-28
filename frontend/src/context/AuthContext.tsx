@@ -1,5 +1,4 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
-import { get } from '../utils/api';
 import type { User } from '../types';
 
 interface AuthState {
@@ -13,9 +12,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AuthState>({ user: null, loading: true });
 
   useEffect(() => {
-    get<User>('/api/users/me')
-      .then(res => {
-        setState({ user: res.success ? res.data : null, loading: false });
+    fetch('/api/users/me')
+      .then(async res => {
+        if (!res.ok) { setState({ user: null, loading: false }); return; }
+        try {
+          const json = await res.json();
+          setState({ user: json.success ? json.data : null, loading: false });
+        } catch {
+          setState({ user: null, loading: false });
+        }
       })
       .catch(() => setState({ user: null, loading: false }));
   }, []);

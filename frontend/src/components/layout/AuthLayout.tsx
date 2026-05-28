@@ -5,7 +5,7 @@ import FreeTierBanner from './FreeTierBanner';
 import ToastContainer from '../ui/ToastContainer';
 
 const navItems = [
-  { to: '/', label: 'Dashboard' },
+  { to: '/dashboard', label: 'Dashboard' },
   { to: '/offers', label: 'Offers' },
   { to: '/profile', label: 'Profile' },
   { to: '/tracking', label: 'Tracking' },
@@ -30,7 +30,7 @@ function AuthLayoutInner() {
   return (
     <div className="auth-layout">
       <header className="layout-header">
-        <NavLink to="/" className="layout-logo">
+        <NavLink to="/dashboard" className="layout-logo">
           42<span className="accent">jobs</span>
           <span className="logo-leds">
             <span className="logo-led" />

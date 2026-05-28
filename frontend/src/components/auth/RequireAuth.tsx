@@ -1,18 +1,11 @@
 import { Navigate, Outlet } from 'react-router';
-import { AuthProvider, useAuth } from '../../context';
-
-function AuthGate() {
-  const { loading } = useAuth();
-  if (loading) return null;
-  return <Outlet />;
-}
+import { useAuth } from '../../context';
 
 export default function RequireAuth() {
-  return (
-    <AuthProvider>
-      <AuthGate />
-    </AuthProvider>
-  );
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  if (!user) return <Navigate to="/login" replace />;
+  return <Outlet />;
 }
 
 export function RequireAdmin() {
