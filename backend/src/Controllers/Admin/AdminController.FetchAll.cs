@@ -12,7 +12,7 @@ public partial class AdminController
 
         try
         {
-            await _fetch.FetchAllCategoriesAsync();
+            await _fetch.FetchAllCategoriesAsync("past-week");
             return Ok(new { message = "Scheduled fetch triggered for all categories" });
         }
         catch (Exception ex)

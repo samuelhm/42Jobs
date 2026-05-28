@@ -73,7 +73,8 @@ public partial class JobFetchService : BackgroundService, IJobFetchService
 
     public bool IsFetchAllRunning => Volatile.Read(ref _fetchAllRunning) == 1;
 
-    public Task FetchAllCategoriesAsync() => FetchAllCategoriesWithTokenAsync(CancellationToken.None);
+    public Task FetchAllCategoriesAsync(string? datePosted = null)
+        => FetchAllCategoriesWithTokenAsync(CancellationToken.None, datePosted);
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -124,8 +125,10 @@ public partial class JobFetchService : BackgroundService, IJobFetchService
         }
     }
 
-    private async Task FetchAllCategoriesWithTokenAsync(CancellationToken ct)
+    private async Task FetchAllCategoriesWithTokenAsync(CancellationToken ct, string? datePosted = null)
     {
+        var effectiveDatePosted = datePosted ?? "past-24h";
+
         if (Interlocked.CompareExchange(ref _fetchAllRunning, 1, 0) != 0)
         {
             _logger.LogWarning("Fetch all already running, skipping");
@@ -175,7 +178,7 @@ public partial class JobFetchService : BackgroundService, IJobFetchService
                 {
                     Location = safeLocation,
                     Limit = 10,
-                    DatePosted = "past-24h",
+                    DatePosted = effectiveDatePosted,
                     SortBy = "recent",
                 });
 
