@@ -13,9 +13,9 @@ public partial class AiService
             var (systemPrompt, userTemplate, defaultModelId) = await LoadPromptAsync("parse_experience");
             var userPrompt = FillTemplate(userTemplate, new() { ["raw_text"] = rawText });
 
-            var (provider, model, apiKey, isFreeTier) = await ResolveModelAsync(defaultModelId);
-            var schema = LoadSchema("parse_experience", provider.ServiceName);
-            var result = await CallWithRetryAsync(provider, systemPrompt, userPrompt, schema, model, apiKey, "parse_experience", isFreeTier, ct, useThinking: false);
+            var resolved = await ResolveModelAsync(defaultModelId);
+            var schema = LoadSchema("parse_experience", resolved.Provider.ServiceName);
+            var result = await CallWithRetryAsync(resolved, systemPrompt, userPrompt, schema, "parse_experience", ct, useThinking: false);
 
             if (result.TryGetProperty("error", out var err) && err.ValueKind != JsonValueKind.Null)
             {

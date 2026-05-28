@@ -13,9 +13,9 @@ public partial class AiService
             var keywordsList = string.Join("\n", keywords.Select(k => $"- {k}"));
             var userPrompt = FillTemplate(userTemplate, new() { ["keywords"] = keywordsList });
 
-            var (provider, model, apiKey, isFreeTier) = await ResolveModelAsync(defaultModelId);
-            var schema = LoadSchema("clean_keywords", provider.ServiceName);
-            var result = await CallWithRetryAsync(provider, systemPrompt, userPrompt, schema, model, apiKey, "clean_keywords", isFreeTier, ct, useThinking: false);
+            var resolved = await ResolveModelAsync(defaultModelId);
+            var schema = LoadSchema("clean_keywords", resolved.Provider.ServiceName);
+            var result = await CallWithRetryAsync(resolved, systemPrompt, userPrompt, schema, "clean_keywords", ct, useThinking: false);
 
             if (result.TryGetProperty("error", out var err) && err.ValueKind != JsonValueKind.Null)
             {

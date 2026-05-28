@@ -8,6 +8,8 @@ namespace src.Services.Ai;
 
 public partial class AiService : IAiService
 {
+    private record ResolvedModel(IAiProvider Provider, string Name, string? ApiKey, bool IsFreeTier, bool SupportsReasoning);
+
     private readonly Dictionary<string, IAiProvider> _providers;
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly EncryptionService _encryption;
@@ -36,7 +38,7 @@ public partial class AiService : IAiService
         return (prompt.SystemPrompt, prompt.UserPromptTemplate, prompt.DefaultModelId);
     }
 
-    private async Task<(IAiProvider provider, string model, string? apiKey, bool isFreeTier)> ResolveModelAsync(int? defaultModelId)
+    private async Task<ResolvedModel> ResolveModelAsync(int? defaultModelId)
     {
         using var scope = _scopeFactory.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -49,7 +51,7 @@ public partial class AiService : IAiService
         var provider = _providers.GetValueOrDefault(model.AiService.Name)
             ?? throw new InvalidOperationException($"No provider registered for service '{model.AiService.Name}'");
 
-        return (provider, model.Name, _encryption.Decrypt(model.AiService.ApiKey), model.AiService.IsFreeTier);
+        return new ResolvedModel(provider, model.Name, _encryption.Decrypt(model.AiService.ApiKey), model.AiService.IsFreeTier, model.SupportsReasoning);
     }
 
     private JsonElement LoadSchema(string functionality, string serviceName)
@@ -64,21 +66,23 @@ public partial class AiService : IAiService
     }
 
     private async Task<JsonElement> CallWithRetryAsync(
-        IAiProvider provider, string systemPrompt, string userPrompt,
-        JsonElement schema, string model, string? apiKey, string functionality, bool isFreeTier, CancellationToken ct, bool useThinking = false, string? thinkingEffort = null)
+        ResolvedModel resolved, string systemPrompt, string userPrompt,
+        JsonElement schema, string functionality, CancellationToken ct, bool useThinking = false, string? thinkingEffort = null)
     {
-        if (isFreeTier)
+        var effectiveThinking = useThinking && resolved.SupportsReasoning;
+
+        if (resolved.IsFreeTier)
             await Task.Delay(6000 + Random.Shared.Next(1500), ct);
 
         for (var attempt = 1; attempt <= 5; attempt++)
         {
             try
             {
-                return await provider.CallAsync(systemPrompt, userPrompt, schema, model, apiKey, functionality, ct, useThinking, thinkingEffort);
+                return await resolved.Provider.CallAsync(systemPrompt, userPrompt, schema, resolved.Name, resolved.ApiKey, functionality, ct, effectiveThinking, thinkingEffort);
             }
             catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
             {
-                if (!isFreeTier)
+                if (!resolved.IsFreeTier)
                     throw new InvalidOperationException(
                         "Rate limit (429) detected but API key is not marked as free tier. " +
                         "Go to Admin > AI Services and enable 'Free tier' for this provider. " +

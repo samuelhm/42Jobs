@@ -10,9 +10,9 @@ public partial class AiService
         var (systemPrompt, userTemplate, defaultModelId) = await LoadPromptAsync("cv_generation");
         var userPrompt = FillTemplate(userTemplate, context);
 
-        var (provider, model, apiKey, isFreeTier) = await ResolveModelAsync(defaultModelId);
-        var schema = LoadSchema("cv_generation", provider.ServiceName);
-        var result = await CallWithRetryAsync(provider, systemPrompt, userPrompt, schema, model, apiKey, "cv_generation", isFreeTier, ct, useThinking: true, thinkingEffort: "high");
+        var resolved = await ResolveModelAsync(defaultModelId);
+        var schema = LoadSchema("cv_generation", resolved.Provider.ServiceName);
+        var result = await CallWithRetryAsync(resolved, systemPrompt, userPrompt, schema, "cv_generation", ct, useThinking: true, thinkingEffort: "high");
 
         if (result.TryGetProperty("error", out var err) && err.ValueKind != JsonValueKind.Null)
         {
@@ -24,6 +24,6 @@ public partial class AiService
             }
         }
 
-        return (result, model);
+        return (result, resolved.Name);
     }
 }

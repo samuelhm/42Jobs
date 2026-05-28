@@ -15,10 +15,10 @@ public partial class AiService
             ["description"] = description ?? "No disponible"
         });
 
-        var (provider, model, apiKey, isFreeTier) = await ResolveModelAsync(defaultModelId);
-        var schema = LoadSchema("filter_jobs", provider.ServiceName);
-        var result = await CallWithRetryAsync(provider, systemPrompt, userPrompt, schema, model, apiKey,
-            "filter_jobs", isFreeTier, ct, useThinking: false);
+        var resolved = await ResolveModelAsync(defaultModelId);
+        var schema = LoadSchema("filter_jobs", resolved.Provider.ServiceName);
+        var result = await CallWithRetryAsync(resolved, systemPrompt, userPrompt, schema,
+            "filter_jobs", ct, useThinking: false);
 
         if (result.TryGetProperty("error", out var err) && err.ValueKind != JsonValueKind.Null)
         {

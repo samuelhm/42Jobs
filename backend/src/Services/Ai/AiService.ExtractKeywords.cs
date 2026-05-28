@@ -10,10 +10,10 @@ public partial class AiService
         var (systemPrompt, userTemplate, defaultModelId) = await LoadPromptAsync("extract_keywords");
         var userPrompt = FillTemplate(userTemplate, new() { ["text"] = text });
 
-        var (provider, model, apiKey, isFreeTier) = await ResolveModelAsync(defaultModelId);
-        var schema = LoadSchema("extract_keywords", provider.ServiceName);
-        var result = await CallWithRetryAsync(provider, systemPrompt, userPrompt, schema, model, apiKey,
-            "extract_keywords", isFreeTier, ct, useThinking: true);
+        var resolved = await ResolveModelAsync(defaultModelId);
+        var schema = LoadSchema("extract_keywords", resolved.Provider.ServiceName);
+        var result = await CallWithRetryAsync(resolved, systemPrompt, userPrompt, schema,
+            "extract_keywords", ct, useThinking: true);
 
         if (result.TryGetProperty("error", out var err) && err.ValueKind != JsonValueKind.Null)
         {

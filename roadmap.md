@@ -13,7 +13,7 @@
 | Checkpoint | Estado |
 |------------|--------|
 | Docker Compose + Dockerfiles | ✅ |
-| Migraciones SQL (30 archivos) | ✅ |
+| Migraciones SQL (31 archivos) | ✅ |
 | Proyecto .NET 10 vacío | ✅ |
 
 ### Fase 1 — Backend base con Entity Framework Core (COMPLETADA ✅)

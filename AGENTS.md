@@ -46,7 +46,7 @@ Este es un proyecto **personal de aprendizaje**. El objetivo principal no es ent
 │       ├── Services/               ← IAiService, JobFetchService, GithubImportService, AiReadinessService, JWT, Encryption, AdminLog
 │       └── Utils/                  ← DatabaseUrlParser
 ├── database/
-│   └── migrations/            ← 30 archivos SQL (categorías, keywords, jobs, perfil, user_categories...)
+│   └── migrations/            ← 31 archivos SQL (categorías, keywords, jobs, perfil, user_categories...)
 ├── frontend/
 │   ├── Dockerfile              ← Multi-stage: dev (vite) + prod (nginx + build)
 │   ├── nginx.conf              ← Proxy /api -> backend, sirve estáticos de dist/
@@ -106,7 +106,7 @@ Este es un proyecto **personal de aprendizaje**. El objetivo principal no es ent
 
 ## Estado actual del proyecto
 
-1. **Base de datos:** ✅ Migraciones SQL con 30 archivos. Tablas: categorías, empresas, keywords, jobs, perfil de usuario, idiomas, certificaciones, educación, proyectos, experiencias, user_providers, user_jobs, user_categories, resumes, cv_templates, ai_services, ai_models, ai_prompts, admin_logs y tablas M2M (job_keywords, project_keywords, work_experience_keywords).
+1. **Base de datos:** ✅ Migraciones SQL con 31 archivos. Tablas: categorías, empresas, keywords, jobs, perfil de usuario, idiomas, certificaciones, educación, proyectos, experiencias, user_providers, user_jobs, user_categories, resumes, cv_templates, ai_services, ai_models, ai_prompts, admin_logs y tablas M2M (job_keywords, project_keywords, work_experience_keywords).
 2. **Backend:** ✅ Funcional. 14 controladores REST con autenticación JWT vía cookie (`42jobs_auth`). EF Core con snake_case naming convention. Servicios: LinkedIn RapidAPI, Gemini/OpenAI/DeepSeek (filtro + keywords + CV), background job queue con Channel<T> para fetch de trabajos con scheduler automático (00:00 UTC). Pipeline de reintentos y validación de readiness.
 3. **Frontend:** ✅ Funcional. React 19 + React Router 7 con Vite. Data router (`createBrowserRouter`) con loaders y actions. Barrel pattern en todas las carpetas. CSS modular (13 archivos). Hooks y utils compartidos. Tipos centralizados. Modal AiNotConfiguredModal para errores de readiness.
 
