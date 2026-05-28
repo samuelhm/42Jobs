@@ -35,8 +35,13 @@ public class GeminiProvider : IAiProvider
             ["response_schema"] = schema,
             ["temperature"] = 0.1
         };
-        if (useThinking && thinkingEffort is not null)
-            generationConfig["thinkingConfig"] = new { thinkingLevel = thinkingEffort.ToUpperInvariant() };
+        if (useThinking)
+        {
+            var thinkingConfig = new Dictionary<string, object> { ["include_thoughts"] = true };
+            if (thinkingEffort is not null)
+                thinkingConfig["thinkingLevel"] = thinkingEffort.ToUpperInvariant();
+            generationConfig["thinkingConfig"] = thinkingConfig;
+        }
 
         var requestBody = new
         {

@@ -48,10 +48,11 @@ public class OpenAiProvider : IAiProvider
             schema.WriteTo(writer);
             writer.WriteEndObject();
             writer.WriteEndObject();
-            if (useThinking && thinkingEffort is not null)
+            if (useThinking)
             {
                 writer.WriteStartObject("reasoning");
-                writer.WriteString("effort", thinkingEffort);
+                if (thinkingEffort is not null)
+                    writer.WriteString("effort", thinkingEffort);
                 writer.WriteEndObject();
             }
             writer.WriteEndObject();
