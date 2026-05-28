@@ -22,7 +22,7 @@ public partial class JobFetchService
             var enabledProviders = await GetEnabledProvidersAsync(db);
             var allJobs = new List<JobItem>();
 
-            foreach (var provider in enabledProviders)
+            foreach (var (provider, config) in enabledProviders)
             {
                 try
                 {
@@ -31,7 +31,7 @@ public partial class JobFetchService
 
                     while (true)
                     {
-                        var result = await SearchPageWithRetryAsync(provider, request, limit, start, ct);
+                        var result = await SearchPageWithRetryAsync(provider, config, request, limit, start, ct);
 
                         allJobs.AddRange(result.Jobs);
                         _logger.LogDebug("Fetched {Count} jobs from {Portal}:{Provider} (start={Start})",
@@ -99,7 +99,7 @@ public partial class JobFetchService
     }
 
     private async Task<JobSearchResult> SearchPageWithRetryAsync(
-        IJobProvider provider, FetchRequest request, int limit, int start, CancellationToken ct)
+        IJobProvider provider, ProviderConfig config, FetchRequest request, int limit, int start, CancellationToken ct)
     {
         for (var retry = 0; retry < 5; retry++)
         {
@@ -109,7 +109,7 @@ public partial class JobFetchService
                 var keywords = $"{request.CategoryName} in {userLocation}";
                 return await provider.SearchAsync(
                     new JobSearchRequest(keywords, "Spain", limit,
-                        request.DatePosted, request.SortBy, start), ct);
+                        request.DatePosted, request.SortBy, start), config, ct);
             }
             catch (Exception ex)
             {
@@ -128,14 +128,14 @@ public partial class JobFetchService
             $"Search page at offset {start} failed after 5 retries for {provider.ProviderName}");
     }
 
-    private async Task<List<IJobProvider>> GetEnabledProvidersAsync(AppDbContext db)
+    private async Task<List<(IJobProvider Provider, ProviderConfig Config)>> GetEnabledProvidersAsync(AppDbContext db)
     {
         var enabled = await db.Set<Models.JobProvider>()
             .Where(p => p.IsEnabled && p.IsActive)
             .OrderBy(p => p.Portal)
             .ToListAsync();
 
-        var result = new List<IJobProvider>();
+        var result = new List<(IJobProvider, ProviderConfig)>();
         var seenPortals = new HashSet<string>();
 
         foreach (var config in enabled)
@@ -145,10 +145,11 @@ public partial class JobFetchService
             var key = $"{config.Portal}:{config.ProviderName}";
             if (_providers.TryGetValue(key, out var provider))
             {
-                provider.BaseUrl = config.BaseUrl;
-                provider.ApiKey = _encryption.Decrypt(config.ApiKey);
-                provider.Config = config.Config;
-                result.Add(provider);
+                var providerConfig = new ProviderConfig(
+                    config.BaseUrl,
+                    _encryption.Decrypt(config.ApiKey),
+                    config.Config);
+                result.Add((provider, providerConfig));
             }
             else
                 _logger.LogWarning("No DI registration for provider {Key}", key);

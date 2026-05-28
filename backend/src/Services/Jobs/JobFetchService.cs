@@ -80,11 +80,31 @@ public partial class JobFetchService : BackgroundService, IJobFetchService
     {
         _logger.LogInformation("JobFetchService background service started");
 
-        _ = RunSchedulerAsync(stoppingToken);
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await RunSchedulerAsync(stoppingToken);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                _logger.LogError(ex, "Fatal error in fetch scheduler, it will not restart");
+            }
+        }, stoppingToken);
 
         await foreach (var request in _channel.Reader.ReadAllAsync(stoppingToken))
         {
-            _ = Task.Run(() => ProcessFetchAsync(request, stoppingToken), stoppingToken);
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await ProcessFetchAsync(request, stoppingToken);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Unhandled exception in fetch task {JobId}", request.JobId);
+                }
+            }, stoppingToken);
         }
     }
 

@@ -25,19 +25,11 @@ public class InfoJobsProvider : IJobProvider
 {
     private readonly IHttpClientFactory _httpFactory;
     private readonly ILogger<InfoJobsProvider> _logger;
-    private string? _baseUrlOverride;
-    private string? _apiKeyOverride;
-    private string? _configJson;
 
     public static string Portal => "InfoJobs";
     public static string ProviderNameValue => "Native";
     string IJobProvider.Portal => Portal;
     string IJobProvider.ProviderName => ProviderNameValue;
-
-    // These setters are called by JobFetchService with values from the DB
-    string? IJobProvider.BaseUrl { set => _baseUrlOverride = value; }
-    string? IJobProvider.ApiKey { set => _apiKeyOverride = value; }
-    string? IJobProvider.Config { set => _configJson = value; }
 
     public InfoJobsProvider(IHttpClientFactory httpFactory, ILogger<InfoJobsProvider> logger)
     {
@@ -45,10 +37,10 @@ public class InfoJobsProvider : IJobProvider
         _logger = logger;
     }
 
-    private HttpClient CreateClient()
+    private HttpClient CreateClient(ProviderConfig config)
     {
-        var host = _baseUrlOverride;
-        var key = _apiKeyOverride;
+        var host = config.BaseUrl;
+        var key = config.ApiKey;
 
         if (string.IsNullOrWhiteSpace(host))
             throw new InvalidOperationException("InfoJobs host not configured. Set it in Admin > Job Providers.");
@@ -57,17 +49,20 @@ public class InfoJobsProvider : IJobProvider
 
         var client = _httpFactory.CreateClient();
         client.BaseAddress = new Uri(host);
-        // Add your provider's auth header
         client.DefaultRequestHeaders.Add("Authorization", $"Bearer {key}");
         return client;
     }
 
-    public async Task<JobSearchResult> SearchAsync(JobSearchRequest request, CancellationToken ct)
+    public async Task<JobSearchResult> SearchAsync(JobSearchRequest request, ProviderConfig config, CancellationToken ct)
     {
-        using var http = CreateClient();
+        using var http = CreateClient(config);
 
-        // Call your provider's search API
-        // Map the response to JobSearchResult
+        // Optional: use config.ConfigJson for provider-specific settings
+        if (!string.IsNullOrEmpty(config.ConfigJson))
+        {
+            using var cfg = JsonDocument.Parse(config.ConfigJson);
+            // apply config overrides...
+        }
 
         var result = new JobSearchResult();
 
@@ -83,15 +78,16 @@ public class InfoJobsProvider : IJobProvider
             Salary = "...",
             Benefits = "...",
             JobUrl = "...",
+            Source = "infojobs",   // lowercase portal name used in DB
         });
 
         result.TotalCount = result.Jobs.Count;
         return result;
     }
 
-    public async Task<JobDetailResult?> GetDetailsAsync(string externalId, CancellationToken ct)
+    public async Task<JobDetailResult?> GetDetailsAsync(string externalId, ProviderConfig config, CancellationToken ct)
     {
-        using var http = CreateClient();
+        using var http = CreateClient(config);
 
         // Call your provider's detail API
         // Map the response to JobDetailResult
@@ -112,8 +108,9 @@ public class InfoJobsProvider : IJobProvider
 **Rules:**
 - `Portal` must match the portal name in the DB (`job_providers.portal`).
 - `ProviderName` must match the provider name in the DB (`job_providers.provider_name`).
-- The `IJobProvider` interface exposes setters for `BaseUrl`, `ApiKey`, and `Config`. These are called by `JobFetchService` with values read from the `job_providers` table at runtime. Your provider must store them in private fields and use them when building HTTP requests.
+- Config is received via `ProviderConfig` (immutable record) passed to `SearchAsync` and `GetDetailsAsync`. Your provider must NOT store mutable state — the config is thread-safe and scoped to each request.
 - `ExternalId` is the job's unique identifier from the source. It's used for deduplication and is unique per `(external_id, source)` pair.
+- Set `JobItem.Source` to the lowercase portal name (e.g., `"infojobs"`). This is used as the `source` field in the `jobs` table.
 - Use `IHttpClientFactory` (not injected `HttpClient`) so the provider can be a singleton.
 
 ## 2. Register in DI
@@ -141,9 +138,9 @@ ON CONFLICT (portal, provider_name) DO NOTHING;
 ```
 
 - `is_enabled = TRUE`: the provider will be called on every fetch.
-- `api_key`: set via **Admin > Job Providers** — encrypted at rest (see [docs/Encryption.md](Encryption.md)). Injected at runtime by `JobFetchService`.
-- `base_url`: the base URL for the provider's API. Injected via `IJobProvider.BaseUrl` setter.
-- `config`: optional JSON for provider-specific settings (e.g., `{"jobType":"F","remote":"true"}`). Injected via `IJobProvider.Config` setter.
+- `api_key`: set via **Admin > Job Providers** — encrypted at rest (see [docs/Encryption.md](Encryption.md)). Decrypted and passed via `ProviderConfig.ApiKey` at runtime.
+- `base_url`: the base URL for the provider's API. Passed via `ProviderConfig.BaseUrl`.
+- `config`: optional JSON for provider-specific settings (e.g., `{"jobType":"F","remote":"true"}`). Passed via `ProviderConfig.ConfigJson`.
 - **Only one provider per portal** should be enabled. `JobFetchService` picks the first enabled one per portal.
 
 ## 4. Verify

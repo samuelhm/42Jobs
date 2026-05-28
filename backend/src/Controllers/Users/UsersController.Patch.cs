@@ -8,6 +8,10 @@ public partial class UsersController
     [HttpPatch("{id:guid}")]
     public async Task<IActionResult> Patch([FromRoute] Guid id, [FromBody] UpdateUserDto body)
     {
+        var currentUserId = GetUserId();
+        if (currentUserId != id && !User.IsInRole("Admin"))
+            return Forbid();
+
         var user = await _db.Users.FindAsync(id);
         if (user is null)
         {

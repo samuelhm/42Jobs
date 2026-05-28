@@ -28,7 +28,9 @@ public class ExceptionMiddleware
             context.Response.StatusCode = StatusCodes.Status500InternalServerError;
             context.Response.ContentType = "application/json";
 
-            var response = new { error = "An unexpected error occurred" };
+            var response = _env.IsDevelopment()
+                ? new { error = ex.Message, stack = (string?)ex.StackTrace }
+                : new { error = "An unexpected error occurred", stack = (string?)null };
             var json = JsonSerializer.Serialize(response, new JsonSerializerOptions
             {
                 PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower

@@ -7,6 +7,10 @@ public partial class UsersController
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete([FromRoute] Guid id)
     {
+        var currentUserId = GetUserId();
+        if (currentUserId != id && !User.IsInRole("Admin"))
+            return Forbid();
+
         var user = await _db.Users.FindAsync(id);
         if (user is null)
         {

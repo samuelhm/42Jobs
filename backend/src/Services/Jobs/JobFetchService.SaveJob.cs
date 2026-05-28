@@ -12,7 +12,7 @@ public partial class JobFetchService
 {
     private async Task<string> ProcessJobAsync(
         IServiceScope outerScope,
-        List<IJobProvider> providers,
+        List<(IJobProvider Provider, ProviderConfig Config)> providers,
         IAiService ai,
         JobItem job,
         int categoryId,
@@ -24,7 +24,7 @@ public partial class JobFetchService
 
         if (string.IsNullOrEmpty(job.ExternalId)) return "skipped";
 
-        var source = "linkedin";
+        var source = job.Source;
         var existingJob = await db.Jobs.FirstOrDefaultAsync(
             j => j.ExternalId == job.ExternalId && j.Source == source, ct);
         if (existingJob is not null) return "skipped";
@@ -183,15 +183,15 @@ public partial class JobFetchService
     }
 
     private async Task<JobDetailResult?> GetDetailsWithRetryAsync(
-        List<IJobProvider> providers, JobItem job, CancellationToken ct)
+        List<(IJobProvider Provider, ProviderConfig Config)> providers, JobItem job, CancellationToken ct)
     {
         for (var retry = 0; retry < 10; retry++)
         {
-            foreach (var provider in providers)
+            foreach (var (provider, config) in providers)
             {
                 try
                 {
-                    var details = await provider.GetDetailsAsync(job.ExternalId, ct);
+                    var details = await provider.GetDetailsAsync(job.ExternalId, config, ct);
                     if (details is not null && !string.IsNullOrEmpty(details.Description))
                         return details;
                 }
@@ -281,12 +281,16 @@ public partial class JobFetchService
             {
                 var (skills, companyType) = await ai.ExtractKeywordsAsync(inputText, ct);
 
-                foreach (var rawName in skills)
+                var names = skills
+                    .Select(n => n.Trim().ToLowerInvariant())
+                    .Where(n => !string.IsNullOrEmpty(n))
+                    .Distinct()
+                    .ToList();
+
+                if (names.Count > 0)
                 {
-                    var name = rawName.Trim().ToLowerInvariant();
-                    if (string.IsNullOrEmpty(name)) continue;
-                    var keywordId = await UpsertKeywordAsync(db, name, ct);
-                    await LinkJobKeywordAsync(db, jobId, keywordId, ct);
+                    var keywordIds = await BatchUpsertKeywordsAsync(db, names, ct);
+                    await BatchLinkJobKeywordsAsync(db, jobId, keywordIds, ct);
                 }
 
                 if (CompanyTypeMap.TryGetValue(companyType, out var mappedType))
@@ -318,6 +322,64 @@ public partial class JobFetchService
         }
     }
 
+    private static async Task<List<int>> BatchUpsertKeywordsAsync(AppDbContext db, List<string> names, CancellationToken ct)
+    {
+        var valuesList = new List<string>();
+        var parameters = new List<NpgsqlParameter>();
+        for (int i = 0; i < names.Count; i++)
+        {
+            parameters.Add(new NpgsqlParameter($"@p{i}", names[i]));
+            valuesList.Add($"(@p{i})");
+        }
+
+        var sql = $@"
+            INSERT INTO keywords (name)
+            VALUES {string.Join(", ", valuesList)}
+            ON CONFLICT (name) DO UPDATE SET name = EXCLUDED.name
+            RETURNING id";
+
+        var conn = db.Database.GetDbConnection();
+        var wasClosed = conn.State != System.Data.ConnectionState.Open;
+        if (wasClosed)
+            await conn.OpenAsync(ct);
+
+        try
+        {
+            await using var cmd = conn.CreateCommand();
+            cmd.CommandText = sql;
+            foreach (var p in parameters)
+                cmd.Parameters.Add(p);
+
+            var ids = new List<int>();
+            await using var reader = await cmd.ExecuteReaderAsync(ct);
+            while (await reader.ReadAsync(ct))
+                ids.Add(reader.GetInt32(0));
+
+            return ids;
+        }
+        finally
+        {
+            if (wasClosed && conn.State == System.Data.ConnectionState.Open)
+                await conn.CloseAsync();
+        }
+    }
+
+    private static async Task BatchLinkJobKeywordsAsync(AppDbContext db, int jobId, List<int> keywordIds, CancellationToken ct)
+    {
+        if (keywordIds.Count == 0) return;
+
+        var valuesList = new List<string>();
+        for (int i = 0; i < keywordIds.Count; i++)
+            valuesList.Add($"({jobId}, {keywordIds[i]})");
+
+        var sql = $@"
+            INSERT INTO job_keywords (job_id, keyword_id)
+            VALUES {string.Join(", ", valuesList)}
+            ON CONFLICT DO NOTHING";
+
+        await db.Database.ExecuteSqlRawAsync(sql, ct);
+    }
+
     private static async Task<int> UpsertCompanyAsync(AppDbContext db, string name, string? websiteUrl, CancellationToken ct)
     {
         var company = await db.Companies.FirstOrDefaultAsync(c => c.Name == name, ct);
@@ -343,37 +405,5 @@ public partial class JobFetchService
             await db.SaveChangesAsync(ct);
         }
         return company.Id;
-    }
-
-    private static async Task<int> UpsertKeywordAsync(AppDbContext db, string name, CancellationToken ct)
-    {
-        var keyword = await db.Keywords.FirstOrDefaultAsync(k => k.Name == name, ct);
-        if (keyword is not null) return keyword.Id;
-
-        keyword = new Keyword { Name = name };
-        db.Keywords.Add(keyword);
-        try
-        {
-            await db.SaveChangesAsync(ct);
-        }
-        catch (DbUpdateException ex)
-            when (ex.InnerException is Npgsql.PostgresException pgEx && pgEx.SqlState == "23505")
-        {
-            db.ChangeTracker.Clear();
-            keyword = await db.Keywords.FirstOrDefaultAsync(k => k.Name == name, ct);
-            if (keyword is null) throw;
-        }
-        return keyword.Id;
-    }
-
-    private static async Task LinkJobKeywordAsync(AppDbContext db, int jobId, int keywordId, CancellationToken ct)
-    {
-        var exists = await db.Set<Dictionary<string, object>>("job_keywords")
-            .AnyAsync(jk => EF.Property<int>(jk, "job_id") == jobId
-                          && EF.Property<int>(jk, "keyword_id") == keywordId, ct);
-        if (exists) return;
-        db.Database.ExecuteSqlRaw(
-            "INSERT INTO job_keywords (job_id, keyword_id) VALUES ({0}, {1}) ON CONFLICT DO NOTHING",
-            jobId, keywordId);
     }
 }

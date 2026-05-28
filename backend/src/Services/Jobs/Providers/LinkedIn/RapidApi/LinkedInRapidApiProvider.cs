@@ -10,9 +10,6 @@ public class LinkedInRapidApiProvider : IJobProvider
     private readonly IHttpClientFactory _httpFactory;
     private readonly AdminLogService _log;
     private readonly ILogger<LinkedInRapidApiProvider> _logger;
-    private string? _baseUrlOverride;
-    private string? _apiKeyOverride;
-    private string? _configJson;
 
     private static readonly TimeSpan RateWindow = TimeSpan.FromMinutes(1);
     private static readonly int MaxRequestsPerWindow = 8;
@@ -24,9 +21,6 @@ public class LinkedInRapidApiProvider : IJobProvider
     public static string ProviderNameValue => "RapidAPI";
     string IJobProvider.Portal => Portal;
     string IJobProvider.ProviderName => ProviderNameValue;
-    string? IJobProvider.BaseUrl { set => _baseUrlOverride = value; }
-    string? IJobProvider.ApiKey { set => _apiKeyOverride = value; }
-    string? IJobProvider.Config { set => _configJson = value; }
 
     public LinkedInRapidApiProvider(IHttpClientFactory httpFactory, AdminLogService log, ILogger<LinkedInRapidApiProvider> logger)
     {
@@ -71,10 +65,10 @@ public class LinkedInRapidApiProvider : IJobProvider
         }
     }
 
-    private HttpClient CreateClient()
+    private HttpClient CreateClient(ProviderConfig config)
     {
-        var host = _baseUrlOverride;
-        var key = _apiKeyOverride;
+        var host = config.BaseUrl;
+        var key = config.ApiKey;
 
         if (string.IsNullOrWhiteSpace(host))
             throw new InvalidOperationException("LinkedIn host not configured. Set it in Admin > Job Providers.");
@@ -128,10 +122,10 @@ public class LinkedInRapidApiProvider : IJobProvider
         throw new HttpRequestException($"LinkedIn RapidAPI rate limited after {MaxRetries} retries");
     }
 
-    public async Task<JobSearchResult> SearchAsync(JobSearchRequest request, CancellationToken ct)
+    public async Task<JobSearchResult> SearchAsync(JobSearchRequest request, ProviderConfig config, CancellationToken ct)
     {
         var correlationId = Guid.NewGuid().ToString("N");
-        using var http = CreateClient();
+        using var http = CreateClient(config);
         var queryParams = new Dictionary<string, string>
         {
             ["keywords"] = request.Keywords,
@@ -143,11 +137,11 @@ public class LinkedInRapidApiProvider : IJobProvider
         if (!string.IsNullOrEmpty(request.DatePosted)) queryParams["datePosted"] = request.DatePosted;
         if (!string.IsNullOrEmpty(request.SortBy)) queryParams["sortBy"] = request.SortBy;
 
-        if (!string.IsNullOrEmpty(_configJson))
+        if (!string.IsNullOrEmpty(config.ConfigJson))
         {
             try
             {
-                using var cfg = JsonDocument.Parse(_configJson);
+                using var cfg = JsonDocument.Parse(config.ConfigJson);
                 foreach (var prop in cfg.RootElement.EnumerateObject())
                 {
                     var key = prop.Name;
@@ -198,6 +192,7 @@ public class LinkedInRapidApiProvider : IJobProvider
                     Salary = job.TryGetProperty("salary", out var sal) ? sal.GetString() : null,
                     Benefits = job.TryGetProperty("benefits", out var ben) ? ben.GetString() : null,
                     JobUrl = job.TryGetProperty("jobUrl", out var jurl) ? jurl.GetString() : null,
+                    Source = "linkedin",
                 });
             }
         }
@@ -212,10 +207,10 @@ public class LinkedInRapidApiProvider : IJobProvider
         return result;
     }
 
-    public async Task<JobDetailResult?> GetDetailsAsync(string externalId, CancellationToken ct)
+    public async Task<JobDetailResult?> GetDetailsAsync(string externalId, ProviderConfig config, CancellationToken ct)
     {
         var correlationId = Guid.NewGuid().ToString("N");
-        using var http = CreateClient();
+        using var http = CreateClient(config);
         var url = $"/job/{Uri.EscapeDataString(externalId)}";
 
         var response = await GetWithRetryAsync(http, url, "getDetails",

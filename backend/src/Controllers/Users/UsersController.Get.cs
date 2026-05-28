@@ -9,6 +9,10 @@ public partial class UsersController
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> Get([FromRoute] Guid id)
     {
+        var currentUserId = GetUserId();
+        if (currentUserId != id && !User.IsInRole("Admin"))
+            return NotFound(new { error = "User not found" });
+
         var user = await _db.Users.FindAsync(id);
         if (user is null)
         {

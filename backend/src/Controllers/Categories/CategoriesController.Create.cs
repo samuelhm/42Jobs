@@ -21,6 +21,13 @@ public partial class CategoriesController
         string? enqueueLocation = null;
         bool fetchTriggered = false;
 
+        var fetchErrors = new List<string>();
+        foreach (var fn in new[] { "filter_jobs", "extract_keywords" })
+            fetchErrors.AddRange(await _readiness.CheckAsync(fn));
+
+        if (fetchErrors.Count > 0)
+            return StatusCode(503, new { error = string.Join("; ", fetchErrors) });
+
         if (existing is not null)
         {
             category = existing;
@@ -39,13 +46,6 @@ public partial class CategoriesController
         }
         else
         {
-            var fetchErrors = new List<string>();
-            foreach (var fn in new[] { "filter_jobs", "extract_keywords" })
-                fetchErrors.AddRange(await _readiness.CheckAsync(fn));
-
-            if (fetchErrors.Count > 0)
-                return StatusCode(503, new { error = string.Join("; ", fetchErrors) });
-
             category = new Category { Name = body.Name };
             _db.Categories.Add(category);
             await _db.SaveChangesAsync();

@@ -22,6 +22,8 @@ public partial class UsersController
             return BadRequest(new { error = "Only @student.42barcelona.com email addresses are allowed" });
         }
 
+        body.Email = body.Email.Trim().ToLowerInvariant();
+
         var emailExists = await _db.Users.AnyAsync(u => u.Email == body.Email);
         if (emailExists)
         {

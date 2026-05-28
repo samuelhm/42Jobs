@@ -4,12 +4,11 @@ public interface IJobProvider
 {
     string Portal { get; }
     string ProviderName { get; }
-    string? BaseUrl { set; }
-    string? ApiKey { set; }
-    string? Config { set; }
-    Task<JobSearchResult> SearchAsync(JobSearchRequest request, CancellationToken ct);
-    Task<JobDetailResult?> GetDetailsAsync(string externalId, CancellationToken ct);
+    Task<JobSearchResult> SearchAsync(JobSearchRequest request, ProviderConfig config, CancellationToken ct);
+    Task<JobDetailResult?> GetDetailsAsync(string externalId, ProviderConfig config, CancellationToken ct);
 }
+
+public record ProviderConfig(string? BaseUrl, string? ApiKey, string? ConfigJson);
 
 public record JobSearchRequest(
     string Keywords,
@@ -37,6 +36,7 @@ public class JobItem
     public string? Salary { get; set; }
     public string? Benefits { get; set; }
     public string? JobUrl { get; set; }
+    public string Source { get; set; } = "linkedin";
 }
 
 public class JobDetailResult

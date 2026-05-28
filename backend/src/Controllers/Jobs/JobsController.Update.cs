@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace src.Controllers;
@@ -5,6 +6,7 @@ namespace src.Controllers;
 public partial class JobsController
 {
     [HttpPatch("{id:int}")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Update([FromRoute] int id, [FromBody] UpdateJobDto body)
     {
         var job = await _db.Jobs.FindAsync(id);
