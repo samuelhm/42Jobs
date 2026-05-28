@@ -8,4 +8,5 @@ public interface IJobFetchService
     FetchStatusDto? GetStatus(Guid jobId);
     Task FetchAllCategoriesAsync(string? datePosted = null, string? location = null);
     bool IsFetchAllRunning { get; }
+    QueueStatsDto GetQueueStats();
 }

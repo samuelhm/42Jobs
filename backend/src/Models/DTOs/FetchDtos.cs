@@ -20,3 +20,12 @@ public class FetchStatusDto
     public int Skipped { get; set; }
     public string? Error { get; set; }
 }
+
+public class QueueStatsDto
+{
+    public int Queued { get; set; }
+    public int Running { get; set; }
+    public int Completed { get; set; }
+    public int Failed { get; set; }
+    public bool FetchAllRunning { get; set; }
+}

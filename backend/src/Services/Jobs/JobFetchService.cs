@@ -73,6 +73,19 @@ public partial class JobFetchService : BackgroundService, IJobFetchService
 
     public bool IsFetchAllRunning => Volatile.Read(ref _fetchAllRunning) == 1;
 
+    public QueueStatsDto GetQueueStats()
+    {
+        var statuses = _statuses.Values;
+        return new QueueStatsDto
+        {
+            Queued = _channel.Reader.Count,
+            Running = statuses.Count(s => s.Status == "running"),
+            Completed = statuses.Count(s => s.Status == "completed"),
+            Failed = statuses.Count(s => s.Status == "failed"),
+            FetchAllRunning = IsFetchAllRunning,
+        };
+    }
+
     public Task FetchAllCategoriesAsync(string? datePosted = null, string? location = null)
         => FetchAllCategoriesWithTokenAsync(CancellationToken.None, datePosted, location);
 
