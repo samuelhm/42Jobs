@@ -217,6 +217,8 @@ public partial class JobFetchService
     private async Task<(string relevant, string juniorFriendly)> FilterWithRetryAsync(
         IAiService ai, string categoryName, string title, string? description, CancellationToken ct)
     {
+        var hadError = false;
+
         for (var retry = 0; retry < 3; retry++)
         {
             try
@@ -229,9 +231,17 @@ public partial class JobFetchService
 
                 _logger.LogWarning("AI filter returned unexpected values: relevant='{Relevant}' junior='{Junior}' for \"{Title}\", attempt {Attempt}",
                     relevant, juniorFriendly, title, retry + 1);
+
+                if (retry < 2)
+                {
+                    var delay = (int)Math.Pow(2, retry) * 2000 + Random.Shared.Next(1000);
+                    await Task.Delay(delay, ct);
+                }
             }
             catch (Exception ex)
             {
+                hadError = true;
+
                 if (retry < 2)
                 {
                     var delay = (int)Math.Pow(2, retry) * 2000 + Random.Shared.Next(1000);
@@ -246,7 +256,11 @@ public partial class JobFetchService
             }
         }
 
-        throw new InvalidOperationException($"AI filter failed after 3 attempts for \"{title}\"");
+        if (hadError)
+            throw new InvalidOperationException($"AI filter failed after 3 attempts for \"{title}\"");
+
+        _logger.LogWarning("AI filter could not decide for \"{Title}\" after 3 attempts, accepting as relevant", title);
+        return ("yes", "yes");
     }
 
     private async Task ExtractKeywordsWithRetryAsync(
