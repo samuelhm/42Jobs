@@ -90,38 +90,22 @@ public partial class JobFetchService : BackgroundService, IJobFetchService
 
     private async Task RunSchedulerAsync(CancellationToken ct)
     {
-        var targetHours = new[] { 8, 12, 16, 20 };
+        var targetHour = 0;
 
         while (!ct.IsCancellationRequested)
         {
             var now = DateTime.UtcNow;
-            var nextRun = now.Date;
-
-            foreach (var hour in targetHours)
-            {
-                var candidate = now.Date.AddHours(hour);
-                if (candidate > now)
-                {
-                    nextRun = candidate;
-                    break;
-                }
-            }
-
+            var nextRun = now.Date.AddHours(targetHour);
             if (nextRun <= now)
-                nextRun = now.Date.AddDays(1).AddHours(targetHours[0]);
+                nextRun = nextRun.AddDays(1);
 
             var delay = nextRun - now;
-            if (delay > TimeSpan.Zero)
-            {
-                _logger.LogInformation("Scheduler: next run at {NextRun} UTC (in {Delay})", nextRun, delay);
-                await Task.Delay(delay, ct);
-            }
+            _logger.LogInformation("Scheduler: next run at {NextRun} UTC (in {Delay})", nextRun, delay);
+            await Task.Delay(delay, ct);
 
             if (ct.IsCancellationRequested) break;
 
             await FetchAllCategoriesWithTokenAsync(ct);
-
-            await Task.Delay(TimeSpan.FromMinutes(1), ct);
         }
     }
 

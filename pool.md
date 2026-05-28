@@ -158,7 +158,7 @@ if (Interlocked.CompareExchange(ref _fetchAllRunning, 1, 0) != 0)
 }
 ```
 
-Protege `FetchAllCategoriesWithTokenAsync` contra ejecución simultánea. Si el scheduler (cada 4h) y el admin (manual) intentan lanzar un fetch-all a la vez, el segundo recibe HTTP 409.
+Protege `FetchAllCategoriesWithTokenAsync` contra ejecución simultánea. Si el scheduler (cada 24h a las 00:00 UTC) y el admin (manual) intentan lanzar un fetch-all a la vez, el segundo recibe HTTP 409.
 
 `Interlocked.CompareExchange` es atómico a nivel CPU — no hay race condition posible.
 
