@@ -15,7 +15,7 @@ public partial class AiService
 
             var (provider, model, apiKey, isFreeTier) = await ResolveModelAsync(defaultModelId);
             var schema = LoadSchema("analyze_github", provider.ServiceName);
-            var result = await CallWithRetryAsync(provider, systemPrompt, userPrompt, schema, model, apiKey, "analyze_github", isFreeTier, ct, useThinking: true);
+            var result = await CallWithRetryAsync(provider, systemPrompt, userPrompt, schema, model, apiKey, "analyze_github", isFreeTier, ct, useThinking: true, thinkingEffort: "high");
 
             if (result.TryGetProperty("error", out var err) && err.ValueKind != JsonValueKind.Null)
             {
