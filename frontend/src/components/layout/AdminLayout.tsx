@@ -1,4 +1,5 @@
 import { NavLink, Outlet, useNavigate } from 'react-router';
+import { useState } from 'react';
 
 const adminNav = [
   { to: '/admin', label: 'Dashboard', end: true },
@@ -14,21 +15,36 @@ const adminNav = [
 
 export default function AdminLayout() {
   const navigate = useNavigate();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  function closeSidebar() {
+    setSidebarOpen(false);
+  }
 
   return (
     <div className="admin-layout">
       <header className="admin-header">
-        <NavLink to="/admin" className="layout-logo">
-          42<span className="accent">jobs</span> Admin
-        </NavLink>
+        <div className="admin-header-left">
+          <button
+            className="admin-menu-btn"
+            onClick={() => setSidebarOpen(o => !o)}
+            aria-label={sidebarOpen ? 'Close sidebar' : 'Open sidebar'}
+          >
+            {sidebarOpen ? '\u2715' : '\u2630'}
+          </button>
+          <NavLink to="/admin" className="layout-logo">
+            42<span className="accent">jobs</span> Admin
+          </NavLink>
+        </div>
         <div className="admin-header-right">
           <button className="logout-btn" onClick={() => navigate('/')}>
             Back to App
           </button>
         </div>
       </header>
-      <div className="admin-body">
-        <nav className="admin-sidebar">
+      <div className={`admin-body${sidebarOpen ? ' sidebar-open' : ''}`}>
+        <div className="admin-sidebar-overlay" onClick={closeSidebar} />
+        <nav className="admin-sidebar" onClick={closeSidebar}>
           {adminNav.map(item => (
             <NavLink
               key={item.to}
