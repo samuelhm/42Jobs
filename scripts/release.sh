@@ -5,15 +5,16 @@ set -euo pipefail
 latest=$(git tag --sort=-v:refname --list 'v*' | head -1)
 
 if [ -z "$latest" ]; then
-    new="v0.1.0-alpha"
+    new="v0.1.0-beta"
 else
-    if [[ "$latest" =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)-alpha$ ]]; then
+    if [[ "$latest" =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)-(.+)$ ]]; then
         major="${BASH_REMATCH[1]}"
         minor="${BASH_REMATCH[2]}"
         patch="${BASH_REMATCH[3]}"
-        new="v${major}.${minor}.$((patch + 1))-alpha"
+        suffix="${BASH_REMATCH[4]}"
+        new="v${major}.${minor}.$((patch + 1))-${suffix}"
     else
-        echo "Error: el tag '$latest' no sigue el patrón vX.Y.Z-alpha" >&2
+        echo "Error: el tag '$latest' no sigue el patrón vX.Y.Z-suffix" >&2
         exit 1
     fi
 fi
