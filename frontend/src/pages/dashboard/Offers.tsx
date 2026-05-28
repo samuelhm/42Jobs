@@ -29,7 +29,16 @@ function OffersContent() {
   const [notesJob, setNotesJob] = useState<Job | null>(null);
   const [editingTitle, setEditingTitle] = useState<{ jobId: number; title: string } | null>(null);
   const [cvJob, setCvJob] = useState<Job | null>(null);
+  const [seniorDiscarded, setSeniorDiscarded] = useState(0);
   const { toast } = useToast();
+
+  useEffect(() => {
+    if (!categoryId) return;
+    fetchWithAuth(`/api/categories/${categoryId}/discarded-stats`)
+      .then(r => r.json())
+      .then(json => { if (json.success) setSeniorDiscarded(json.data.senior_only); })
+      .catch(() => {});
+  }, [categoryId]);
 
   function handleKwStatusChange(keywordId: number, newStatus: string) {
     setUserKeywords((prev) => {
@@ -95,6 +104,11 @@ function OffersContent() {
         {lastFetchedAt && (
           <p className="last-fetched" style={{ fontSize: '0.72rem', color: 'var(--text-dim)', marginBottom: '0.75rem' }}>
             Last updated {formatLastFetched(lastFetchedAt)}
+            {seniorDiscarded > 0 && (
+              <span style={{ color: 'var(--red)', marginLeft: '0.75rem' }}>
+                {seniorDiscarded} discarded (senior only)
+              </span>
+            )}
           </p>
         )}
 
