@@ -101,7 +101,7 @@ public partial class JobFetchService
     private async Task<JobSearchResult> SearchPageWithRetryAsync(
         IJobProvider provider, FetchRequest request, int limit, int start, CancellationToken ct)
     {
-        for (var retry = 0; retry < 3; retry++)
+        for (var retry = 0; retry < 5; retry++)
         {
             try
             {
@@ -113,11 +113,11 @@ public partial class JobFetchService
             }
             catch (Exception ex)
             {
-                if (retry < 2)
+                if (retry < 4)
                 {
-                    var delay = (int)Math.Pow(2, retry) * 1500 + Random.Shared.Next(1000);
+                    var delay = (int)Math.Pow(2, retry) * 2500 + Random.Shared.Next(1000);
                     _logger.LogWarning(ex,
-                        "Search page failed at offset {Start} for {Provider}, retry {Retry}/3 in {Delay}ms",
+                        "Search page failed at offset {Start} for {Provider}, retry {Retry}/5 in {Delay}ms",
                         start, provider.ProviderName, retry + 1, delay);
                     await Task.Delay(delay, ct);
                 }
@@ -125,7 +125,7 @@ public partial class JobFetchService
         }
 
         throw new InvalidOperationException(
-            $"Search page at offset {start} failed after 3 retries for {provider.ProviderName}");
+            $"Search page at offset {start} failed after 5 retries for {provider.ProviderName}");
     }
 
     private async Task<List<IJobProvider>> GetEnabledProvidersAsync(AppDbContext db)
