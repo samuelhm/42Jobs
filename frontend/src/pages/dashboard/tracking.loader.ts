@@ -1,4 +1,4 @@
-import { fetchWithAuth } from '../../utils/fetchWithAuth';
+import { get } from '../../utils/api';
 import type { UserKeyword } from '../../types';
 import type { TrackingJob } from './tracking.types';
 
@@ -9,8 +9,8 @@ export interface TrackingData {
 
 export async function trackingLoader(): Promise<TrackingData> {
   const [trackRes, kwRes] = await Promise.all([
-    fetchWithAuth('/api/tracking').then(r => r.json()),
-    fetchWithAuth('/api/keywords').then(r => r.json()),
+    get<TrackingJob[]>('/api/tracking'),
+    get<UserKeyword[]>('/api/keywords'),
   ]);
 
   const userKeywords: Record<string, UserKeyword> = {};

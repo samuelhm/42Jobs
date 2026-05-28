@@ -89,6 +89,9 @@ export default function AdminLogs() {
   const { logs, total, actors, actions, filters, page, limit } = useLoaderData() as LoaderData;
   const [, setSearchParams] = useSearchParams();
   const [modalJson, setModalJson] = useState<string | null>(null);
+  const [filterActor, setFilterActor] = useState(filters.actor);
+  const [filterAction, setFilterAction] = useState(filters.action);
+  const [filterPayload2, setFilterPayload2] = useState(filters.payload2);
   const revalidator = useRevalidator();
   const pollRef = useRef<ReturnType<typeof setInterval>>(undefined);
   const seenIds = useRef(new Set<number>());
@@ -99,6 +102,7 @@ export default function AdminLogs() {
   }, [revalidator]);
 
   const dedupedLogs = useMemo(() => {
+    seenIds.current.clear();
     return logs.filter(l => {
       if (seenIds.current.has(l.id)) return false;
       seenIds.current.add(l.id);
@@ -111,18 +115,15 @@ export default function AdminLogs() {
 
   function navigateToPage(p: number) {
     const params = new URLSearchParams();
-    const actor = (document.getElementById('filter-actor') as HTMLSelectElement)?.value || '';
-    const action = (document.getElementById('filter-action') as HTMLSelectElement)?.value || '';
-    const payload2 = (document.getElementById('filter-payload2') as HTMLInputElement)?.value || '';
-    if (actor) params.set('actor', actor);
-    if (action) params.set('action', action);
-    if (payload2) params.set('payload2', payload2);
+    if (filterActor) params.set('actor', filterActor);
+    if (filterAction) params.set('action', filterAction);
+    if (filterPayload2) params.set('payload2', filterPayload2);
     params.set('page', String(p));
     setSearchParams(params);
   }
 
   function applyFilters() {
-    seenIds.current = new Set();
+    seenIds.current.clear();
     navigateToPage(1);
   }
 
@@ -152,12 +153,12 @@ export default function AdminLogs() {
       <h2>Logs ({total})</h2>
 
       <div className="log-filters">
-        <select id="filter-actor" defaultValue={filters.actor} onChange={applyFilters}>
+        <select id="filter-actor" value={filterActor} onChange={e => { setFilterActor(e.target.value); applyFilters(); }}>
           <option value="">All actors</option>
           {actors.map(a => <option key={a} value={a}>{a}</option>)}
         </select>
 
-        <select id="filter-action" defaultValue={filters.action} onChange={applyFilters}>
+        <select id="filter-action" value={filterAction} onChange={e => { setFilterAction(e.target.value); applyFilters(); }}>
           <option value="">All actions</option>
           {actions.map(a => <option key={a} value={a}>{a}</option>)}
         </select>
@@ -166,13 +167,14 @@ export default function AdminLogs() {
           id="filter-payload2"
           type="text"
           placeholder="Filter by model / API..."
-          defaultValue={filters.payload2}
+          value={filterPayload2}
+          onChange={e => setFilterPayload2(e.target.value)}
           onKeyDown={e => { if (e.key === 'Enter') applyFilters(); }}
         />
 
         <button className="admin-btn" onClick={applyFilters}>Filter</button>
         {(filters.actor || filters.action || filters.payload2) && (
-          <button className="admin-btn" onClick={() => { seenIds.current = new Set(); setSearchParams({}); }}>Clear</button>
+          <button className="admin-btn" onClick={() => { seenIds.current.clear(); setFilterActor(''); setFilterAction(''); setFilterPayload2(''); setSearchParams({}); }}>Clear</button>
         )}
       </div>
 

@@ -1,4 +1,4 @@
-import { fetchWithAuth } from '../../utils/fetchWithAuth';
+import { get } from '../../utils/api';
 import type { UserKeyword, Job, Category } from '../../types';
 
 export interface OffersData {
@@ -16,9 +16,9 @@ export async function offersLoader({ request }: { request: Request }): Promise<O
   const categoryId = getCategoryId(request.url);
 
   const [kwRes, jobsRes] = await Promise.all([
-    fetchWithAuth('/api/keywords').then(r => r.json()),
+    get<UserKeyword[]>('/api/keywords'),
     categoryId
-      ? fetchWithAuth(`/api/categories/${categoryId}/jobs`).then(r => r.json())
+      ? get<Job[]>(`/api/categories/${categoryId}/jobs`)
       : Promise.resolve({ success: true, data: [] }),
   ]);
 
@@ -30,10 +30,9 @@ export async function offersLoader({ request }: { request: Request }): Promise<O
   let lastFetchedAt: string | null = null;
   if (categoryId) {
     try {
-      const catRes = await fetchWithAuth('/api/categories');
-      const catData = await catRes.json();
-      if (catData.success) {
-        const cat = catData.data.find((c: Category) => String(c.id) === categoryId);
+      const catRes = await get<Category[]>('/api/categories');
+      if (catRes.success) {
+        const cat = catRes.data.find((c: Category) => String(c.id) === categoryId);
         lastFetchedAt = cat?.last_fetched_at ?? null;
       }
     } catch { /* non-critical */ }

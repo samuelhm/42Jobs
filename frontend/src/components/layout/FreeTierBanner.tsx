@@ -1,18 +1,25 @@
 import { useEffect, useState } from 'react';
-import { fetchWithAuth } from '../../utils';
+import { get } from '../../utils';
+
+let freeTierCache: Promise<boolean> | null = null;
+
+function checkFreeTier(): Promise<boolean> {
+  if (!freeTierCache) {
+    freeTierCache = get<any[]>('/api/admin/ai-services')
+      .then(res => {
+        const services = res?.data || [];
+        return services.some((s: any) => s.is_free_tier);
+      })
+      .catch(() => false);
+  }
+  return freeTierCache;
+}
 
 export default function FreeTierBanner() {
   const [show, setShow] = useState(false);
 
   useEffect(() => {
-    fetchWithAuth('/api/admin/ai-services')
-      .then(r => r.json().catch(() => ({})))
-      .then(d => {
-        const services = d?.data || [];
-        if (services.some((s: any) => s.is_free_tier))
-          setShow(true);
-      })
-      .catch(() => {});
+    checkFreeTier().then(setShow);
   }, []);
 
   if (!show) return null;

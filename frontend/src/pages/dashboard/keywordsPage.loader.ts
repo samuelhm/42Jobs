@@ -1,4 +1,4 @@
-import { fetchWithAuth } from '../../utils/fetchWithAuth';
+import { get } from '../../utils/api';
 
 interface KeywordItem {
   id: number;
@@ -11,6 +11,6 @@ export interface KeywordsPageData {
 }
 
 export async function keywordsPageLoader(): Promise<KeywordsPageData> {
-  const res = await fetchWithAuth('/api/keywords').then(r => r.json());
+  const res = await get<KeywordItem[]>('/api/keywords');
   return { keywords: res.success ? res.data : [] };
 }

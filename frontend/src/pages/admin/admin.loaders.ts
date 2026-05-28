@@ -1,7 +1,7 @@
-import { fetchWithAuth } from '../../utils/fetchWithAuth';
+import { get } from '../../utils/api';
 
 export async function aiServicesLoader() {
-  const res = await fetchWithAuth('/api/admin/ai-services').then(r => r.json());
+  const res = await get<any[]>('/api/admin/ai-services');
   return { services: res.success ? res.data : [] };
 }
 
@@ -21,7 +21,7 @@ export async function adminLogsLoader({ request }: { request: Request }) {
   params.set('offset', String(offset));
   params.set('limit', String(limit));
 
-  const res = await fetchWithAuth(`/api/admin/logs?${params.toString()}`).then(r => r.json());
+  const res: any = await get(`/api/admin/logs?${params.toString()}`);
   return {
     logs: res.success ? res.data : [],
     total: res.success ? res.total : 0,

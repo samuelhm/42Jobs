@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { Chart, DoughnutController, ArcElement, Tooltip } from 'chart.js';
-import { fetchWithAuth } from '../../utils';
+import { get } from '../../utils';
 
 Chart.register(DoughnutController, ArcElement, Tooltip);
 
@@ -30,8 +30,7 @@ export default function CompanyTypesChart({ categoryId }: Props) {
 
     let cancelled = false;
 
-    fetchWithAuth(`/api/categories/${categoryId}/company-types`)
-      .then((r) => r.json())
+    get<CompanyType[]>(`/api/categories/${categoryId}/company-types`)
       .then((json) => {
         if (cancelled || !json.success || !canvasRef.current) return;
 

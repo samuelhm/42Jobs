@@ -1,4 +1,4 @@
-import { fetchWithAuth } from '../../utils/fetchWithAuth';
+import { get } from '../../utils/api';
 import type { DashboardData, UserKeyword } from './dashboard.types';
 
 function getCategoryId(url: string): string | null {
@@ -9,9 +9,9 @@ export async function dashboardLoader({ request }: { request: Request }): Promis
   const categoryId = getCategoryId(request.url);
 
   const [kwRes, jobsRes] = await Promise.all([
-    fetchWithAuth('/api/keywords').then(r => r.json()),
+    get<UserKeyword[]>('/api/keywords'),
     categoryId
-      ? fetchWithAuth(`/api/categories/${categoryId}/jobs?showTracked=true`).then(r => r.json())
+      ? get<any[]>(`/api/categories/${categoryId}/jobs?showTracked=true`)
       : Promise.resolve({ success: true, data: [] }),
   ]);
 

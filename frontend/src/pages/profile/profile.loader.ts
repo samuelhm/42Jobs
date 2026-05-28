@@ -1,4 +1,4 @@
-import { fetchWithAuth } from '../../utils/fetchWithAuth';
+import { get } from '../../utils/api';
 import type { ProfileData } from '../../types';
 
 export interface ProfilePageData {
@@ -6,6 +6,6 @@ export interface ProfilePageData {
 }
 
 export async function profileLoader(): Promise<ProfilePageData> {
-  const res = await fetchWithAuth('/api/profile').then(r => r.json());
+  const res = await get<ProfileData>('/api/profile');
   return { profile: res.success ? res.data : null };
 }

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { fetchWithAuth } from '../../utils';
+import { get, post, put, del } from '../../utils';
 
 interface Field {
   key: string;
@@ -34,9 +34,8 @@ export default function ProfileList({ title, fields, fetchUrl, createUrl, update
   }
 
   async function load() {
-    const res = await fetchWithAuth(fetchUrl);
-    const data = await res.json();
-    if (data.success) setItems(data.data);
+    const res = await get<any[]>(fetchUrl);
+    if (res.success) setItems(res.data);
     setLoading(false);
   }
 
@@ -45,11 +44,10 @@ export default function ProfileList({ title, fields, fetchUrl, createUrl, update
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const body = bodyBuilder(form);
-    const url = editingId ? updateUrl(editingId) : createUrl;
-    const method = editingId ? 'PUT' : 'POST';
-    const res = await fetchWithAuth(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-    const data = await res.json();
-    if (data.success) { resetForm(); load(); }
+    const res = editingId
+      ? await put(updateUrl(editingId), body)
+      : await post(createUrl, body);
+    if (res.success) { resetForm(); load(); }
   }
 
   function handleEdit(item: Record<string, any>) {
@@ -61,7 +59,7 @@ export default function ProfileList({ title, fields, fetchUrl, createUrl, update
 
   async function handleDelete(id: number) {
     if (!confirm('Delete?')) return;
-    await fetchWithAuth(deleteUrl(id), { method: 'DELETE' });
+    await del(deleteUrl(id));
     load();
   }
 

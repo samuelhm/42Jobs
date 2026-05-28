@@ -1,4 +1,4 @@
-import { fetchWithAuth } from '../../utils/fetchWithAuth';
+import { patch } from '../../utils/api';
 
 interface Props {
   keywordName: string;
@@ -17,11 +17,7 @@ export default function KeywordModal({ keywordName, keywordId, currentStatus, on
 
   async function handleSelect(status: string) {
     try {
-      await fetchWithAuth(`/api/keywords/${keywordId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ learning_status: status }),
-      });
+      await patch(`/api/keywords/${keywordId}`, { learning_status: status });
       onStatusChange(keywordId, status);
     } catch {
       // silently fail

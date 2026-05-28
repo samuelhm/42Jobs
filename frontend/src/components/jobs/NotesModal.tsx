@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { fetchWithAuth } from '../../utils/fetchWithAuth';
+import { patch } from '../../utils/api';
 
 interface Props {
   jobId: number;
@@ -24,11 +24,7 @@ export default function NotesModal({ jobId, jobTitle, initialNotes, onClose }: P
     setSaved(false);
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(async () => {
-      await fetchWithAuth(`/api/jobs/${jobId}/notes`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ notes: value }),
-      });
+      await patch(`/api/jobs/${jobId}/notes`, { notes: value });
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     }, 800);

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams } from 'react-router';
 import AddCategoryDialog from './AddCategoryDialog';
-import { fetchWithAuth } from '../../utils';
+import { get, del } from '../../utils';
 import type { Category } from '../../types';
 
 export default function CategoriesBar({ availableOnly }: { availableOnly?: boolean }) {
@@ -20,8 +20,7 @@ export default function CategoriesBar({ availableOnly }: { availableOnly?: boole
   const loadCategories = useCallback(async () => {
     try {
       const url = availableOnly ? '/api/categories?available=true' : '/api/categories';
-      const res = await fetchWithAuth(url);
-      const json = await res.json();
+      const json = await get<Category[]>(url);
       if (json.success) {
         setCategories(json.data);
         const ids = json.data.map((c: Category) => c.id);
@@ -40,6 +39,12 @@ export default function CategoriesBar({ availableOnly }: { availableOnly?: boole
 
   useEffect(() => {
     loadCategories();
+    return () => {
+      if (pollingRef.current) {
+        clearInterval(pollingRef.current);
+        pollingRef.current = null;
+      }
+    };
   }, [loadCategories]);
 
   function select(id: number) {
@@ -60,8 +65,7 @@ export default function CategoriesBar({ availableOnly }: { availableOnly?: boole
     pollingRef.current = setInterval(async () => {
       attempts++;
       try {
-        const res = await fetchWithAuth('/api/categories');
-        const json = await res.json();
+        const json = await get<Category[]>('/api/categories');
         if (json.success) {
           const cat = json.data.find((c: Category) => c.id === id);
           if (cat?.job_count && cat.job_count > 0) {
@@ -99,8 +103,7 @@ export default function CategoriesBar({ availableOnly }: { availableOnly?: boole
       pollingRef.current = setInterval(async () => {
         attempts++;
         try {
-          const res = await fetchWithAuth('/api/categories');
-          const json = await res.json();
+          const json = await get<Category[]>('/api/categories');
           if (json.success) {
             const cat = json.data.find((c: Category) => c.id === id);
             if (cat?.job_count && cat.job_count > 0) {
@@ -126,7 +129,7 @@ export default function CategoriesBar({ availableOnly }: { availableOnly?: boole
 
   async function handleUnfollow(id: number, e: React.MouseEvent) {
     e.stopPropagation();
-    await fetchWithAuth(`/api/categories/${id}/follow`, { method: 'DELETE' });
+    await del(`/api/categories/${id}/follow`);
     await loadCategories();
   }
 

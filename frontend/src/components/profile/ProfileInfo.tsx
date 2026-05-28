@@ -1,19 +1,6 @@
 import { useState, useEffect } from 'react';
-import { fetchWithAuth } from '../../utils';
+import { put, post, SPANISH_CITIES } from '../../utils';
 import type { ProfileData } from '../../types';
-
-const SPANISH_CITIES = [
-  'Madrid', 'Barcelona', 'Valencia', 'Sevilla', 'Zaragoza', 'Málaga',
-  'Murcia', 'Palma', 'Las Palmas de Gran Canaria', 'Bilbao', 'Alicante',
-  'Córdoba', 'Valladolid', 'Vigo', 'Gijón', 'Hospitalet de Llobregat',
-  'Vitoria-Gasteiz', 'A Coruña', 'Granada', 'Elche', 'Oviedo', 'Badalona',
-  'Cartagena', 'Terrassa', 'Jerez de la Frontera', 'Sabadell', 'Móstoles',
-  'Santa Cruz de Tenerife', 'Pamplona', 'Almería', 'San Sebastián',
-  'Burgos', 'Santander', 'Castellón de la Plana', 'Albacete',
-  'Alcalá de Henares', 'Getafe', 'Logroño', 'San Cristóbal de La Laguna',
-  'Huelva', 'Badajoz', 'Tarragona', 'Lleida', 'Marbella', 'León',
-  'Cádiz', 'Jaén', 'Ourense', 'Girona', 'Lugo', 'Toledo',
-];
 
 interface Props {
   profile: ProfileData;
@@ -21,10 +8,12 @@ interface Props {
 }
 
 function resizePhoto(file: File, maxDim: number): Promise<string> {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     const reader = new FileReader();
+    reader.onerror = () => reject(new Error('Failed to read file'));
     reader.onload = () => {
       const img = new Image();
+      img.onerror = () => reject(new Error('Invalid image file'));
       img.onload = () => {
         let w = img.width;
         let h = img.height;
@@ -56,15 +45,11 @@ export default function ProfileInfo({ profile, onSave }: Props) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
-    const res = await fetchWithAuth('/api/profile', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form),
-    });
-    const data = await res.json();
-    if (data.success) {
-      if (data.fetch_triggered) {
-        setMsg(`Saved. Fetching jobs for ${data.categories_fetched} categories in ${data.location} — may take a few minutes.`);
+    const res = await put<ProfileData>('/api/profile', form);
+    const extra = res as any;
+    if (res.success) {
+      if (extra.fetch_triggered) {
+        setMsg(`Saved. Fetching jobs for ${extra.categories_fetched} categories in ${extra.location} — may take a few minutes.`);
         setTimeout(() => setMsg(''), 6000);
       } else {
         setMsg('Saved');
@@ -83,18 +68,13 @@ export default function ProfileInfo({ profile, onSave }: Props) {
     setPhotoUploading(true);
     try {
       const dataUrl = await resizePhoto(file, 300);
-      const res = await fetchWithAuth('/api/profile/photo', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ photo: dataUrl }),
-      });
-      const data = await res.json();
-      if (data.success) {
+      const res = await post<{ photo?: string }>('/api/profile/photo', { photo: dataUrl });
+      if (res.success) {
         setForm((prev) => ({ ...prev, photo: dataUrl }));
         setMsg('Photo updated');
         setTimeout(() => setMsg(''), 2000);
       } else {
-        setMsg(data.error || 'Photo upload failed');
+        setMsg(res.error || 'Photo upload failed');
       }
     } catch {
       setMsg('Photo upload failed');
@@ -106,18 +86,13 @@ export default function ProfileInfo({ profile, onSave }: Props) {
   async function handlePhotoRemove() {
     setPhotoUploading(true);
     try {
-      const res = await fetchWithAuth('/api/profile/photo', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ photo: null }),
-      });
-      const data = await res.json();
-      if (data.success) {
+      const res = await post<{ photo?: string }>('/api/profile/photo', { photo: null });
+      if (res.success) {
         setForm((prev) => ({ ...prev, photo: undefined }));
         setMsg('Photo removed');
         setTimeout(() => setMsg(''), 2000);
       } else {
-        setMsg(data.error || 'Failed to remove photo');
+        setMsg(res.error || 'Failed to remove photo');
       }
     } catch {
       setMsg('Failed to remove photo');

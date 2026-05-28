@@ -32,6 +32,7 @@ export default function DiscardedJobs() {
       const res = await get<DiscardedJob[]>(`/api/admin/discarded-jobs?limit=${LIMIT}&offset=${offset}`);
       if (res.success) {
         setTotal(res.total || 0);
+        seenIds.current.clear();
         const filtered = res.data.filter(j => {
           if (seenIds.current.has(j.id)) return false;
           seenIds.current.add(j.id);

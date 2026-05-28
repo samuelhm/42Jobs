@@ -2,7 +2,11 @@ import type { ApiResponse } from '../types';
 import { fetchWithAuth } from './fetchWithAuth';
 
 async function api<T>(url: string, options?: RequestInit): Promise<ApiResponse<T>> {
-  const res = await fetchWithAuth(url, { headers: { 'Content-Type': 'application/json' }, ...options });
+  const { headers: customHeaders, ...restOptions } = options ?? {};
+  const res = await fetchWithAuth(url, {
+    headers: { 'Content-Type': 'application/json', ...customHeaders },
+    ...restOptions,
+  });
   if (res.status === 204) return { success: true, status: 204, data: null as T };
   try {
     const json = await res.json();
