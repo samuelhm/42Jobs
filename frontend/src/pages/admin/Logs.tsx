@@ -1,5 +1,6 @@
-import { useState, Fragment, useEffect, useRef } from 'react';
+import { useState, Fragment, useEffect, useRef, useMemo } from 'react';
 import { useLoaderData, useSearchParams, useRevalidator } from 'react-router';
+import { Pagination } from '../../components';
 
 interface LogEntry {
   id: number;
@@ -14,9 +15,12 @@ interface LogEntry {
 
 interface LoaderData {
   logs: LogEntry[];
+  total: number;
   actors: string[];
   actions: string[];
   filters: { actor: string; action: string; payload2: string };
+  page: number;
+  limit: number;
 }
 
 function statusClass(payload3: string | null): string {
@@ -82,28 +86,44 @@ function groupLogs(logs: LogEntry[]): LogGroup[] {
 }
 
 export default function AdminLogs() {
-  const { logs, actors, actions, filters } = useLoaderData() as LoaderData;
+  const { logs, total, actors, actions, filters, page, limit } = useLoaderData() as LoaderData;
   const [, setSearchParams] = useSearchParams();
   const [modalJson, setModalJson] = useState<string | null>(null);
   const revalidator = useRevalidator();
   const pollRef = useRef<ReturnType<typeof setInterval>>(undefined);
+  const seenIds = useRef(new Set<number>());
 
   useEffect(() => {
     pollRef.current = setInterval(() => revalidator.revalidate(), 5000);
     return () => clearInterval(pollRef.current);
   }, [revalidator]);
 
-  const groups = groupLogs(logs);
+  const dedupedLogs = useMemo(() => {
+    return logs.filter(l => {
+      if (seenIds.current.has(l.id)) return false;
+      seenIds.current.add(l.id);
+      return true;
+    });
+  }, [logs]);
 
-  function applyFilters() {
+  const groups = groupLogs(dedupedLogs);
+  const totalPages = Math.ceil(total / limit);
+
+  function navigateToPage(p: number) {
     const params = new URLSearchParams();
-    const actor = (document.getElementById('filter-actor') as HTMLSelectElement).value;
-    const action = (document.getElementById('filter-action') as HTMLSelectElement).value;
-    const payload2 = (document.getElementById('filter-payload2') as HTMLInputElement).value;
+    const actor = (document.getElementById('filter-actor') as HTMLSelectElement)?.value || '';
+    const action = (document.getElementById('filter-action') as HTMLSelectElement)?.value || '';
+    const payload2 = (document.getElementById('filter-payload2') as HTMLInputElement)?.value || '';
     if (actor) params.set('actor', actor);
     if (action) params.set('action', action);
     if (payload2) params.set('payload2', payload2);
+    params.set('page', String(p));
     setSearchParams(params);
+  }
+
+  function applyFilters() {
+    seenIds.current = new Set();
+    navigateToPage(1);
   }
 
   function renderRow(log: LogEntry, isResponse: boolean = false) {
@@ -129,7 +149,7 @@ export default function AdminLogs() {
 
   return (
     <div>
-      <h2>Logs</h2>
+      <h2>Logs ({total})</h2>
 
       <div className="log-filters">
         <select id="filter-actor" defaultValue={filters.actor} onChange={applyFilters}>
@@ -152,9 +172,11 @@ export default function AdminLogs() {
 
         <button className="admin-btn" onClick={applyFilters}>Filter</button>
         {(filters.actor || filters.action || filters.payload2) && (
-          <button className="admin-btn" onClick={() => setSearchParams({})}>Clear</button>
+          <button className="admin-btn" onClick={() => { seenIds.current = new Set(); setSearchParams({}); }}>Clear</button>
         )}
       </div>
+
+      <Pagination page={page} totalPages={totalPages} onPageChange={navigateToPage} />
 
       <div className="log-table-wrap">
         <table className="log-table">
@@ -181,6 +203,8 @@ export default function AdminLogs() {
           </tbody>
         </table>
       </div>
+
+      <Pagination page={page} totalPages={totalPages} onPageChange={navigateToPage} />
 
       {modalJson && (
         <div className="dialog-overlay" onClick={() => setModalJson(null)}>

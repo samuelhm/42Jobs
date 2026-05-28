@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { get } from '../../utils';
+import { Pagination } from '../../components';
 
 interface DiscardedJob {
   id: number;
@@ -14,27 +15,46 @@ interface DiscardedJob {
   created_at: string;
 }
 
+const LIMIT = 100;
+
 export default function DiscardedJobs() {
   const [jobs, setJobs] = useState<DiscardedJob[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState<number | null>(null);
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const seenIds = useRef(new Set<number>());
 
-  async function load() {
+  async function load(p: number) {
+    setLoading(true);
     try {
-      const res = await get<DiscardedJob[]>('/api/admin/discarded-jobs');
-      if (res.success) setJobs(res.data);
+      const offset = (p - 1) * LIMIT;
+      const res = await get<DiscardedJob[]>(`/api/admin/discarded-jobs?limit=${LIMIT}&offset=${offset}`);
+      if (res.success) {
+        setTotal(res.total || 0);
+        const filtered = res.data.filter(j => {
+          if (seenIds.current.has(j.id)) return false;
+          seenIds.current.add(j.id);
+          return true;
+        });
+        setJobs(filtered);
+      }
     } catch {}
     setLoading(false);
   }
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(page); }, [page]);
+
+  const totalPages = Math.ceil(total / LIMIT);
 
   if (loading) return null;
 
   return (
     <div>
-      <h2>Discarded Jobs ({jobs.length})</h2>
+      <h2>Discarded Jobs ({total})</h2>
       <p className="text-muted">Jobs filtered out by AI — not relevant or senior-only. Kept to avoid re-fetching details and re-running AI on future searches.</p>
+
+      <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
 
       {jobs.length === 0 ? (
         <div className="empty-state" style={{ marginTop: '1.5rem' }}>
@@ -82,6 +102,8 @@ export default function DiscardedJobs() {
           })}
         </div>
       )}
+
+      <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
     </div>
   );
 }

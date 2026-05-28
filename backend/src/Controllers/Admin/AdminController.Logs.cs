@@ -10,7 +10,8 @@ public partial class AdminController
         [FromQuery] string? actor,
         [FromQuery] string? action,
         [FromQuery] string? payload2,
-        [FromQuery] int limit = 500)
+        [FromQuery] int limit = 100,
+        [FromQuery] int offset = 0)
     {
         var query = _db.AdminLogs.AsQueryable();
 
@@ -23,8 +24,12 @@ public partial class AdminController
         if (!string.IsNullOrWhiteSpace(payload2))
             query = query.Where(l => l.Payload2 != null && l.Payload2.Contains(payload2));
 
+        var total = await query.CountAsync();
+
         var logs = await query
             .OrderByDescending(l => l.CreatedAt)
+            .ThenByDescending(l => l.Id)
+            .Skip(offset)
             .Take(Math.Min(limit, 1000))
             .Select(l => new
             {
@@ -54,6 +59,6 @@ public partial class AdminController
             .AsNoTracking()
             .ToListAsync();
 
-        return Ok(new { success = true, data = logs, actors, actions });
+        return Ok(new { success = true, data = logs, total, actors, actions });
     }
 }
