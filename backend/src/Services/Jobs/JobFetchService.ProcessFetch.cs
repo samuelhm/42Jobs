@@ -105,8 +105,10 @@ public partial class JobFetchService
         {
             try
             {
+                var userLocation = request.Location ?? "Barcelona";
+                var keywords = $"{request.CategoryName} in {userLocation}";
                 return await provider.SearchAsync(
-                    new JobSearchRequest(request.CategoryName, request.Location, limit,
+                    new JobSearchRequest(keywords, "Spain", limit,
                         request.DatePosted, request.SortBy, start), ct);
             }
             catch (Exception ex)
