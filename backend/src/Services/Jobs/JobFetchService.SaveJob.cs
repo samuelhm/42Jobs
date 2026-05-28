@@ -231,12 +231,12 @@ public partial class JobFetchService
                 }
                 else
                 {
-                    _logger.LogWarning(ex, "AI filter failed after 3 attempts for \"{Title}\", passing through", title);
+                    _logger.LogWarning(ex, "AI filter failed after 3 attempts for \"{Title}\", skipping job", title);
                 }
             }
         }
 
-        return ("yes", "yes");
+        throw new InvalidOperationException($"AI filter failed after 3 attempts for \"{title}\"");
     }
 
     private async Task ExtractKeywordsWithRetryAsync(

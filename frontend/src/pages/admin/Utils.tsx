@@ -18,6 +18,7 @@ export default function AdminUtils() {
       <DedupSection />
       <CleanSection />
       <FetchAllSection />
+      <ReprocessSection />
       <CategorySection />
     </div>
   );
@@ -179,6 +180,44 @@ function CategorySection() {
               <button className="btn-delete" onClick={() => deleteCategory(c)}>Delete</button>
             </div>
           ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ReprocessSection() {
+  const [msg, setMsg] = useState('');
+  const [running, setRunning] = useState(false);
+
+  async function runReprocess() {
+    setRunning(true);
+    setMsg('');
+    try {
+      const res = await post<{ deleted: number; skipped_tracked: number }>('/api/admin/reprocess-broken-jobs', {});
+      if (res.success) {
+        const d = res.data;
+        setMsg(`Deleted ${d.deleted} jobs without keywords. ${d.skipped_tracked} skipped (tracked by users).`);
+      } else {
+        setMsg(res.error || 'Error');
+      }
+    } catch {
+      setMsg('Connection error');
+    }
+    setRunning(false);
+    setTimeout(() => setMsg(''), 8000);
+  }
+
+  return (
+    <div className="service-card" style={{ marginBottom: '1rem' }}>
+      <h3>Reprocess Broken Jobs</h3>
+      <p className="text-muted" style={{ marginBottom: '0.75rem' }}>Deletes jobs with no keywords (typically caused by AI outages during fetch). Tracked jobs are preserved. They will be re-discovered and re-processed on the next fetch.</p>
+      <button className="admin-btn" style={{ background: 'var(--red)', borderColor: 'var(--red)' }} onClick={runReprocess} disabled={running}>
+        {running ? 'Processing...' : 'Reprocess'}
+      </button>
+      {msg && (
+        <div style={{ marginTop: '0.75rem', padding: '0.75rem', background: 'var(--bg)', borderRadius: 'var(--radius)', border: '1px solid var(--border)', fontSize: '0.75rem' }}>
+          {msg}
         </div>
       )}
     </div>
