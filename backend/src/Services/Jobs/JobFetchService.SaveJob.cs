@@ -218,6 +218,8 @@ public partial class JobFetchService
         IAiService ai, string categoryName, string title, string? description, CancellationToken ct)
     {
         var hadError = false;
+        string lastRelevant = "yes";
+        string lastJuniorFriendly = "yes";
 
         for (var retry = 0; retry < 3; retry++)
         {
@@ -225,6 +227,9 @@ public partial class JobFetchService
             {
                 var (relevant, juniorFriendly) = await ai.FilterJobRelevanceAsync(
                     categoryName, title, description, ct);
+
+                lastRelevant = relevant;
+                lastJuniorFriendly = juniorFriendly;
 
                 if (relevant is "yes" or "no" && juniorFriendly is "yes" or "no")
                     return (relevant, juniorFriendly);
@@ -259,8 +264,12 @@ public partial class JobFetchService
         if (hadError)
             throw new InvalidOperationException($"AI filter failed after 3 attempts for \"{title}\"");
 
-        _logger.LogWarning("AI filter could not decide for \"{Title}\" after 3 attempts, accepting as relevant", title);
-        return ("yes", "yes");
+        var finalRelevant = lastRelevant is "yes" or "no" ? lastRelevant : "yes";
+        var finalJunior = lastJuniorFriendly is "yes" or "no" ? lastJuniorFriendly : "yes";
+
+        _logger.LogWarning("AI filter could not decide for \"{Title}\" after 3 attempts, using last values: relevant='{Relevant}' junior='{Junior}'",
+            title, finalRelevant, finalJunior);
+        return (finalRelevant, finalJunior);
     }
 
     private async Task ExtractKeywordsWithRetryAsync(
