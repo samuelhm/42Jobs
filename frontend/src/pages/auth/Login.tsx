@@ -43,7 +43,7 @@ export default function Login() {
       const data = await res.json();
 
       if (res.ok) {
-        navigate('/', { replace: true });
+        navigate('/dashboard', { replace: true });
       } else {
         setServerError(data.error || 'Invalid email or password');
       }
