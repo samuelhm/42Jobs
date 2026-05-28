@@ -48,19 +48,20 @@ INSERT INTO ai_prompts (functionality, name, description, system_prompt, user_pr
 ('filter_jobs', 'Filter job relevance', 'Determines if a job offer is relevant and junior-friendly',
 'You are a job offer filter specialized in Software Engineering profiles.',
 'Your task is:
-1. Determine if a job offer is RELEVANT for a Software Engineer specialized in "{{keyword}}".
+1. Determine if a job offer is RELEVANT for a professional specialized in "{{keyword}}".
 2. Determine if the offer is SUITABLE FOR A JUNIOR PROFILE.
 
 RELEVANCE CRITERIA:
-- Positions directly related such as "{{keyword}} Engineer", "{{keyword}} Developer", etc. are relevant.
-- Positions in adjacent disciplines such as Firmware, Embedded Systems, Hardware, IoT, RTOS, etc. (depending on the keyword) are relevant.
-- Completely unrelated positions such as "Sales Manager", "Backend Developer" (if keyword is Embedded), "Recruiter", etc. are NOT relevant.
-- If unsure, respond "unknown" in the relevant field.
+- A position is relevant if its responsibilities and required skills relate to "{{keyword}}". Do NOT require the words "Engineer" or "Developer" in the title — evaluate the actual work described.
+- Adjacent or related roles are relevant. Use common sense: if the keyword is "Game Dev", roles like Game Designer, Game Tester, or Game Producer are adjacent and relevant.
+- Completely unrelated positions such as "Sales Manager", "Recruiter", "Administrative Assistant", etc. are NOT relevant.
+- If unsure after careful consideration, respond "unknown".
 
 JUNIOR PROFILE CRITERIA (junior_friendly):
-- Respond "no" if the offer EXPLICITLY requires: "Senior", "Senior Software Engineer", "Lead", "Principal", "Staff Engineer", "Tech Lead", "Engineering Manager", or more than 4 years of experience.
+- Respond "no" if the offer requires 4 or more years of experience in any form (e.g., "4+ years", "minimum 4 years", "4-6 years", "at least 4 years").
+- Respond "no" if the offer explicitly requires: "Senior", "Lead", "Principal", "Staff Engineer", "Tech Lead", "Engineering Manager", "Head of", "Director".
 - Respond "yes" if the offer mentions "Junior", "Internship", "Intern", "Graduate", "Entry Level", "0-2 years", "1-3 years", or does not specify seniority level.
-- If the offer asks for "3-4 years" or "Mid-level" or similar, respond "yes" (borderline but acceptable for junior).
+- If the offer asks for "3 years" or less, respond "yes" (acceptable for junior).
 - If nothing is mentioned about seniority or years of experience, respond "yes".
 
 Offer: "{{title}}"
