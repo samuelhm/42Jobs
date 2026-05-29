@@ -62,14 +62,56 @@ export default function HomePage() {
       </section>
 
       <section className="home-video">
-        <h2>Guía rápida en video</h2>
+        <h2>Cómo completar tu perfil en 2 minutos</h2>
         <div className="home-video-container">
-          <iframe
-            src="https://www.youtube.com/embed/VIDEO_ID"
-            title="42jobs - Guía de uso"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-          />
+          <video
+            src="/resources/tutorial.mp4"
+            controls
+            className="home-video-player"
+          >
+            Tu navegador no soporta el elemento de video.
+          </video>
+        </div>
+      </section>
+
+      <section className="home-advantages">
+        <h2>¿Por qué 42jobs en lugar de las plataformas de empleo tradicionales?</h2>
+        <div className="home-advantages-grid">
+          <div className="home-advantage-card">
+            <span className="home-advantage-icon">🎯</span>
+            <div>
+              <h3>Filtrado automático para juniors</h3>
+              <p>Las plataformas tradicionales mezclan ofertas senior, mid y junior sin distinción clara. 42jobs filtra automáticamente con IA para mostrarte solo lo que de verdad encaja con tu perfil junior. No pierdas tiempo leyendo ofertas que piden 5 años de experiencia.</p>
+            </div>
+          </div>
+          <div className="home-advantage-card">
+            <span className="home-advantage-icon">📊</span>
+            <div>
+              <h3>Match % real con tu perfil</h3>
+              <p>En LinkedIn o InfoJobs envías el mismo CV a todo. Aquí ves exactamente qué tecnologías coinciden entre la oferta y tu perfil, y cuál es tu % de compatibilidad real. Así priorizas las ofertas donde tienes más posibilidades.</p>
+            </div>
+          </div>
+          <div className="home-advantage-card">
+            <span className="home-advantage-icon">📄</span>
+            <div>
+              <h3>CV por oferta, sin esfuerzo</h3>
+              <p>En plataformas normales tienes que adaptar tu CV manualmente para cada puesto. 42jobs genera un CV en HTML optimizado para ATS con tus datos y las keywords de la oferta automáticamente. Edítalo, conviértelo a PDF y envíalo.</p>
+            </div>
+          </div>
+          <div className="home-advantage-card">
+            <span className="home-advantage-icon">🗂️</span>
+            <div>
+              <h3>Seguimiento centralizado</h3>
+              <p>Deja de usar hojas de cálculo para trackear candidaturas. Con 42jobs mueves ofertas a Tracking, cambias el estado (Applied, Interview, Offer, Rejected) y llevas el control de todo tu proceso desde un solo lugar.</p>
+            </div>
+          </div>
+          <div className="home-advantage-card">
+            <span className="home-advantage-icon">🆓</span>
+            <div>
+              <h3>Gratis y open source</h3>
+              <p>Sin suscripciones, sin premium, sin límites artificiales. 42jobs es 100% gratuito y de código abierto. Tú controlas tus datos y puedes incluso ejecutarlo en tu propio servidor si lo prefieres.</p>
+            </div>
+          </div>
         </div>
       </section>
 

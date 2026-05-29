@@ -52,7 +52,7 @@
 | Checkpoint | Estado |
 |------------|--------|
 | JWT + cookie auth (`42jobs_auth`) | ✅ |
-| Registro (BCrypt hash, @student.42barcelona.com restriction) | ✅ |
+| Registro (BCrypt hash) | ✅ |
 | Login (JWT generation) | ✅ |
 | Logout (cookie deletion) | ✅ |
 | [Authorize] en todos los controladores | ✅ |

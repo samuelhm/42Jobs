@@ -19,8 +19,6 @@ export default function Register() {
       errs.email = 'Email is required';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
       errs.email = 'Invalid email format';
-    } else if (!email.trim().endsWith('@student.42barcelona.com')) {
-      errs.email = 'Email not allowed';
     }
 
     if (!password) {

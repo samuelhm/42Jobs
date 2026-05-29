@@ -73,13 +73,65 @@
   background: var(--bg);
 }
 
-.home-video-container iframe {
+.home-video-container iframe,
+.home-video-player {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
   border: 0;
+  border-radius: var(--radius);
+}
+
+/* ── Advantages ── */
+.home-advantages h2 {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: var(--text-bright);
+  margin-bottom: 1rem;
+}
+
+.home-advantages-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.home-advantage-card {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.25rem;
+  transition: border-color 0.2s;
+}
+
+.home-advantage-card:hover {
+  border-color: var(--amber-dim);
+}
+
+.home-advantage-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+  line-height: 1;
+  margin-top: 0.1rem;
+}
+
+.home-advantage-card h3 {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-bright);
+  margin-bottom: 0.25rem;
+}
+
+.home-advantage-card p {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  line-height: 1.5;
 }
 
 /* ── Steps ── */
@@ -165,5 +217,10 @@
 
   .home-steps-grid {
     grid-template-columns: 1fr;
+  }
+
+  .home-advantage-card {
+    flex-direction: column;
+    gap: 0.5rem;
   }
 }

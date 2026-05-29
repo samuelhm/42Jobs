@@ -53,10 +53,9 @@ Violación del contrato REST. Se hace a drede por ahora; a futuro implementar so
 background tasks. Idealmente separar en dos clases: `JobFetchBackgroundService` (solo scheduling)
 y `JobFetchService` (lógica de enqueue + procesamiento).
 
-### #14 — Validación de email restringida a `@student.42barcelona.com`
+### #14 — Validación de email abierta a cualquier dominio
 
-El registro solo acepta emails `@student.42barcelona.com`. Si se quiere abrir a otros campus
-o usuarios externos, este check debería ser configurable (lista de dominios permitidos en config).
+El registro acepta cualquier email válido. La restricción a `@student.42barcelona.com` fue eliminada.
 
 ### #16 — Foto de perfil guardada en BD como base64
 
