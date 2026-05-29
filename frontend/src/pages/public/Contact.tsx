@@ -1,10 +1,12 @@
+import yoPhoto from '../../assets/yo.webp';
+
 export default function ContactPage() {
   return (
     <div className="page-content">
       <h2>Contact</h2>
 
       <div className="contact-card">
-        <img src="/resources/yo.webp" alt="Samuel Hurtado Marin" className="contact-photo"
+        <img src={yoPhoto} alt="Samuel Hurtado Marin" className="contact-photo"
           onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
 
         <div className="contact-info">

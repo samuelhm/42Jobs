@@ -1,5 +1,6 @@
 import { Link } from 'react-router';
 import { useAuth } from '../../context';
+import tutorialVideo from '../../assets/tutorial.mp4';
 
 const steps = [
   {
@@ -65,7 +66,7 @@ export default function HomePage() {
         <h2>Cómo completar tu perfil en 2 minutos</h2>
         <div className="home-video-container">
           <video
-            src="/resources/tutorial.mp4"
+            src={tutorialVideo}
             controls
             className="home-video-player"
           >
