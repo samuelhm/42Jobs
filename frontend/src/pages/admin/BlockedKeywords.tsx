@@ -30,7 +30,7 @@ export default function BlockedKeywords() {
 
   async function updateRedirect(id: number, redirectToName: string) {
     try {
-      await put(`/api/admin/blocked-keywords/${id}`, { redirectToName: redirectToName || null });
+      await put(`/api/admin/blocked-keywords/${id}`, { redirect_to_name: redirectToName || null });
       setItems(prev => prev.map(i => i.id === id ? { ...i, redirectName: redirectToName || null } : i));
       setMsg('Updated');
       setTimeout(() => setMsg(''), 3000);
