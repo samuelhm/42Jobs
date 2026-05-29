@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useLoaderData } from 'react-router';
 import { CategoriesBar, NotesModal, KeywordTag, CvModal } from '../../components';
 import { fetchWithAuth, formatDescription, getMatchPct, getMatchClass, isRecent } from '../../utils';
-import { useToast } from '../../context';
+import { useToast, useAuth } from '../../context';
 import type { Job, UserKeyword } from '../../types';
 import type { OffersData } from './offers.loader';
 
@@ -232,6 +232,8 @@ function JobAccordion({ job, userKeywords, onStatusChange }: {
   userKeywords: Record<string, UserKeyword>;
   onStatusChange: (kwId: number, status: string) => void;
 }) {
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'Admin';
   return (
     <div className="oferta-accordion">
       <div className="accordion-grid">
@@ -255,7 +257,9 @@ function JobAccordion({ job, userKeywords, onStatusChange }: {
               name={kw}
               id={entry?.id || 0}
               status={entry?.learning_status || 'not_learned'}
+              isAdmin={isAdmin}
               onStatusChange={onStatusChange}
+              onDelete={() => {}}
             />
           );
         })}

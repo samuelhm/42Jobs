@@ -17,6 +17,7 @@ const dash = [
   { to: '/admin/templates', icon: '📄', label: 'CV Templates', desc: 'HTML & CSS layouts' },
   { to: '/admin/job-providers', icon: '🌐', label: 'Job Providers', desc: 'API sources & keys' },
   { to: '/admin/utils', icon: '🛠️', label: 'Utils', desc: 'Dedup & cleanup' },
+  { to: '/admin/blocked-keywords', icon: '🚫', label: 'Blocked KWs', desc: 'Blocked & redirect mappings' },
   { to: '/admin/logs', icon: '📋', label: 'Logs', desc: 'Request & response logs' },
 ];
 

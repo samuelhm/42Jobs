@@ -27,6 +27,7 @@ public class AppDbContext : DbContext
     public DbSet<JobProvider> JobProviders => Set<JobProvider>();
     public DbSet<DiscardedJob> DiscardedJobs => Set<DiscardedJob>();
     public DbSet<AdminLog> AdminLogs => Set<AdminLog>();
+    public DbSet<BlockedKeyword> BlockedKeywords => Set<BlockedKeyword>();
 
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
@@ -594,6 +595,27 @@ public class AppDbContext : DbContext
             entity.HasIndex(l => l.Actor);
             entity.HasIndex(l => l.Action);
             entity.HasIndex(l => l.CorrelationId);
+        });
+
+        // ── BlockedKeyword ────────────────────────────────────
+        modelBuilder.Entity<BlockedKeyword>(entity =>
+        {
+            entity.ToTable("blocked_keywords");
+            entity.HasKey(b => b.Id);
+            entity.Property(b => b.Id).ValueGeneratedOnAdd();
+            entity.Property(b => b.Name).IsRequired().HasMaxLength(200);
+            entity.HasIndex(b => b.Name).IsUnique();
+            entity.Property(b => b.CreatedAt)
+                  .HasDefaultValueSql("NOW()")
+                  .ValueGeneratedOnAdd();
+
+            entity.HasOne(b => b.RedirectKeyword)
+                  .WithMany()
+                  .HasForeignKey(b => b.RedirectTo)
+                  .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasIndex(b => b.RedirectTo)
+                  .HasDatabaseName("idx_blocked_keywords_redirect");
         });
     }
 }

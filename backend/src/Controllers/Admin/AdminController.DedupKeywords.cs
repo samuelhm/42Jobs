@@ -140,6 +140,9 @@ public partial class AdminController
                 mergedEntries.Add((keep.Name, dupName));
                 merged++;
                 alreadyMerged.Add(dup.Id);
+
+                // Save mapping so future dedups skip AI
+                await SaveDedupMapping(dupName, keep.Id);
             }
         }
 
@@ -228,6 +231,28 @@ public partial class AdminController
             if (size <= overlap) start += size; // safety: prevent infinite loop
         }
         return chunks;
+    }
+
+    private async Task SaveDedupMapping(string dupName, int keepId)
+    {
+        try
+        {
+            var name = dupName.ToLowerInvariant();
+            var exists = await _db.BlockedKeywords.AnyAsync(b => b.Name == name);
+            if (!exists)
+            {
+                _db.BlockedKeywords.Add(new Models.BlockedKeyword
+                {
+                    Name = name,
+                    RedirectTo = keepId
+                });
+                await _db.SaveChangesAsync();
+            }
+        }
+        catch
+        {
+            // ignore duplicates (race condition)
+        }
     }
 
     private IActionResult BuildResult(int merged, List<string> warnings, List<(string kept, string duplicate)> entries)

@@ -287,9 +287,27 @@ public partial class JobFetchService
                     .Distinct()
                     .ToList();
 
-                if (names.Count > 0)
+                // Resolve blocked keywords: skip blocked ones, redirect known dupes
+                var blocked = await db.BlockedKeywords.ToDictionaryAsync(
+                    b => b.Name, b => b.RedirectTo, ct);
+                var resolved = new List<(string name, int? redirectId)>();
+                foreach (var name in names)
                 {
-                    var keywordIds = await BatchUpsertKeywordsAsync(db, names, ct);
+                    if (blocked.TryGetValue(name, out var redirect))
+                    {
+                        if (redirect is null) continue; // skip entirely
+                        var target = await db.Keywords.FindAsync(new object[] { redirect.Value }, ct);
+                        if (target is not null)
+                            resolved.Add((target.Name, null));
+                        continue;
+                    }
+                    resolved.Add((name, null));
+                }
+                var finalNames = resolved.Select(r => r.name).Distinct().ToList();
+
+                if (finalNames.Count > 0)
+                {
+                    var keywordIds = await BatchUpsertKeywordsAsync(db, finalNames, ct);
                     await BatchLinkJobKeywordsAsync(db, jobId, keywordIds, ct);
                 }
 

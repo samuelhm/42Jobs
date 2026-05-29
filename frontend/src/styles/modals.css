@@ -113,3 +113,60 @@
   border-color: var(--amber);
   box-shadow: 0 0 8px var(--amber-glow);
 }
+
+/* ── Block keyword section (admin only) ── */
+.kw-block-section {
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.kw-block-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.62rem;
+  color: var(--red);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 0;
+}
+
+.kw-block-input {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.78rem;
+  padding: 0.35rem 0.5rem;
+  outline: none;
+}
+
+.kw-block-input:focus {
+  border-color: var(--red);
+}
+
+.kw-block-btn {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.62rem;
+  font-weight: 600;
+  padding: 0.3rem 0.7rem;
+  border: 1px solid var(--red);
+  border-radius: var(--radius);
+  background: rgba(212, 114, 106, 0.08);
+  color: var(--red);
+  cursor: pointer;
+  transition: all 0.2s;
+  align-self: flex-start;
+}
+
+.kw-block-btn:hover {
+  background: rgba(212, 114, 106, 0.18);
+}
+
+.kw-block-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

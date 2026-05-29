@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useLoaderData } from 'react-router';
 import { NotesModal, CvModal, KeywordTag } from '../../components';
 import { fetchWithAuth, formatDescription, isRecent } from '../../utils';
-import { useToast } from '../../context';
+import { useToast, useAuth } from '../../context';
 import type { TrackingJob } from './tracking.types';
 import type { TrackingData } from './tracking.loader';
 import type { UserKeyword } from '../../types';
@@ -135,6 +135,8 @@ function JobCard({ job, userKeywords, onKwStatusChange, onJobStatusChange }: {
   const [notesOpen, setNotesOpen] = useState(false);
   const [cvOpen, setCvOpen] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'Admin';
 
   async function handleStatusChange(newStatus: string) {
     onJobStatusChange(job.job_id, newStatus);
@@ -271,7 +273,9 @@ function JobCard({ job, userKeywords, onKwStatusChange, onJobStatusChange }: {
                       name={kw}
                       id={entry?.id || 0}
                       status={entry?.learning_status || 'not_learned'}
+                      isAdmin={isAdmin}
                       onStatusChange={onKwStatusChange}
+                      onDelete={() => {}}
                     />
                   );
                 })}

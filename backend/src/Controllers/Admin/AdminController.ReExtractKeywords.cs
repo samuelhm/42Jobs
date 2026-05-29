@@ -35,6 +35,7 @@ public partial class AdminController
         if (toProcess.Count == 0)
             return Ok(new { message = "No jobs to process", processed = 0, keywords = 0 });
 
+        var blocked = await _db.BlockedKeywords.ToDictionaryAsync(b => b.Name, b => b.RedirectTo);
         var totalKeywords = 0;
         var processed = 0;
 
@@ -61,9 +62,26 @@ public partial class AdminController
 
                     if (names.Count == 0) continue;
 
-                    var keywordIds = await BatchUpsertKeywordsAsync(names);
+                    var finalNames = new List<string>();
+                    foreach (var name in names)
+                    {
+                        if (blocked.TryGetValue(name, out var redirect))
+                        {
+                            if (redirect is null) continue;
+                            var target = await _db.Keywords.FindAsync(redirect.Value);
+                            if (target is not null)
+                                finalNames.Add(target.Name);
+                            continue;
+                        }
+                        finalNames.Add(name);
+                    }
+                    finalNames = finalNames.Distinct().ToList();
+
+                    if (finalNames.Count == 0) continue;
+
+                    var keywordIds = await BatchUpsertKeywordsAsync(finalNames);
                     await BatchLinkJobKeywordsAsync(job.Id, keywordIds);
-                    totalKeywords += names.Count;
+                    totalKeywords += finalNames.Count;
                     processed++;
                 }
                 catch (Exception ex)

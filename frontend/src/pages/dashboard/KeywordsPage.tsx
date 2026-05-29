@@ -1,16 +1,23 @@
 import { useState } from 'react';
 import { useLoaderData } from 'react-router';
 import { KeywordTag } from '../../components';
+import { useAuth } from '../../context';
 import type { KeywordsPageData } from './keywordsPage.loader';
 
 export default function KeywordsPage() {
   const { keywords: initialKeywords } = useLoaderData() as KeywordsPageData;
+  const { user } = useAuth();
   const [keywords, setKeywords] = useState(initialKeywords);
+  const isAdmin = user?.role === 'Admin';
 
   function handleStatusChange(keywordId: number, newStatus: string) {
     setKeywords((prev) =>
       prev.map((k) => (k.id === keywordId ? { ...k, learning_status: newStatus } : k))
     );
+  }
+
+  function handleDelete(keywordId: number) {
+    setKeywords((prev) => prev.filter((k) => k.id !== keywordId));
   }
 
   const unset = keywords.filter((k) => k.learning_status === null);
@@ -21,20 +28,22 @@ export default function KeywordsPage() {
   return (
     <div className="keywords-page">
       <h2>Keywords ({keywords.length})</h2>
-      <KeywordSection title="Not specified" className="unset" items={unset} emptyMsg="All keywords assigned" onStatusChange={handleStatusChange} />
-      <KeywordSection title="Not learned" className="not-learned" items={notLearned} emptyMsg="None" onStatusChange={handleStatusChange} displayStatus="not_learned" />
-      <KeywordSection title="Learned in my studies" className="learned" items={studies} emptyMsg="None yet" onStatusChange={handleStatusChange} />
-      <KeywordSection title="Personal projects" className="project" items={personal} emptyMsg="None yet" onStatusChange={handleStatusChange} />
+      <KeywordSection title="Not specified" className="unset" items={unset} emptyMsg="All keywords assigned" isAdmin={isAdmin} onStatusChange={handleStatusChange} onDelete={handleDelete} />
+      <KeywordSection title="Not learned" className="not-learned" items={notLearned} emptyMsg="None" isAdmin={isAdmin} onStatusChange={handleStatusChange} onDelete={handleDelete} displayStatus="not_learned" />
+      <KeywordSection title="Learned in my studies" className="learned" items={studies} emptyMsg="None yet" isAdmin={isAdmin} onStatusChange={handleStatusChange} onDelete={handleDelete} />
+      <KeywordSection title="Personal projects" className="project" items={personal} emptyMsg="None yet" isAdmin={isAdmin} onStatusChange={handleStatusChange} onDelete={handleDelete} />
     </div>
   );
 }
 
-function KeywordSection({ title, className, items, emptyMsg, onStatusChange, displayStatus }: {
+function KeywordSection({ title, className, items, emptyMsg, isAdmin, onStatusChange, onDelete, displayStatus }: {
   title: string;
   className: string;
   items: Array<{ id: number; name: string; learning_status: string | null }>;
   emptyMsg: string;
+  isAdmin: boolean;
   onStatusChange: (id: number, status: string) => void;
+  onDelete: (id: number) => void;
   displayStatus?: string;
 }) {
   return (
@@ -48,7 +57,9 @@ function KeywordSection({ title, className, items, emptyMsg, onStatusChange, dis
             name={k.name}
             id={k.id}
             status={displayStatus ?? k.learning_status}
+            isAdmin={isAdmin}
             onStatusChange={onStatusChange}
+            onDelete={onDelete}
           />
         ))}
       </div>

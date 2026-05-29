@@ -16,6 +16,7 @@ export default function AdminUtils() {
       <h2>Utils</h2>
       <p className="text-muted">Dangerous operations — use with caution.</p>
       <DedupSection />
+      <DedupKnownSection />
       <CleanSection />
       <ReExtractSection />
       <FetchAllSection />
@@ -53,6 +54,38 @@ function DedupSection() {
       </button>
       {msg && <div style={{ marginTop: '0.75rem', padding: '0.75rem', background: 'var(--bg)', borderRadius: 'var(--radius)', border: '1px solid var(--border)', fontSize: '0.75rem' }}>{msg}</div>}
       {aiError && <AiNotConfiguredModal message={aiError} onClose={() => setAiError('')} />}
+    </div>
+  );
+}
+
+function DedupKnownSection() {
+  const [msg, setMsg] = useState('');
+  const [running, setRunning] = useState(false);
+
+  async function runDedupKnown() {
+    setRunning(true);
+    setMsg('Running known dedup...');
+    const res = await post<{ message: string; merged: number; warnings?: string[] | null }>('/api/admin/dedup-known', {});
+    if (!res.success) {
+      setMsg(res.error || 'Error');
+      setRunning(false);
+      return;
+    }
+    const d = res.data;
+    let text = d.message;
+    if (d.warnings && d.warnings.length > 0) text += '\nWarnings: ' + d.warnings.join('; ');
+    setMsg(text);
+    setRunning(false);
+  }
+
+  return (
+    <div className="service-card" style={{ marginBottom: '1rem' }}>
+      <h3>Dedup Known</h3>
+      <p className="text-muted" style={{ marginBottom: '0.75rem' }}>Applies known dedup mappings from Blocked Keywords without using AI. Use this after adding new redirects or after cleanup to merge any remaining duplicates.</p>
+      <button className="admin-btn" onClick={runDedupKnown} disabled={running}>
+        {running ? 'Running...' : 'Run Dedup Known'}
+      </button>
+      {msg && <div style={{ marginTop: '0.75rem', padding: '0.75rem', background: 'var(--bg)', borderRadius: 'var(--radius)', border: '1px solid var(--border)', fontSize: '0.75rem', whiteSpace: 'pre-wrap' }}>{msg}</div>}
     </div>
   );
 }

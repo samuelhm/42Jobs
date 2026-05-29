@@ -6,4 +6,5 @@ export { default as Templates } from './Templates';
 export { default as JobProviders } from './JobProviders';
 export { default as Utils } from './Utils';
 export { default as DiscardedJobs } from './DiscardedJobs';
+export { default as BlockedKeywords } from './BlockedKeywords';
 export { default as Logs } from './Logs';

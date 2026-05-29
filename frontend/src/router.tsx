@@ -3,7 +3,7 @@ import { RequireAuth, RequireAdmin, AuthLayout, AdminLayout, PublicLayout } from
 import HomeGate from './components/auth/HomeGate';
 import { Login, Register, Dashboard, OffersRoute, Profile, Tracking, KeywordsPage, HomePage } from './pages';
 import { PrivacyPage, TermsPage, ContactPage, FaqPage } from './pages';
-import { AdminDashboard, AiServices, AiModels, AiPrompts, Templates, JobProviders, Utils, DiscardedJobs, Logs } from './pages/admin';
+import { AdminDashboard, AiServices, AiModels, AiPrompts, Templates, JobProviders, Utils, DiscardedJobs, BlockedKeywords, Logs } from './pages/admin';
 
 import { dashboardLoader } from './pages/dashboard/dashboard.loader';
 import { offersLoader } from './pages/dashboard/offers.loader';
@@ -84,6 +84,7 @@ const routes = createRoutesFromElements(
           <Route path="admin/job-providers" element={<JobProviders />} />
           <Route path="admin/utils" element={<Utils />} />
           <Route path="admin/discarded-jobs" element={<DiscardedJobs />} />
+          <Route path="admin/blocked-keywords" element={<BlockedKeywords />} />
           <Route path="admin/logs" element={<Logs />} loader={adminLogsLoader} />
         </Route>
       </Route>
