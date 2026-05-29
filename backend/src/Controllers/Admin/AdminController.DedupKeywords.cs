@@ -124,6 +124,12 @@ public partial class AdminController
                 continue;
             }
 
+            if (alreadyMerged.Contains(keep.Id))
+            {
+                warnings.Add($"Canonical keyword '{keep.Name}' was already merged as duplicate in another group, skipping");
+                continue;
+            }
+
             alreadyMerged.Add(keep.Id);
 
             foreach (var dupName in group.Skip(1))
