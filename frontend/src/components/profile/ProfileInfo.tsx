@@ -57,7 +57,7 @@ export default function ProfileInfo({ profile, onSave }: Props) {
       }
       onSave();
     }
-    else { setMsg('Error'); }
+    else { setMsg(res.error || 'Error'); }
     setSaving(false);
   }
 

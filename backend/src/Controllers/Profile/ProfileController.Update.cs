@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using src.Models.DTOs;
@@ -12,6 +13,22 @@ public partial class ProfileController
         var userId = GetUserId();
         var user = await _db.Users.FindAsync(userId);
         if (user is null) return NotFound(new { error = "User not found" });
+
+        if (body.Email is not null)
+        {
+            var email = body.Email.Trim().ToLowerInvariant();
+            if (string.IsNullOrEmpty(email))
+                return BadRequest(new { error = "Email cannot be empty" });
+            if (!Regex.IsMatch(email, @"^[^\s@]+@[^\s@]+\.[^\s@]+$"))
+                return BadRequest(new { error = "Invalid email format" });
+            if (!email.Equals(user.Email, StringComparison.OrdinalIgnoreCase))
+            {
+                var exists = await _db.Users.AnyAsync(u => u.Email == email && u.Id != userId);
+                if (exists)
+                    return Conflict(new { error = "Email already in use" });
+                user.Email = email;
+            }
+        }
 
         var oldLocation = user.PreferredLocation;
 
