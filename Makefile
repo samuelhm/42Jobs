@@ -7,7 +7,8 @@ COMPOSE_PROD := docker compose -f docker-compose.yml -f docker-compose.prod.yml
 .PHONY: help \
         dev-up dev-down dev-build dev-restart dev-logs dev-ps dev-shell \
         prod-up prod-down prod-build prod-restart prod-logs prod-ps \
-        switch-prod switch-dev install clean logs-clean users db-patch release
+        switch-prod switch-dev install clean logs-clean users db-patch release \
+        backup restore
 
 # ─── Default ───────────────────────────────────────────────
 help:
@@ -40,6 +41,8 @@ help:
 	@echo "    make logs-clean     Truncar tabla admin_logs"
 	@echo "    make users          Contar usuarios registrados"
 	@echo "    make db-patch       Aplicar parches de producción a la BD"
+	@echo "    make backup         Crear backup de la base de datos"
+	@echo "    make restore FILE=  Restaurar backup (ej: make restore FILE=backups/42jobs_20250101_120000.sql.gz)"
 	@echo "    make release        Crear nuevo tag y disparar deploy"
 
 # ═══════════════════════════════════════════════════════════
@@ -121,6 +124,16 @@ users:
 
 release:
 	@bash scripts/release.sh
+
+backup:
+	@bash scripts/backup.sh
+
+restore:
+	@if [ -z "$(FILE)" ]; then \
+		echo "Usage: make restore FILE=backups/42jobs_20250101_120000.sql.gz"; \
+		exit 1; \
+	fi
+	@bash scripts/restore.sh "$(FILE)"
 
 db-patch:
 	@bash scripts/apply-production-patches.sh

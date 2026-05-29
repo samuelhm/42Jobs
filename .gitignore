@@ -27,6 +27,9 @@ Thumbs.db
 *~
 resources/
 
+# Backups
+backups/
+
 # Private migration
 database/migrations/99-private.sql
 
