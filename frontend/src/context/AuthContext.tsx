@@ -1,31 +1,40 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
 import type { User } from '../types';
 
 interface AuthState {
   user: User | null;
   loading: boolean;
+  refresh: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthState | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<AuthState>({ user: null, loading: true });
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetch('/api/users/me')
-      .then(async res => {
-        if (!res.ok) { setState({ user: null, loading: false }); return; }
-        try {
-          const json = await res.json();
-          setState({ user: json.success ? json.data : null, loading: false });
-        } catch {
-          setState({ user: null, loading: false });
-        }
-      })
-      .catch(() => setState({ user: null, loading: false }));
+  const fetchUser = useCallback(async () => {
+    try {
+      const res = await fetch('/api/users/me');
+      if (!res.ok) { setUser(null); return; }
+      const json = await res.json();
+      setUser(json.success ? json.data : null);
+    } catch {
+      setUser(null);
+    }
   }, []);
 
-  return <AuthContext.Provider value={state}>{children}</AuthContext.Provider>;
+  useEffect(() => {
+    fetchUser().finally(() => setLoading(false));
+  }, [fetchUser]);
+
+  const refresh = useCallback(async () => {
+    setLoading(true);
+    await fetchUser();
+    setLoading(false);
+  }, [fetchUser]);
+
+  return <AuthContext.Provider value={{ user, loading, refresh }}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {

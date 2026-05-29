@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router';
+import { useAuth } from '../../context';
 
 export default function Register() {
   const navigate = useNavigate();
+  const { refresh } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -56,7 +58,18 @@ export default function Register() {
       const data = await res.json();
 
       if (res.ok) {
-        navigate('/login', { replace: true });
+        // Autologin: authenticate with the same credentials
+        const loginRes = await fetch('/api/users/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: email.trim(), password }),
+        });
+        if (loginRes.ok) {
+          await refresh();
+          navigate('/home', { replace: true });
+        } else {
+          navigate('/login', { replace: true });
+        }
       } else {
         setServerError(data.error || 'Registration failed');
       }

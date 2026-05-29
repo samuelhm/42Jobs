@@ -66,7 +66,7 @@ const routes = createRoutesFromElements(
     {/* Auth required */}
     <Route element={<RequireAuth />} errorElement={<ErrorPage />} hydrateFallbackElement={<HydrateFallback />}>
       <Route element={<AuthLayout />} errorElement={<ErrorPage />}>
-        <Route index path="home" element={<HomePage />} />
+        <Route path="home" element={<HomePage />} />
         <Route path="dashboard" element={<Dashboard />} loader={dashboardLoader} />
         <Route path="offers" element={<OffersRoute />} loader={offersLoader} />
         <Route path="profile" element={<Profile />} loader={profileLoader} />

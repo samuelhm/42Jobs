@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router';
+import { useAuth } from '../../context';
 
 export default function Login() {
   const navigate = useNavigate();
+  const { refresh } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -43,6 +45,7 @@ export default function Login() {
       const data = await res.json();
 
       if (res.ok) {
+        await refresh();
         navigate('/home', { replace: true });
       } else {
         setServerError(data.error || 'Invalid email or password');
