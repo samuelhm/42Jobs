@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace src.Controllers;
 
@@ -44,11 +45,38 @@ public partial class AdminController
         if (toRemove.Count == 0)
             return Ok(new { message = "No keywords to remove", removed = 0 });
 
-        foreach (var batch in toRemove.Distinct(StringComparer.OrdinalIgnoreCase).Chunk(100))
+        var distinctNames = toRemove.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+
+        // Upsert into blocked_keywords so they never come back
+        foreach (var batch in distinctNames.Chunk(100))
+        {
+            var valuesBlocked = new List<string>();
+            var parametersBlocked = new List<Npgsql.NpgsqlParameter>();
+            for (int i = 0; i < batch.Length; i++)
+            {
+                parametersBlocked.Add(new Npgsql.NpgsqlParameter($"@b{i}", batch[i].ToLowerInvariant()));
+                valuesBlocked.Add($"(@b{i})");
+            }
+            var sqlBlocked = $@"
+                INSERT INTO blocked_keywords (name)
+                VALUES {string.Join(", ", valuesBlocked)}
+                ON CONFLICT (name) DO NOTHING";
+            await _db.Database.ExecuteSqlRawAsync(sqlBlocked, parametersBlocked);
+        }
+
+        // Delete the keywords themselves (associations cascade)
+        foreach (var batch in distinctNames.Chunk(100))
         {
             await _db.Keywords.Where(k => batch.Contains(k.Name)).ExecuteDeleteAsync();
         }
 
-        return Ok(new { message = $"Removed {toRemove.Count} low-quality keywords", removed = toRemove.Count });
+        _ = _adminLog.LogAsync(
+            actor: "admin",
+            action: "clean_keywords",
+            payload1: new { removed = distinctNames.Count, names = distinctNames },
+            payload2: null,
+            payload3: null);
+
+        return Ok(new { message = $"Blocked and removed {distinctNames.Count} low-quality keywords", removed = distinctNames.Count });
     }
 }
