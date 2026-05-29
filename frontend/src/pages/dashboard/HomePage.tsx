@@ -2,18 +2,6 @@ import { Link } from 'react-router';
 import { useAuth } from '../../context';
 import tutorialVideo from '../../assets/tutorial.mp4';
 
-function getTodayString() {
-  const now = new Date();
-  return now.toLocaleDateString('es-ES', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  }) + ' a las ' + now.toLocaleTimeString('es-ES', {
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-}
-
 const steps = [
   {
     num: '01',
@@ -58,13 +46,6 @@ export default function HomePage() {
 
   return (
     <div className="home-page">
-      <div className="home-notice">
-        <span className="home-notice-date">{getTodayString()}</span>
-        <p>
-          Por un error en un algoritmo heurístico he eliminado de la base de datos keywords importantes como &ldquo;C&rdquo; o &ldquo;C++&rdquo;. Como resultado, el % de match con las ofertas puede verse alterado. Estoy solucionando este problema para que puedas guiarte del % de match a partir del día 1 de junio sin miedo.
-        </p>
-      </div>
-
       <section className="home-hero">
         <div className="home-hero-text">
           <h1>
