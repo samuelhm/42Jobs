@@ -17,15 +17,16 @@ const navItems = [
 function AuthLayoutInner() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useAuth();
+  const { user, refresh } = useAuth();
   const [loggingOut, setLoggingOut] = useState(false);
 
   async function handleLogout() {
     setLoggingOut(true);
     try {
       await fetch('/api/users/logout', { method: 'POST' });
+      await refresh();
     } finally {
-      navigate('/login', { replace: true });
+      navigate('/', { replace: true });
     }
   }
 
