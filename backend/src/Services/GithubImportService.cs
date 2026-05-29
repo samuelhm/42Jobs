@@ -179,6 +179,9 @@ public class GithubImportService : BackgroundService
                 {
                     var db = saveScope.ServiceProvider.GetRequiredService<AppDbContext>();
 
+                    var blocked = await db.BlockedKeywords
+                        .ToDictionaryAsync(b => b.Name, b => b.RedirectTo, ct);
+
                     foreach (var proj in batchProjects)
                     {
                         ct.ThrowIfCancellationRequested();
@@ -208,6 +211,17 @@ public class GithubImportService : BackgroundService
                         {
                             var name = kwName.Trim().ToLowerInvariant();
                             if (string.IsNullOrEmpty(name)) continue;
+
+                            // Check blocked_keywords: skip blocked, redirect known dupes
+                            if (blocked.TryGetValue(name, out var redirect))
+                            {
+                                if (redirect is null) continue; // permanently blocked
+                                var target = await db.Keywords.FindAsync(new object[] { redirect.Value }, ct);
+                                if (target is not null)
+                                    name = target.Name;
+                                else
+                                    continue;
+                            }
 
                             var kw = await db.Keywords.FirstOrDefaultAsync(k => k.Name == name, ct);
                             if (kw is null)
