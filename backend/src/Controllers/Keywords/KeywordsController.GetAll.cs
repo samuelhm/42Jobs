@@ -11,6 +11,12 @@ public partial class KeywordsController
     {
         var userId = GetUserId();
 
+        var blockedNames = await _db.BlockedKeywords
+            .Select(b => b.Name)
+            .ToListAsync();
+
+        var blockedSet = new HashSet<string>(blockedNames);
+
         var keywords = await _db.Keywords
             .OrderBy(k => k.Name)
             .Select(k => new KeywordResponseDto
@@ -24,6 +30,10 @@ public partial class KeywordsController
             })
             .ToListAsync();
 
-        return Ok(new { success = true, data = keywords });
+        var filtered = keywords
+            .Where(k => !blockedSet.Contains(k.Name.ToLowerInvariant()))
+            .ToList();
+
+        return Ok(new { success = true, data = filtered });
     }
 }
