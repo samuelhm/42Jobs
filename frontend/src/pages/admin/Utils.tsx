@@ -17,6 +17,7 @@ export default function AdminUtils() {
       <p className="text-muted">Dangerous operations — use with caution.</p>
       <DedupSection />
       <CleanSection />
+      <ReExtractSection />
       <FetchAllSection />
       <ReprocessSection />
       <CategorySection />
@@ -81,6 +82,38 @@ function CleanSection() {
       <p className="text-muted" style={{ marginBottom: '0.75rem' }}>Uses AI to remove low-quality keywords (filler words, overly broad terms, school identifiers, assignment names).</p>
       <button className="admin-btn" onClick={runClean} disabled={running}>
         {running ? 'Running...' : 'Run Clean'}
+      </button>
+      {msg && <div style={{ marginTop: '0.75rem', padding: '0.75rem', background: 'var(--bg)', borderRadius: 'var(--radius)', border: '1px solid var(--border)', fontSize: '0.75rem' }}>{msg}</div>}
+      {aiError && <AiNotConfiguredModal message={aiError} onClose={() => setAiError('')} />}
+    </div>
+  );
+}
+
+function ReExtractSection() {
+  const [msg, setMsg] = useState('');
+  const [running, setRunning] = useState(false);
+  const [aiError, setAiError] = useState('');
+
+  async function runReExtract() {
+    setRunning(true);
+    setMsg('Re-extracting keywords from all jobs...');
+    const res = await post<{ message: string; processed: number; keywords: number }>('/api/admin/re-extract-keywords', {});
+    if (res.status === 503) {
+      setAiError(res.error || 'AI not configured');
+      setRunning(false);
+      setMsg('');
+      return;
+    }
+    setMsg(res.success ? res.data.message : 'Error');
+    setRunning(false);
+  }
+
+  return (
+    <div className="service-card" style={{ marginBottom: '1rem' }}>
+      <h3>Re-extract Keywords</h3>
+      <p className="text-muted" style={{ marginBottom: '0.75rem' }}>Re-extracts keywords from all non-discarded jobs using AI. Useful to recover keywords lost by accidental cleanup. Processes in batches of 20 with 2s delay between batches.</p>
+      <button className="admin-btn" onClick={runReExtract} disabled={running}>
+        {running ? 'Running...' : 'Re-extract All'}
       </button>
       {msg && <div style={{ marginTop: '0.75rem', padding: '0.75rem', background: 'var(--bg)', borderRadius: 'var(--radius)', border: '1px solid var(--border)', fontSize: '0.75rem' }}>{msg}</div>}
       {aiError && <AiNotConfiguredModal message={aiError} onClose={() => setAiError('')} />}
