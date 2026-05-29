@@ -206,7 +206,6 @@ INSERT INTO blocked_keywords (name) VALUES
 ('greek'),
 ('growth'),
 ('guides'),
-('guro'),
 ('honesty'),
 ('illustration'),
 ('imagination'),
