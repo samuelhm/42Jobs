@@ -118,12 +118,16 @@ Projects to analyze:
    postgresql 16 + postgres → postgresql
    angular 17 + angular 18 → angular
 
-2. GROUP — abbreviations and expanded names of the SAME technology:
+2. GROUP — abbreviations, expanded names and phrasal variations of the SAME concept:
    aws + amazon web services → aws
    ci/cd + continuous integration → ci/cd
    c# + csharp → c#
    js + javascript → javascript
    ml + machine learning → machine learning
+   disaster recovery + disaster recovery plan + disaster recovery planning → disaster recovery
+   data analysis + data analytics + data analyzing → data analysis
+   project management + managing projects + project managing → project management
+   NOTE: when a keyword is a more specific phrasing of another keyword representing the exact same professional skill, group them. Keep the shortest canonical form.
 
 3. DO NOT GROUP — different technologies that share a parent or ecosystem:
    docker ⊗ docker compose (runtime vs orchestration)
