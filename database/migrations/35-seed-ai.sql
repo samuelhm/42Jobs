@@ -118,13 +118,14 @@ Projects to analyze:
    postgresql 16 + postgres → postgresql
    angular 17 + angular 18 → angular
 
-2. GROUP — abbreviations and expanded names:
+2. GROUP — abbreviations and expanded names of the SAME technology:
    aws + amazon web services → aws
    ci/cd + continuous integration → ci/cd
-   c# + csharp + .net → c#
+   c# + csharp → c#
    js + javascript → javascript
+   ml + machine learning → machine learning
 
-3. DO NOT GROUP — different technologies that share a parent:
+3. DO NOT GROUP — different technologies that share a parent or ecosystem:
    docker ⊗ docker compose (runtime vs orchestration)
    linux ⊗ ubuntu (kernel vs distro)
    git ⊗ github ⊗ gitlab (different tools)
@@ -132,6 +133,10 @@ Projects to analyze:
    mongodb ⊗ mongoose (database vs ODM)
    kubernetes ⊗ k3s ⊗ minikube (different distros, keep separate)
    react ⊗ react native (web vs mobile)
+   c ⊗ c++ ⊗ c# (different programming languages)
+   .net ⊗ c# ⊗ f# (framework vs languages)
+   python ⊗ python3 ⊗ python 3.11 (same language, different versions → GROUP)
+   xgboost ⊗ lightgbm ⊗ catboost (different ML libraries)
 
 4. DO NOT GROUP — different frameworks/languages/clouds:
    react ⊗ vue ⊗ angular
@@ -156,10 +161,16 @@ Keywords to analyze:
 'Review this list of keywords. Return only the ones that should be REMOVED.
 
 VALID keywords (KEEP — do NOT flag these):
-- Specific technologies: programming languages, frameworks, libraries, databases, cloud services, DevOps tools, build systems, testing frameworks, operating systems, hardware platforms, protocols
+- Specific technologies: programming languages (including single-letter ones like C, R, Go, D), frameworks, libraries (including ML/AI: xgboost, scikit-learn, pytorch, tensorflow, keras, lightgbm), databases, cloud services, DevOps tools, build systems, testing frameworks, operating systems, hardware platforms, protocols
 - Concrete hard skills: "api design", "database optimization", "unit testing", "system architecture", "rest api", "microservices", "ci/cd", "authentication"
 - Recruiter-relevant soft skills only if explicitly legitimate: "communication", "teamwork", "problem solving", "leadership", "project management"
-- Proper technical names with correct casing: "c#", "c++", ".net", "node.js", "react", "postgresql", "typescript", "docker"
+- Proper technical names with correct casing: "c", "c#", "c++", ".net", "node.js", "react", "postgresql", "typescript", "docker", "f#"
+
+CRITICAL RULE — DO NOT REMOVE:
+- Single-character keywords that are real programming languages: "c", "r", "d", "j"
+- Keywords with special characters that are real technologies: "c++", "c#", "f#"
+- ML and data science libraries: "xgboost", "scikit-learn", "pytorch", "tensorflow", "keras", "lightgbm", "catboost", "pandas", "numpy", "scipy", "nltk", "spacy", "opencv"
+- Cloud and infrastructure: "aws", "gcp", "azure", "terraform", "ansible", "pulumi"
 
 INVALID keywords (REMOVE — flag these):
 - Filler/generic words: "experience", "knowledge", "ability", "skill", "proficient", "understanding", "expertise", "capability", "competence"
@@ -169,7 +180,7 @@ INVALID keywords (REMOVE — flag these):
 - Job titles or company names: anything that sounds like a position or employer, not a skill
 - Synonyms that are not the canonical form: prefer "react" over "reactjs", "postgresql" over "postgres"
 
-DECISION RULE: "Would a recruiter or ATS search for this exact term when looking for a candidate?" If the answer is clearly NO, flag it for removal. Only flag keywords you are confident are invalid. When in doubt, KEEP.
+DECISION RULE: "Would a recruiter or ATS search for this exact term when looking for a candidate?" If the answer is clearly NO, flag it for removal. ONLY flag keywords you are absolutely confident are invalid. WHEN IN DOUBT, KEEP THE KEYWORD. It is much better to keep a borderline keyword than to accidentally delete a real technology.
 
 Keywords to analyze:
 {{keywords}}',

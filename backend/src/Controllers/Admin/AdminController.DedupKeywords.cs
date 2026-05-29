@@ -188,7 +188,9 @@ public partial class AdminController
 
     /// <summary>
     /// Normalizes a keyword name for heuristic comparison.
-    /// "React 18" → "react", "node.js" → "node js", "C#" → "c"
+    /// "React 18" → "react", "node.js" → "node js"
+    /// Note: does NOT strip + or # — those are part of real
+    /// language names (C++, C#, F#) and must not be merged.
     /// </summary>
     private static string NormalizeKeyword(string name)
     {
@@ -199,7 +201,8 @@ public partial class AdminController
         // Strip version numbers: "react 18", "python 3.11", ".net 6"
         n = VersionRegex().Replace(n, "");
 
-        // Replace formatting chars with spaces: "react.js" → "react js", "c#" → "c"
+        // Replace formatting chars with spaces: "react.js" → "react js"
+        // Deliberately excludes + and # to protect C++, C#, F#, etc.
         n = SpecialCharsRegex().Replace(n, " ");
 
         // Collapse multiple spaces
@@ -247,7 +250,7 @@ public partial class AdminController
     [System.Text.RegularExpressions.GeneratedRegex(@"\s+\d+(\.\d+)*$")]
     private static partial Regex VersionRegex();
 
-    [System.Text.RegularExpressions.GeneratedRegex(@"[\.\#\+\-\/]")]
+    [System.Text.RegularExpressions.GeneratedRegex(@"[\.\-\/]")]
     private static partial Regex SpecialCharsRegex();
 
     [System.Text.RegularExpressions.GeneratedRegex(@"\s+")]
