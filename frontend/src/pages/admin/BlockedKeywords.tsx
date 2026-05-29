@@ -4,9 +4,9 @@ import { get, put, del } from '../../utils/api';
 interface BlockedKeyword {
   id: number;
   name: string;
-  redirectTo: number | null;
-  redirectName: string | null;
-  createdAt: string;
+  redirect_to: number | null;
+  redirect_name: string | null;
+  created_at: string;
 }
 
 export default function BlockedKeywords() {
@@ -31,7 +31,7 @@ export default function BlockedKeywords() {
   async function updateRedirect(id: number, redirectToName: string) {
     try {
       await put(`/api/admin/blocked-keywords/${id}`, { redirect_to_name: redirectToName || null });
-      setItems(prev => prev.map(i => i.id === id ? { ...i, redirectName: redirectToName || null } : i));
+      setItems(prev => prev.map(i => i.id === id ? { ...i, redirect_name: redirectToName || null } : i));
       setMsg('Updated');
       setTimeout(() => setMsg(''), 3000);
     } catch {
@@ -111,22 +111,22 @@ export default function BlockedKeywords() {
                 <tr key={item.id}>
                   <td className="mono">{item.name}</td>
                   <td>
-                    {item.redirectTo ? (
-                      <span style={{ color: 'var(--amber)' }}>{item.redirectName}</span>
+                    {item.redirect_to ? (
+                      <span style={{ color: 'var(--amber)' }}>{item.redirect_name}</span>
                     ) : (
                       <span className="text-muted">blocked (no redirect)</span>
                     )}
                   </td>
-                  <td className="text-muted">{new Date(item.createdAt).toLocaleDateString()}</td>
+                  <td className="text-muted">{new Date(item.created_at).toLocaleDateString()}</td>
                   <td>
                     <div style={{ display: 'flex', gap: '0.5rem' }}>
                       <select
-                        value={item.redirectName || ''}
+                        value={item.redirect_name || ''}
                         onChange={(e) => updateRedirect(item.id, e.target.value)}
                         style={{ ...inputStyle, width: '160px' }}
                       >
                         <option value="">No redirect</option>
-                        {item.redirectName && <option value={item.redirectName}>{item.redirectName}</option>}
+                        {item.redirect_name && <option value={item.redirect_name}>{item.redirect_name}</option>}
                       </select>
                       <input
                         type="text"

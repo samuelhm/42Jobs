@@ -7,9 +7,10 @@ const adminNav = [
   { to: '/admin/ai-services', label: 'AI Services' },
   { to: '/admin/ai-models', label: 'AI Models' },
   { to: '/admin/ai-prompts', label: 'Prompts' },
-  { to: '/admin/templates', label: 'CV Templates' },
   { to: '/admin/job-providers', label: 'Job Providers' },
+  { to: '/admin/templates', label: 'CV Templates' },
   { to: '/admin/utils', label: 'Utils' },
+  { to: '/admin/blocked-keywords', label: 'Blocked KWs' },
   { to: '/admin/discarded-jobs', label: 'Discarded' },
   { to: '/admin/logs', label: 'Logs' },
 ];
