@@ -47,8 +47,21 @@ public partial class AdminController
 
         var distinctNames = toRemove.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
 
+        // Safety net: never auto-remove compound keywords (2+ words).
+        // Single-word flags ("coding", "experience") are reliable;
+        // multi-word flags ("code review", "azure services") are often
+        // incorrect with smaller AI models.
+        var singleWord = distinctNames.Where(n => !n.Contains(' ')).ToList();
+        var multiWord = distinctNames.Where(n => n.Contains(' ')).ToList();
+        if (multiWord.Count > 0)
+        {
+            _logger.LogWarning(
+                "Clean keywords: AI suggested removing {Count} compound keywords. Skipped per safety net. Run dedup manually: {Names}",
+                multiWord.Count, string.Join(", ", multiWord.Take(20)));
+        }
+
         // Upsert into blocked_keywords so they never come back
-        foreach (var batch in distinctNames.Chunk(100))
+        foreach (var batch in singleWord.Chunk(100))
         {
             var valuesBlocked = new List<string>();
             var parametersBlocked = new List<Npgsql.NpgsqlParameter>();
@@ -61,11 +74,11 @@ public partial class AdminController
                 INSERT INTO blocked_keywords (name)
                 VALUES {string.Join(", ", valuesBlocked)}
                 ON CONFLICT (name) DO NOTHING";
-            await _db.Database.ExecuteSqlRawAsync(sqlBlocked, parametersBlocked);
+            await _db.Database.ExecuteSqlRawAsync(sqlBlocked, parametersBlocked.Cast<object>().ToArray());
         }
 
         // Delete the keywords themselves (associations cascade)
-        foreach (var batch in distinctNames.Chunk(100))
+        foreach (var batch in singleWord.Chunk(100))
         {
             await _db.Keywords.Where(k => batch.Contains(k.Name)).ExecuteDeleteAsync();
         }
@@ -73,10 +86,10 @@ public partial class AdminController
         _ = _adminLog.LogAsync(
             actor: "admin",
             action: "clean_keywords",
-            payload1: new { removed = distinctNames.Count, names = distinctNames },
+            payload1: new { removed = singleWord.Count, skipped_multiword = multiWord.Count, names = singleWord },
             payload2: null,
             payload3: null);
 
-        return Ok(new { message = $"Blocked and removed {distinctNames.Count} low-quality keywords", removed = distinctNames.Count });
+        return Ok(new { message = $"Blocked and removed {singleWord.Count} low-quality keywords ({multiWord.Count} multi-word skipped for safety)", removed = singleWord.Count, skipped_multiword = multiWord.Count });
     }
 }
