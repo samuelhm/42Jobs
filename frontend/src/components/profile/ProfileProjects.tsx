@@ -19,6 +19,7 @@ export default function ProfileProjects() {
   const [ghToken, setGhToken] = useState('');
   const [importing, setImporting] = useState(false);
   const [importStatus, setImportStatus] = useState<{ message: string; type: 'info' | 'success' | 'error'; processed?: number; total?: number } | null>(null);
+  const [showImportConfirm, setShowImportConfirm] = useState(false);
   const [aiError, setAiError] = useState('');
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const activeJobRef = useRef<string | null>(null);
@@ -73,6 +74,11 @@ export default function ProfileProjects() {
     if (!confirm('Delete?')) return;
     await fetchWithAuth(`/api/projects/${id}`, { method: 'DELETE' });
     load();
+  }
+
+  async function confirmImport() {
+    setShowImportConfirm(false);
+    await handleImport();
   }
 
   async function handleImport() {
@@ -181,7 +187,7 @@ export default function ProfileProjects() {
             value={ghToken}
             onChange={(e) => setGhToken(e.target.value)}
           />
-          <button className="btn-confirm" onClick={handleImport} disabled={importing}>
+          <button className="btn-confirm" onClick={() => setShowImportConfirm(true)} disabled={importing}>
             {importing ? 'Importing...' : 'Import'}
           </button>
         </div>
@@ -258,6 +264,23 @@ export default function ProfileProjects() {
           {editingId && <button type="button" className="btn-cancel" onClick={resetForm}>Cancel</button>}
         </div>
       </form>
+      {showImportConfirm && (
+        <div className="dialog-overlay" onClick={() => setShowImportConfirm(false)}>
+          <div className="dialog-box" onClick={(e) => e.stopPropagation()}>
+            <h3>Import from GitHub</h3>
+            <p>
+              This process may take <strong>several minutes</strong> depending on
+              the number of repositories you have. The import runs in the
+              background — you can continue filling out your profile while it
+              works.
+            </p>
+            <div className="dialog-actions">
+              <button className="btn-cancel" onClick={() => setShowImportConfirm(false)}>Cancel</button>
+              <button className="btn-confirm" onClick={confirmImport}>Start Import</button>
+            </div>
+          </div>
+        </div>
+      )}
       {aiError && <AiNotConfiguredModal message={aiError} onClose={() => setAiError('')} />}
     </div>
   );
