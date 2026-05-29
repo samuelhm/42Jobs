@@ -170,3 +170,59 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+.kw-redirect-btn {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.62rem;
+  font-weight: 600;
+  padding: 0.3rem 0.7rem;
+  border: 1px solid var(--amber);
+  border-radius: var(--radius);
+  background: rgba(212, 168, 83, 0.12);
+  color: var(--amber);
+  cursor: pointer;
+  transition: all 0.2s;
+  align-self: flex-start;
+}
+
+.kw-redirect-btn:hover {
+  background: rgba(212, 168, 83, 0.25);
+}
+
+.kw-redirect-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.kw-suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top: 0;
+  border-radius: 0 0 var(--radius) var(--radius);
+  z-index: 10;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.kw-suggestion-item {
+  display: block;
+  width: 100%;
+  padding: 0.4rem 0.5rem;
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.75rem;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.kw-suggestion-item:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+}
