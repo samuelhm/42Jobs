@@ -9,7 +9,7 @@ export default function ContactPage() {
 
         <div className="contact-info">
           <span className="name">Samuel Hurtado Marin</span>
-          <span className="role">Software Developer &mdash; 42 Barcelona</span>
+          <span className="role">Software Developer</span>
           <a href="mailto:samuel@hurtadom.dev" className="email">samuel@hurtadom.dev</a>
 
           <div className="contact-links">

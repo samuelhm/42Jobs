@@ -1,0 +1,169 @@
+/* ── Home page (logged-in landing) ── */
+.home-page {
+  padding: 2rem 1.5rem;
+  max-width: 960px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+/* ── Hero ── */
+.home-hero {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.home-hero-text h1 {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  font-size: 1.6rem;
+  color: var(--text-bright);
+  margin-bottom: 0.5rem;
+}
+
+.home-hero-text p {
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  line-height: 1.6;
+  max-width: 520px;
+}
+
+.home-hero-action {
+  flex-shrink: 0;
+}
+
+.home-dashboard-btn {
+  display: inline-block;
+  padding: 0.65rem 1.5rem;
+  background: var(--amber);
+  color: var(--bg);
+  border-radius: var(--radius);
+  font-family: 'Outfit', sans-serif;
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-decoration: none;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+
+.home-dashboard-btn:hover {
+  background: #e0bc6a;
+}
+
+/* ── Video ── */
+.home-video h2 {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: var(--text-bright);
+  margin-bottom: 0.75rem;
+}
+
+.home-video-container {
+  position: relative;
+  padding-bottom: 56.25%;
+  height: 0;
+  overflow: hidden;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--bg);
+}
+
+.home-video-container iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+/* ── Steps ── */
+.home-steps h2 {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: var(--text-bright);
+  margin-bottom: 1rem;
+}
+
+.home-steps-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.home-step-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  transition: border-color 0.2s;
+}
+
+.home-step-card:hover {
+  border-color: var(--amber-dim);
+}
+
+.home-step-highlight {
+  border-color: var(--amber-dim);
+  background: rgba(212, 168, 83, 0.04);
+}
+
+.home-step-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: var(--amber);
+  letter-spacing: 0.06em;
+}
+
+.home-step-card h3 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-bright);
+}
+
+.home-step-card p {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  line-height: 1.5;
+  flex: 1;
+}
+
+.home-step-link {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--amber);
+  text-decoration: none;
+  transition: color 0.2s;
+  align-self: flex-start;
+}
+
+.home-step-link:hover {
+  color: #e0bc6a;
+}
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+  .home-page {
+    padding: 1.5rem 1rem;
+  }
+
+  .home-hero {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .home-steps-grid {
+    grid-template-columns: 1fr;
+  }
+}

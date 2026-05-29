@@ -15,7 +15,7 @@ export default function KeywordsPage() {
 
   const unset = keywords.filter((k) => k.learning_status === null);
   const notLearned = keywords.filter((k) => k.learning_status === 'not_learned');
-  const school = keywords.filter((k) => k.learning_status === 'learned_in_school');
+  const studies = keywords.filter((k) => k.learning_status === 'learned_in_school');
   const personal = keywords.filter((k) => k.learning_status === 'learned_personal_project');
 
   return (
@@ -23,7 +23,7 @@ export default function KeywordsPage() {
       <h2>Keywords ({keywords.length})</h2>
       <KeywordSection title="Not specified" className="unset" items={unset} emptyMsg="All keywords assigned" onStatusChange={handleStatusChange} />
       <KeywordSection title="Not learned" className="not-learned" items={notLearned} emptyMsg="None" onStatusChange={handleStatusChange} displayStatus="not_learned" />
-      <KeywordSection title="Learned at 42 Barcelona" className="learned" items={school} emptyMsg="None yet" onStatusChange={handleStatusChange} />
+      <KeywordSection title="Learned in my studies" className="learned" items={studies} emptyMsg="None yet" onStatusChange={handleStatusChange} />
       <KeywordSection title="Personal projects" className="project" items={personal} emptyMsg="None yet" onStatusChange={handleStatusChange} />
     </div>
   );

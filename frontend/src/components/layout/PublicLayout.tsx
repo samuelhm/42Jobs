@@ -14,7 +14,7 @@ export default function PublicLayout() {
         <div className="public-header-right">
           {user ? (
             <>
-              <Link to="/dashboard" className="landing-btn landing-btn-secondary" style={{ padding: '0.35rem 0.9rem', fontSize: '0.72rem' }}>
+              <Link to="/home" className="landing-btn landing-btn-secondary" style={{ padding: '0.35rem 0.9rem', fontSize: '0.72rem' }}>
                 Dashboard
               </Link>
               <Link to="/profile" className="landing-btn landing-btn-ghost" style={{ padding: '0.35rem 0.9rem', fontSize: '0.72rem' }}>

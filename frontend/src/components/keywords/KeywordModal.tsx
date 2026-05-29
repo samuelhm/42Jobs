@@ -10,7 +10,7 @@ interface Props {
 
 export default function KeywordModal({ keywordName, keywordId, currentStatus, onStatusChange, onClose }: Props) {
   const options = [
-    { value: 'learned_in_school', label: 'Learned at 42 Barcelona', dotClass: 'learned-school' },
+    { value: 'learned_in_school', label: 'Learned in my studies', dotClass: 'learned-studies' },
     { value: 'learned_personal_project', label: 'Personal project', dotClass: 'learned-project' },
     { value: 'not_learned', label: 'Not learned', dotClass: 'not-learned' },
   ];

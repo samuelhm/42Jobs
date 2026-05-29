@@ -17,7 +17,7 @@ export default function LandingPage() {
 
         <div className="landing-actions">
           {user ? (
-            <Link to="/dashboard" className="landing-btn landing-btn-primary">Ir al Dashboard</Link>
+            <Link to="/home" className="landing-btn landing-btn-primary">Ir al Dashboard</Link>
           ) : (
             <>
               <Link to="/register" className="landing-btn landing-btn-primary">Empezar</Link>

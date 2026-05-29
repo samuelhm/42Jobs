@@ -104,6 +104,13 @@
 | DeepSeek como provider por defecto | ✅ |
 | Google free-tier desactivado por defecto | ✅ |
 | Migraciones autocontenidas (no dependen de production-patches) | ✅ |
+| Detección de ofertas cerradas (sin scraping) | ⬚ |
+
+**Nota sobre detección de ofertas cerradas:** La API de LinkedIn RapidAPI no expone ningún campo que indique si una oferta ya no acepta solicitudes (ni en search ni en getDetails). Se necesita una alternativa sin scraping. Opciones a explorar:
+
+- **Heurística por antigüedad:** Si `posted_date > 30 días`, marcarla como probablemente cerrada y moverla a `discarded_jobs`. Simple pero inexacta.
+- **Verificación vía jobUrl con HEAD/GET:** Hacer un GET ligero al `job_url` y revisar si el status code es 404 o si el body contiene "no longer accepting". Esto es scraping mínimo, pero más fiable.
+- **Re-fetch periódico con getDetails:** Si el endpoint `/job/{id}` devuelve `success: false` o datos vacíos para una oferta antes válida, asumir que fue retirada. Esto aprovecha la API existente sin scraping externo.
 
 ---
 

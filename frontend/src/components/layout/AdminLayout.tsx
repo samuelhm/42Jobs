@@ -1,5 +1,6 @@
 import { NavLink, Outlet, useNavigate } from 'react-router';
 import { useState } from 'react';
+import Footer from './Footer';
 
 const adminNav = [
   { to: '/admin', label: 'Dashboard', end: true },
@@ -37,7 +38,7 @@ export default function AdminLayout() {
           </NavLink>
         </div>
         <div className="admin-header-right">
-          <button className="logout-btn" onClick={() => navigate('/')}>
+          <button className="logout-btn" onClick={() => navigate('/home')}>
             Back to App
           </button>
         </div>
@@ -60,6 +61,8 @@ export default function AdminLayout() {
           <Outlet />
         </main>
       </div>
+
+      <Footer />
     </div>
   );
 }

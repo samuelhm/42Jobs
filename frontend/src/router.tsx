@@ -1,7 +1,8 @@
 import { createBrowserRouter, createRoutesFromElements, Route, useRouteError } from 'react-router';
 import { RequireAuth, RequireAdmin, AuthLayout, AdminLayout, PublicLayout } from './components';
-import { Login, Register, Dashboard, OffersRoute, Profile, Tracking, KeywordsPage } from './pages';
-import { LandingPage, PrivacyPage, TermsPage, ContactPage, FaqPage } from './pages';
+import HomeGate from './components/auth/HomeGate';
+import { Login, Register, Dashboard, OffersRoute, Profile, Tracking, KeywordsPage, HomePage } from './pages';
+import { PrivacyPage, TermsPage, ContactPage, FaqPage } from './pages';
 import { AdminDashboard, AiServices, AiModels, AiPrompts, Templates, JobProviders, Utils, DiscardedJobs, Logs } from './pages/admin';
 
 import { dashboardLoader } from './pages/dashboard/dashboard.loader';
@@ -50,7 +51,7 @@ function HydrateFallback() {
 const routes = createRoutesFromElements(
   <>
     {/* Public */}
-    <Route path="/" element={<LandingPage />} />
+    <Route path="/" element={<HomeGate />} />
 
     <Route element={<PublicLayout />}>
       <Route path="privacy" element={<PrivacyPage />} />
@@ -65,6 +66,7 @@ const routes = createRoutesFromElements(
     {/* Auth required */}
     <Route element={<RequireAuth />} errorElement={<ErrorPage />} hydrateFallbackElement={<HydrateFallback />}>
       <Route element={<AuthLayout />} errorElement={<ErrorPage />}>
+        <Route index path="home" element={<HomePage />} />
         <Route path="dashboard" element={<Dashboard />} loader={dashboardLoader} />
         <Route path="offers" element={<OffersRoute />} loader={offersLoader} />
         <Route path="profile" element={<Profile />} loader={profileLoader} />

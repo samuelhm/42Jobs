@@ -86,7 +86,7 @@
 
 .kw-dot.not-learned { background: #e08880; border: 1px solid rgba(212, 114, 106, 0.5); box-shadow: 0 0 6px rgba(212, 114, 106, 0.3); }
 .kw-dot.learned-project { background: #e0bc6a; border: 1px solid rgba(212, 168, 83, 0.5); box-shadow: 0 0 6px var(--amber-glow); }
-.kw-dot.learned-school { background: #80a8d8; border: 1px solid rgba(100, 140, 200, 0.5); box-shadow: 0 0 6px rgba(100, 140, 200, 0.3); }
+.kw-dot.learned-studies { background: #80a8d8; border: 1px solid rgba(100, 140, 200, 0.5); box-shadow: 0 0 6px rgba(100, 140, 200, 0.3); }
 
 /* ── Notes modal ── */
 #notes-modal .notes-textarea {

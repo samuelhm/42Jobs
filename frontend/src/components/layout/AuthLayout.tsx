@@ -2,9 +2,11 @@ import { useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router';
 import { ToastProvider, useAuth } from '../../context';
 import FreeTierBanner from './FreeTierBanner';
+import Footer from './Footer';
 import ToastContainer from '../ui/ToastContainer';
 
 const navItems = [
+  { to: '/home', label: 'Home' },
   { to: '/dashboard', label: 'Dashboard' },
   { to: '/offers', label: 'Offers' },
   { to: '/profile', label: 'Profile' },
@@ -30,7 +32,7 @@ function AuthLayoutInner() {
   return (
     <div className="auth-layout">
       <header className="layout-header">
-        <NavLink to="/dashboard" className="layout-logo">
+        <NavLink to="/home" className="layout-logo">
           42<span className="accent">jobs</span>
           <span className="logo-leds">
             <span className="logo-led" />
@@ -46,7 +48,7 @@ function AuthLayoutInner() {
             <NavLink
               key={item.to}
               to={item.to}
-              end={item.to === '/'}
+              end={item.to === '/home'}
               className={({ isActive }) => `layout-nav-link${isActive ? ' active' : ''}`}
             >
               {item.label}
@@ -87,6 +89,8 @@ function AuthLayoutInner() {
           <FreeTierBanner />
           <Outlet />
         </div>
+
+        <Footer />
     </div>
   );
 }
