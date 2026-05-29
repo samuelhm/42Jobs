@@ -243,17 +243,9 @@ public partial class AdminController
     {
         try
         {
-            var name = dupName.ToLowerInvariant();
-            var exists = await _db.BlockedKeywords.AnyAsync(b => b.Name == name);
-            if (!exists)
-            {
-                _db.BlockedKeywords.Add(new Models.BlockedKeyword
-                {
-                    Name = name,
-                    RedirectTo = keepId
-                });
-                await _db.SaveChangesAsync();
-            }
+            await _db.Database.ExecuteSqlRawAsync(
+                "INSERT INTO blocked_keywords (name, redirect_to) VALUES ({0}, {1}) ON CONFLICT (name) DO NOTHING",
+                dupName.ToLowerInvariant(), keepId);
         }
         catch
         {
