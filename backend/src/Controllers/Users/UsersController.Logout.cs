@@ -7,7 +7,7 @@ public partial class UsersController
     [HttpPost("logout")]
     public IActionResult Logout()
     {
-        Response.Cookies.Delete(_jwt.CookieName);
+        Response.Cookies.Delete(_jwt.CookieName, _jwt.GetCookieOptions());
         _logger.LogInformation("User logged out");
         return Ok(new { message = "Logged out" });
     }
