@@ -70,6 +70,19 @@ CRITICAL RULE — DO NOT REMOVE:
 - ML and data science libraries: "xgboost", "scikit-learn", "pytorch", "tensorflow", "keras", "lightgbm", "catboost", "pandas", "numpy", "scipy", "nltk", "spacy", "opencv"
 - Cloud and infrastructure: "aws", "gcp", "azure", "terraform", "ansible", "pulumi"
 
+COMPOUND KEYWORDS RULE (CRITICAL):
+A compound keyword (2+ words) containing a generic root word is DIFFERENT from the root word alone.
+Examples of VALID compounds that must be KEPT:
+- "code review" / "code quality" / "code optimization" / "code generation" / "code analysis" (specific skills) ≠ "code" (generic)
+- "deployment pipelines" / "deployment architecture" / "deployment workflows" / "deployment tooling" (DevOps skills) ≠ "deployment" (generic)
+- "design systems" / "design tools" / "design review" / "design documentation" / "design specifications" / "design thinking" (specific skills) ≠ "design" (generic)
+- "developer experience" / "developer tooling" / "developer enablement" / "developer workflows" (platform engineering) ≠ "development" (generic)
+- "digital transformation" / "digital product design" / "digital asset management" / "digital marketing" / "digital forensics" (specific fields) ≠ "digital" (generic)
+- "devops engineering" / "devops security" / "devtools" (specific practices) ≠ "development" (generic)
+- "data analysis" / "data engineering" / "data modeling" / "data visualization" (specific skills) ≠ "data" (generic)
+
+The question to ask: "Can a recruiter specifically search for this exact phrase?" If the compound is a recognized professional skill, KEEP IT. Only remove compound keywords when EVERY word in them is filler (e.g., "ongoing development process", "strong technical skills").
+
 INVALID keywords (REMOVE — flag these):
 - Filler/generic words: "experience", "knowledge", "ability", "skill", "proficient", "understanding", "expertise", "capability", "competence"
 - Overly broad meaningless terms: "coding", "programming", "software", "computer", "development", "project", "repository", "open source", "technology", "application", "system", "engineering", "tool", "platform", "solution", "service", "implementation"
