@@ -253,7 +253,7 @@ public partial class AdminController
         }
     }
 
-    private IActionResult BuildResult(int merged, List<string> warnings, List<(string kept, string duplicate)> entries)
+    private IActionResult BuildResult(int merged, List<string> warnings, List<(string kept, string duplicate)> entries, string action = "dedup_keywords")
     {
         var message = merged > 0
             ? $"Merged {merged} duplicate keywords"
@@ -262,7 +262,7 @@ public partial class AdminController
         // Fire-and-forget admin log (must not block the response)
         _ = _adminLog.LogAsync(
             actor: "system",
-            action: "dedup_keywords",
+            action: action,
             payload1: new { merged, groups = entries.Select(e => new { kept = e.kept, duplicate = e.duplicate }).ToList() },
             payload2: warnings.Count > 0 ? string.Join("; ", warnings) : null,
             payload3: null);

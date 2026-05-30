@@ -45,13 +45,32 @@ function DedupSection() {
     setRunning(false);
   }
 
+  async function runFullDedup() {
+    setRunning(true);
+    setMsg('Running full dedup (all keywords in one call)...');
+    const res = await post<{ message: string; merged: number }>('/api/admin/dedup-keywords-all', {});
+    if (res.status === 503) {
+      setAiError(res.error || 'AI not configured');
+      setRunning(false);
+      setMsg('');
+      return;
+    }
+    setMsg(res.success ? res.data.message : 'Error');
+    setRunning(false);
+  }
+
   return (
     <div className="service-card" style={{ marginBottom: '1rem' }}>
       <h3>Deduplicate Keywords</h3>
       <p className="text-muted" style={{ marginBottom: '0.75rem' }}>Uses AI to find and merge duplicate/similar keywords across all tables.</p>
-      <button className="admin-btn" onClick={runDedup} disabled={running}>
-        {running ? 'Running...' : 'Run Dedup'}
-      </button>
+      <div style={{ display: 'flex', gap: '0.5rem' }}>
+        <button className="admin-btn" onClick={runDedup} disabled={running}>
+          {running ? 'Running...' : 'Run Dedup'}
+        </button>
+        <button className="admin-btn" onClick={runFullDedup} disabled={running}>
+          {running ? 'Running...' : 'Full Dedup'}
+        </button>
+      </div>
       {msg && <div style={{ marginTop: '0.75rem', padding: '0.75rem', background: 'var(--bg)', borderRadius: 'var(--radius)', border: '1px solid var(--border)', fontSize: '0.75rem' }}>{msg}</div>}
       {aiError && <AiNotConfiguredModal message={aiError} onClose={() => setAiError('')} />}
     </div>
