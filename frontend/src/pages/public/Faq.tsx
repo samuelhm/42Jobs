@@ -7,15 +7,6 @@ interface FaqItem {
 
 const faqs: FaqItem[] = [
   {
-    q: '¿Por qué la web es lenta? / ¿Por qué generar un CV tarda?',
-    a: (
-      <>
-        Estoy reduciendo costes. Soy junior, como tú. Construí esto para uso personal y lo abrí al público sin ánimo de lucro. No puedo permitirme tokens caros.
-        Además metí saldo en DeepSeek en lugar de OpenRouter, y no puedo añadir más hasta gastar este.
-      </>
-    ),
-  },
-  {
     q: '¿Por qué hay pocos trabajos de X categoría?',
     a: (
       <>
