@@ -128,13 +128,32 @@ function CleanSection() {
     setRunning(false);
   }
 
+  async function runFullClean() {
+    setRunning(true);
+    setMsg('Running full cleanup (all keywords in one call)...');
+    const res = await post<{ message: string; removed: number }>('/api/admin/clean-keywords-all', {});
+    if (res.status === 503) {
+      setAiError(res.error || 'AI not configured');
+      setRunning(false);
+      setMsg('');
+      return;
+    }
+    setMsg(res.success ? res.data.message : 'Error');
+    setRunning(false);
+  }
+
   return (
     <div className="service-card" style={{ marginBottom: '1rem' }}>
       <h3>Clean Keywords</h3>
       <p className="text-muted" style={{ marginBottom: '0.75rem' }}>Uses AI to remove low-quality keywords (filler words, overly broad terms, school identifiers, assignment names).</p>
-      <button className="admin-btn" onClick={runClean} disabled={running}>
-        {running ? 'Running...' : 'Run Clean'}
-      </button>
+      <div style={{ display: 'flex', gap: '0.5rem' }}>
+        <button className="admin-btn" onClick={runClean} disabled={running}>
+          {running ? 'Running...' : 'Run Clean'}
+        </button>
+        <button className="admin-btn" onClick={runFullClean} disabled={running}>
+          {running ? 'Running...' : 'Full Clean'}
+        </button>
+      </div>
       {msg && <div style={{ marginTop: '0.75rem', padding: '0.75rem', background: 'var(--bg)', borderRadius: 'var(--radius)', border: '1px solid var(--border)', fontSize: '0.75rem' }}>{msg}</div>}
       {aiError && <AiNotConfiguredModal message={aiError} onClose={() => setAiError('')} />}
     </div>
