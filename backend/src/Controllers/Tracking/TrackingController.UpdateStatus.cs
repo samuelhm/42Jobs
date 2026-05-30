@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using src.Models;
@@ -38,5 +39,8 @@ public partial class TrackingController
 
 public class UpdateStatusDto
 {
+    [Required(ErrorMessage = "Status is required")]
+    [RegularExpression(@"^(saved|cv_enviado|entrevista_conseguida|empleo_conseguido|rechazado|oculto)$",
+        ErrorMessage = "Status must be one of: saved, cv_enviado, entrevista_conseguida, empleo_conseguido, rechazado, oculto")]
     public string Status { get; set; } = "saved";
 }

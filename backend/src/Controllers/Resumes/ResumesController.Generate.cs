@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using src.Models;
 
@@ -8,6 +9,7 @@ namespace src.Controllers;
 public partial class ResumesController
 {
     [HttpPost("{jobId:int}")]
+    [EnableRateLimiting("cv")]
     public async Task<IActionResult> Generate([FromRoute] int jobId)
     {
         var userId = GetUserId();
@@ -137,7 +139,7 @@ public partial class ResumesController
             ["linkedin"] = user.LinkedinUrl ?? "",
             ["github"] = user.GithubUrl ?? "",
             ["location"] = user.Address ?? "",
-            ["photo"] = string.IsNullOrEmpty(user.Photo) ? "" : $"<img class=\"cv-photo\" src=\"{user.Photo}\" />",
+            ["photo"] = IsSafePhotoUrl(user.Photo) ? $"<img class=\"cv-photo\" src=\"{System.Net.WebUtility.HtmlEncode(user.Photo)}\" />" : "",
             ["profile"] = aiData.TryGetProperty("profile", out var p) ? p.GetString() ?? "" : "",
             ["experiences"] = RenderExperiences(aiData),
             ["projects"] = RenderProjects(aiData),
@@ -150,6 +152,12 @@ public partial class ResumesController
             html = html.Replace($"{{{{{key}}}}}", value);
 
         return html;
+    }
+
+    private static bool IsSafePhotoUrl(string? photo)
+    {
+        if (string.IsNullOrEmpty(photo)) return false;
+        return photo.StartsWith("data:image/") || photo.StartsWith("https://");
     }
 
     private static string RenderExperiences(JsonElement aiData)

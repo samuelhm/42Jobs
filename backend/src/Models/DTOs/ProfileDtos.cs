@@ -1,25 +1,45 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace src.Models.DTOs;
 
 public class LanguageDto
 {
     public int? Id { get; set; }
+
+    [Required(ErrorMessage = "Language name is required")]
+    [MaxLength(100, ErrorMessage = "Language name must be at most 100 characters")]
     public string Name { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Language level is required")]
+    [MaxLength(50, ErrorMessage = "Language level must be at most 50 characters")]
     public string Level { get; set; } = string.Empty;
 }
 
 public class CertificationDto
 {
     public int? Id { get; set; }
+
+    [Required(ErrorMessage = "Certification name is required")]
+    [MaxLength(200, ErrorMessage = "Certification name must be at most 200 characters")]
     public string Name { get; set; } = string.Empty;
+
+    [MaxLength(200, ErrorMessage = "Entity must be at most 200 characters")]
     public string? Entity { get; set; }
+
     public string? DateObtained { get; set; }
 }
 
 public class EducationDto
 {
     public int? Id { get; set; }
+
+    [Required(ErrorMessage = "Degree is required")]
+    [MaxLength(200, ErrorMessage = "Degree must be at most 200 characters")]
     public string Degree { get; set; } = string.Empty;
+
+    [MaxLength(200, ErrorMessage = "Institution must be at most 200 characters")]
     public string? Institution { get; set; }
+
     public int? StartYear { get; set; }
     public int? EndYear { get; set; }
 }
@@ -27,9 +47,19 @@ public class EducationDto
 public class ProjectDto
 {
     public int? Id { get; set; }
+
+    [Required(ErrorMessage = "Project name is required")]
+    [MaxLength(300, ErrorMessage = "Project name must be at most 300 characters")]
     public string Name { get; set; } = string.Empty;
+
+    [MaxLength(5000, ErrorMessage = "Description must be at most 5000 characters")]
     public string? Description { get; set; }
+
+    [Required(ErrorMessage = "Project type is required")]
+    [MaxLength(20, ErrorMessage = "Type must be at most 20 characters")]
+    [RegularExpression(@"^(personal|school)$", ErrorMessage = "Type must be 'personal' or 'school'")]
     public string Type { get; set; } = string.Empty;
+
     public List<int>? KeywordIds { get; set; }
 }
 
@@ -45,11 +75,20 @@ public class ProjectResponseDto
 public class ExperienceDto
 {
     public int? Id { get; set; }
+
+    [Required(ErrorMessage = "Company is required")]
+    [MaxLength(200, ErrorMessage = "Company must be at most 200 characters")]
     public string Company { get; set; } = string.Empty;
+
+    [MaxLength(200, ErrorMessage = "Position must be at most 200 characters")]
     public string? Position { get; set; }
+
     public string? StartDate { get; set; }
     public string? EndDate { get; set; }
+
+    [MaxLength(5000, ErrorMessage = "Description must be at most 5000 characters")]
     public string? Description { get; set; }
+
     public List<int>? KeywordIds { get; set; }
 }
 
@@ -92,16 +131,41 @@ public class ProfileResponseDto
 
 public class UpdateProfileDto
 {
+    [EmailAddress(ErrorMessage = "Invalid email format")]
+    [MaxLength(300, ErrorMessage = "Email must be at most 300 characters")]
     public string? Email { get; set; }
+
+    [MaxLength(200, ErrorMessage = "Name must be at most 200 characters")]
     public string? Name { get; set; }
+
+    [MaxLength(200, ErrorMessage = "Last name must be at most 200 characters")]
     public string? LastName { get; set; }
+
+    [MaxLength(50, ErrorMessage = "Phone must be at most 50 characters")]
+    [Phone(ErrorMessage = "Invalid phone format")]
     public string? Phone { get; set; }
+
+    [MaxLength(5000, ErrorMessage = "Address must be at most 5000 characters")]
     public string? Address { get; set; }
+
+    [Url(ErrorMessage = "Invalid LinkedIn URL")]
+    [MaxLength(2000, ErrorMessage = "LinkedIn URL must be at most 2000 characters")]
     public string? LinkedinUrl { get; set; }
+
+    [Url(ErrorMessage = "Invalid website URL")]
+    [MaxLength(2000, ErrorMessage = "Website URL must be at most 2000 characters")]
     public string? WebsiteUrl { get; set; }
+
+    [Url(ErrorMessage = "Invalid GitHub URL")]
+    [MaxLength(2000, ErrorMessage = "GitHub URL must be at most 2000 characters")]
     public string? GithubUrl { get; set; }
+
     public bool? Junior { get; set; }
+
+    [MaxLength(5000, ErrorMessage = "Presentation must be at most 5000 characters")]
     public string? Presentation { get; set; }
+
+    [MaxLength(200, ErrorMessage = "Location must be at most 200 characters")]
     public string? PreferredLocation { get; set; }
 }
 
@@ -114,6 +178,8 @@ public class KeywordResponseDto
 
 public class UpdateKeywordDto
 {
+    [RegularExpression(@"^(not_learned|learned_personal_project|learned_in_school)$",
+        ErrorMessage = "Learning status must be: not_learned, learned_personal_project, or learned_in_school")]
     public string? LearningStatus { get; set; }
 }
 
@@ -170,6 +236,8 @@ public class GithubProjectResult
 
 public class LinkedInImportDto
 {
+    [Required(ErrorMessage = "Raw text is required")]
+    [MaxLength(100000, ErrorMessage = "Raw text must be at most 100,000 characters")]
     public string RawText { get; set; } = string.Empty;
 }
 
@@ -192,5 +260,6 @@ public class LinkedInEducationParsed
 
 public class UpdatePhotoDto
 {
+    [MaxLength(2_200_000, ErrorMessage = "Photo data too large")]
     public string? Photo { get; set; }
 }

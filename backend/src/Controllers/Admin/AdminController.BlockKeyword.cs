@@ -1,4 +1,6 @@
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 
 namespace src.Controllers;
@@ -6,6 +8,7 @@ namespace src.Controllers;
 public partial class AdminController
 {
     [HttpPost("block-keyword")]
+    [EnableRateLimiting("admin_write")]
     public async Task<IActionResult> BlockKeyword([FromBody] BlockKeywordDto body)
     {
         var keyword = await _db.Keywords.FindAsync(body.KeywordId);
@@ -71,6 +74,9 @@ public partial class AdminController
 
 public class BlockKeywordDto
 {
+    [Range(1, int.MaxValue, ErrorMessage = "A valid keyword is required")]
     public int KeywordId { get; set; }
+
+    [MaxLength(200, ErrorMessage = "Redirect name must be at most 200 characters")]
     public string? RedirectToName { get; set; }
 }

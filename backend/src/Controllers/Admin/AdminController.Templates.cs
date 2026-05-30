@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using src.Models;
@@ -62,9 +63,15 @@ public partial class AdminController
 
 public class CvTemplateDto
 {
+    [Required(ErrorMessage = "Template name is required")]
+    [MaxLength(200, ErrorMessage = "Template name must be at most 200 characters")]
     public string Name { get; set; } = "";
+
     public string? Description { get; set; }
+
+    [Required(ErrorMessage = "HTML template is required")]
     public string HtmlTemplate { get; set; } = "";
+
     public string? Css { get; set; }
     public bool IsActive { get; set; }
 }

@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -63,5 +64,6 @@ public partial class ResumesController
 
 public class RegenerateRequest
 {
+    [Range(1, int.MaxValue, ErrorMessage = "A valid template is required")]
     public int? TemplateId { get; set; }
 }

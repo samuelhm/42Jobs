@@ -1,10 +1,13 @@
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace src.Controllers;
 
 public partial class AdminController
 {
     [HttpPost("fetch-all-categories")]
+    [EnableRateLimiting("admin_write")]
     public async Task<IActionResult> FetchAllCategories([FromBody] FetchAllRequest? body)
     {
         if (_fetch.IsFetchAllRunning)
@@ -25,5 +28,6 @@ public partial class AdminController
 
 public class FetchAllRequest
 {
+    [MaxLength(200, ErrorMessage = "Location must be at most 200 characters")]
     public string? Location { get; set; }
 }

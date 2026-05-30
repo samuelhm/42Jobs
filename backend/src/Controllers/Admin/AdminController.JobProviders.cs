@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using src.Models;
@@ -38,7 +39,12 @@ public class JobProviderDto
 {
     public bool IsEnabled { get; set; }
     public bool IsActive { get; set; } = true;
+
+    [MaxLength(300, ErrorMessage = "Base URL must be at most 300 characters")]
     public string? BaseUrl { get; set; }
+
+    [MaxLength(500, ErrorMessage = "API key must be at most 500 characters")]
     public string? ApiKey { get; set; }
+
     public string? Config { get; set; }
 }

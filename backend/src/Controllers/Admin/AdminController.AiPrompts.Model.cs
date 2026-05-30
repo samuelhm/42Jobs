@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -28,5 +29,6 @@ public partial class AdminController
 
 public class AiPromptModelDto
 {
+    [Range(1, int.MaxValue, ErrorMessage = "A valid model is required")]
     public int? DefaultModelId { get; set; }
 }

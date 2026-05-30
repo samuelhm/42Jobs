@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using src.Models;
@@ -55,8 +56,13 @@ public partial class AdminController
 
 public class AiModelDto
 {
+    [Range(1, int.MaxValue, ErrorMessage = "A valid AI service is required")]
     public int AiServiceId { get; set; }
+
+    [Required(ErrorMessage = "Model name is required")]
+    [MaxLength(100, ErrorMessage = "Model name must be at most 100 characters")]
     public string Name { get; set; } = "";
+
     public bool IsActive { get; set; } = true;
     public bool SupportsReasoning { get; set; }
 }

@@ -387,15 +387,38 @@ public partial class JobFetchService
         if (keywordIds.Count == 0) return;
 
         var valuesList = new List<string>();
+        var parameters = new List<NpgsqlParameter>();
+        parameters.Add(new NpgsqlParameter("@jobId", jobId));
         for (int i = 0; i < keywordIds.Count; i++)
-            valuesList.Add($"({jobId}, {keywordIds[i]})");
+        {
+            parameters.Add(new NpgsqlParameter($"@kw{i}", keywordIds[i]));
+            valuesList.Add($"(@jobId, @kw{i})");
+        }
 
         var sql = $@"
             INSERT INTO job_keywords (job_id, keyword_id)
             VALUES {string.Join(", ", valuesList)}
             ON CONFLICT DO NOTHING";
 
-        await db.Database.ExecuteSqlRawAsync(sql, ct);
+        var conn = db.Database.GetDbConnection();
+        var wasClosed = conn.State != System.Data.ConnectionState.Open;
+        if (wasClosed)
+            await conn.OpenAsync(ct);
+
+        try
+        {
+            await using var cmd = conn.CreateCommand();
+            cmd.CommandText = sql;
+            foreach (var p in parameters)
+                cmd.Parameters.Add(p);
+
+            await cmd.ExecuteNonQueryAsync(ct);
+        }
+        finally
+        {
+            if (wasClosed && conn.State == System.Data.ConnectionState.Open)
+                await conn.CloseAsync();
+        }
     }
 
     private static async Task<int> UpsertCompanyAsync(AppDbContext db, string name, string? websiteUrl, CancellationToken ct)

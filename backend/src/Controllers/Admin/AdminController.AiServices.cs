@@ -1,4 +1,6 @@
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using src.Models;
 
@@ -18,6 +20,7 @@ public partial class AdminController
     }
 
     [HttpPost("ai-services")]
+    [EnableRateLimiting("admin_write")]
     public async Task<IActionResult> CreateAiService([FromBody] AiServiceDto body)
     {
         var isFreeTier = body.Name == "DeepSeek" ? false : body.IsFreeTier;
@@ -28,6 +31,7 @@ public partial class AdminController
     }
 
     [HttpPut("ai-services/{id:int}")]
+    [EnableRateLimiting("admin_write")]
     public async Task<IActionResult> UpdateAiService([FromRoute] int id, [FromBody] AiServiceDto body)
     {
         var service = await _db.AiServices.FindAsync(id);
@@ -54,8 +58,13 @@ public partial class AdminController
 
 public class AiServiceDto
 {
+    [Required(ErrorMessage = "Service name is required")]
+    [MaxLength(50, ErrorMessage = "Service name must be at most 50 characters")]
     public string Name { get; set; } = "";
+
+    [MaxLength(500, ErrorMessage = "API key must be at most 500 characters")]
     public string? ApiKey { get; set; }
+
     public bool IsActive { get; set; } = true;
     public bool IsFreeTier { get; set; }
 }

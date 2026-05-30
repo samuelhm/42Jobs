@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -27,10 +28,12 @@ public partial class JobsController : ControllerBase
 
 public class UpdateJobDto
 {
+    [MaxLength(500, ErrorMessage = "Title must be at most 500 characters")]
     public string? Title { get; set; }
 }
 
 public class UpdateJobNotesDto
 {
+    [MaxLength(10000, ErrorMessage = "Notes must be at most 10,000 characters")]
     public string? Notes { get; set; }
 }

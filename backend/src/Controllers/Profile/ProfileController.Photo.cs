@@ -14,8 +14,8 @@ public partial class ProfileController
 
         if (body.Photo is not null)
         {
-            if (!body.Photo.StartsWith("data:image/"))
-                return BadRequest(new { error = "Photo must be a data URL (data:image/...)" });
+            if (!body.Photo.StartsWith("data:image/") && !body.Photo.StartsWith("https://"))
+                return BadRequest(new { error = "Photo must be a data URL (data:image/...) or a secure URL (https://...)" });
 
             if (body.Photo.Length > 2_097_152)
                 return BadRequest(new { error = "Photo too large (max 2MB)" });

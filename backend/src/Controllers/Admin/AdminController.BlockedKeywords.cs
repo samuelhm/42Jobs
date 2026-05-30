@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -63,5 +64,6 @@ public partial class AdminController
 
 public class UpdateBlockedKeywordDto
 {
+    [MaxLength(200, ErrorMessage = "Redirect name must be at most 200 characters")]
     public string? RedirectToName { get; set; }
 }

@@ -1,4 +1,6 @@
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using src.Models;
 
@@ -23,6 +25,7 @@ public partial class AdminController
     }
 
     [HttpPut("ai-prompts/{id:int}")]
+    [EnableRateLimiting("admin_write")]
     public async Task<IActionResult> UpdateAiPrompt([FromRoute] int id, [FromBody] AiPromptDto body)
     {
         var prompt = await _db.AiPrompts.FindAsync(id);
@@ -41,8 +44,12 @@ public partial class AdminController
 
 public class AiPromptDto
 {
+    [Required(ErrorMessage = "System prompt is required")]
     public string SystemPrompt { get; set; } = "";
+
+    [Required(ErrorMessage = "User prompt template is required")]
     public string UserPromptTemplate { get; set; } = "";
+
     public bool IsActive { get; set; } = true;
     public int? DefaultModelId { get; set; }
     public bool UseReasoning { get; set; }
