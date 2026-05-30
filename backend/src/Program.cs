@@ -71,6 +71,8 @@ builder.Services.AddControllers()
     });
 
 builder.Services.AddSingleton<JwtService>();
+builder.Services.AddSingleton<TokenBlacklistService>();
+builder.Services.AddHostedService(sp => sp.GetRequiredService<TokenBlacklistService>());
 
 builder.Services.AddHttpClient();
 builder.Services.AddSingleton<IJobProvider, LinkedInRapidApiProvider>();
@@ -107,6 +109,14 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             OnMessageReceived = context =>
             {
                 context.Token = context.Request.Cookies["42jobs_auth"];
+                return Task.CompletedTask;
+            },
+            OnTokenValidated = context =>
+            {
+                var blacklist = context.HttpContext.RequestServices.GetRequiredService<TokenBlacklistService>();
+                var jti = context.Principal?.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Jti)?.Value;
+                if (jti is not null && blacklist.IsRevoked(jti))
+                    context.Fail("Token has been revoked");
                 return Task.CompletedTask;
             }
         };
