@@ -123,14 +123,16 @@ public partial class JobFetchService : BackgroundService, IJobFetchService
 
     private async Task RunSchedulerAsync(CancellationToken ct)
     {
-        var targetHour = 0;
+        var targetHours = new[] { 0, 12 };
 
         while (!ct.IsCancellationRequested)
         {
             var now = DateTime.UtcNow;
-            var nextRun = now.Date.AddHours(targetHour);
-            if (nextRun <= now)
-                nextRun = nextRun.AddDays(1);
+            var nextRun = targetHours
+                .Select(h => now.Date.AddHours(h))
+                .Where(t => t > now)
+                .DefaultIfEmpty(now.Date.AddDays(1).AddHours(targetHours[0]))
+                .Min();
 
             var delay = nextRun - now;
             _logger.LogInformation("Scheduler: next run at {NextRun} UTC (in {Delay})", nextRun, delay);
