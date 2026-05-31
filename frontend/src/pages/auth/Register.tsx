@@ -69,7 +69,17 @@ export default function Register() {
           navigate('/login', { replace: true });
         }
       } else {
-        setServerError(data.error || 'Registration failed');
+        // ASP.NET Core model validation returns { errors: { Field: ["msg"] } }
+        if (data.errors && typeof data.errors === 'object') {
+          const fieldErrors: Record<string, string> = {};
+          for (const [key, msgs] of Object.entries(data.errors)) {
+            const field = key.toLowerCase();
+            fieldErrors[field] = Array.isArray(msgs) ? msgs[0] : String(msgs);
+          }
+          setErrors(fieldErrors);
+        } else {
+          setServerError(data.error || 'Registration failed');
+        }
       }
     } catch {
       setServerError('Connection error. Please try again.');
