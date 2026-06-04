@@ -93,18 +93,6 @@ public partial class JobFetchService : BackgroundService, IJobFetchService
     {
         _logger.LogInformation("JobFetchService background service started");
 
-        _ = Task.Run(async () =>
-        {
-            try
-            {
-                await RunSchedulerAsync(stoppingToken);
-            }
-            catch (Exception ex) when (ex is not OperationCanceledException)
-            {
-                _logger.LogError(ex, "Fatal error in fetch scheduler, it will not restart");
-            }
-        }, stoppingToken);
-
         await foreach (var request in _channel.Reader.ReadAllAsync(stoppingToken))
         {
             _ = Task.Run(async () =>
@@ -118,29 +106,6 @@ public partial class JobFetchService : BackgroundService, IJobFetchService
                     _logger.LogError(ex, "Unhandled exception in fetch task {JobId}", request.JobId);
                 }
             }, stoppingToken);
-        }
-    }
-
-    private async Task RunSchedulerAsync(CancellationToken ct)
-    {
-        var targetHours = new[] { 0, 12 };
-
-        while (!ct.IsCancellationRequested)
-        {
-            var now = DateTime.UtcNow;
-            var nextRun = targetHours
-                .Select(h => now.Date.AddHours(h))
-                .Where(t => t > now)
-                .DefaultIfEmpty(now.Date.AddDays(1).AddHours(targetHours[0]))
-                .Min();
-
-            var delay = nextRun - now;
-            _logger.LogInformation("Scheduler: next run at {NextRun} UTC (in {Delay})", nextRun, delay);
-            await Task.Delay(delay, ct);
-
-            if (ct.IsCancellationRequested) break;
-
-            await FetchAllCategoriesWithTokenAsync(ct);
         }
     }
 
@@ -227,7 +192,7 @@ public partial class JobFetchService : BackgroundService, IJobFetchService
                 }
                 else
                 {
-                    _logger.LogWarning("Scheduler: failed to enqueue category {Category}", category.Name);
+                    _logger.LogWarning("FetchAll: failed to enqueue category {Category}", category.Name);
                 }
             }
         }

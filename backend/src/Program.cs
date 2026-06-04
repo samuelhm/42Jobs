@@ -90,6 +90,8 @@ builder.Services.AddHostedService(sp => (JobFetchService)sp.GetRequiredService<I
 builder.Services.AddSingleton<GithubImportService>();
 builder.Services.AddHostedService(sp => sp.GetRequiredService<GithubImportService>());
 
+builder.Services.AddHostedService<JobCleanupService>();
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {

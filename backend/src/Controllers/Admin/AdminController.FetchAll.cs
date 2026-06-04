@@ -11,7 +11,7 @@ public partial class AdminController
     public async Task<IActionResult> FetchAllCategories([FromBody] FetchAllRequest? body)
     {
         if (_fetch.IsFetchAllRunning)
-            return StatusCode(409, new { error = "A fetch is already running (scheduler or previous request). Try again later." });
+            return StatusCode(409, new { error = "A fetch is already running. Try again later." });
 
         try
         {
