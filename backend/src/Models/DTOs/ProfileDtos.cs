@@ -191,6 +191,7 @@ public class CategoryResponseDto
     public string Name { get; set; } = string.Empty;
     public int JobCount { get; set; }
     public DateTime? LastFetchedAt { get; set; }
+    public bool IsFetching { get; set; }
 }
 
 // ─── Job listing ───────────────────────────────────────────

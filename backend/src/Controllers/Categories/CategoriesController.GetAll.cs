@@ -33,6 +33,9 @@ public partial class CategoriesController
             .OrderBy(c => c.Name)
             .ToListAsync();
 
+        foreach (var c in categories)
+            c.IsFetching = _fetchService.IsCategoryFetching(c.Id);
+
         return Ok(new { success = true, data = categories });
     }
 }

@@ -78,9 +78,6 @@ public partial class CategoriesController
             if (category.LastFetchedAt.HasValue && category.LastFetchedAt.Value > DateTime.UtcNow.AddHours(-12))
                 return;
 
-            category.LastFetchedAt = DateTime.UtcNow;
-            await _db.SaveChangesAsync();
-
             var location = !string.IsNullOrEmpty(preferredLocation) ? preferredLocation : "Barcelona";
             _fetchService.Enqueue(category.Id, category.Name, new FetchRequestDto
             {

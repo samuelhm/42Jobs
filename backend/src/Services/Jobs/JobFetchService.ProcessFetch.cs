@@ -85,6 +85,15 @@ public partial class JobFetchService
             status.Status = "completed";
             _logger.LogInformation("Fetch {JobId} done: {Inserted} inserted, {Skipped} skipped",
                 request.JobId, status.Inserted, status.Skipped);
+
+            using var updateScope = _scopeFactory.CreateScope();
+            var updateDb = updateScope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var category = await updateDb.Categories.FindAsync(new object[] { request.CategoryId }, ct);
+            if (category is not null)
+            {
+                category.LastFetchedAt = DateTime.UtcNow;
+                await updateDb.SaveChangesAsync(ct);
+            }
         }
         catch (Exception ex)
         {

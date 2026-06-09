@@ -34,6 +34,15 @@ body {
   100% { background-position: 0% 50%; }
 }
 
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.35; transform: scale(0.7); }
+}
+
 .hidden { display: none !important; }
 
 .loading {

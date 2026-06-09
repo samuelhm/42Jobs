@@ -4,6 +4,11 @@ import AddCategoryDialog from './AddCategoryDialog';
 import { get, del } from '../../utils';
 import type { Category } from '../../types';
 
+function isStale(lastFetchedAt: string | null): boolean {
+  if (!lastFetchedAt) return true;
+  return new Date(lastFetchedAt).getTime() < Date.now() - 12 * 60 * 60 * 1000;
+}
+
 export default function CategoriesBar({ availableOnly }: { availableOnly?: boolean }) {
   const [searchParams, setSearchParams] = useSearchParams();
   const [categories, setCategories] = useState<Category[]>([]);
@@ -13,22 +18,25 @@ export default function CategoriesBar({ availableOnly }: { availableOnly?: boole
   const [processingTitle, setProcessingTitle] = useState('Category created');
   const [processingMsg, setProcessingMsg] = useState('Searching for jobs and processing with AI. New offers will appear automatically here.');
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const statusPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const categoryId = searchParams.get('category');
   const activeId = categoryId ? Number(categoryId) : null;
 
-  const loadCategories = useCallback(async () => {
+  const loadCategories = useCallback(async (silent?: boolean) => {
     try {
       const url = availableOnly ? '/api/categories?available=true' : '/api/categories';
       const json = await get<Category[]>(url);
       if (json.success) {
         setCategories(json.data);
-        const ids = json.data.map((c: Category) => c.id);
-        if (activeId === null || !ids.includes(activeId)) {
-          if (ids.length > 0) {
-            setSearchParams({ category: String(ids[0]) }, { replace: true });
-          } else {
-            setSearchParams({}, { replace: true });
+        if (!silent) {
+          const ids = json.data.map((c: Category) => c.id);
+          if (activeId === null || !ids.includes(activeId)) {
+            if (ids.length > 0) {
+              setSearchParams({ category: String(ids[0]) }, { replace: true });
+            } else {
+              setSearchParams({}, { replace: true });
+            }
           }
         }
       }
@@ -44,8 +52,24 @@ export default function CategoriesBar({ availableOnly }: { availableOnly?: boole
         clearInterval(pollingRef.current);
         pollingRef.current = null;
       }
+      if (statusPollRef.current) {
+        clearInterval(statusPollRef.current);
+        statusPollRef.current = null;
+      }
     };
   }, [loadCategories]);
+
+  useEffect(() => {
+    const anyFetching = categories.some(c => c.is_fetching);
+    if (anyFetching && !statusPollRef.current) {
+      statusPollRef.current = setInterval(() => {
+        loadCategories(true);
+      }, 5000);
+    } else if (!anyFetching && statusPollRef.current) {
+      clearInterval(statusPollRef.current);
+      statusPollRef.current = null;
+    }
+  }, [categories, loadCategories]);
 
   function select(id: number) {
     setSearchParams({ category: String(id) });
@@ -146,6 +170,10 @@ export default function CategoriesBar({ availableOnly }: { availableOnly?: boole
           >
             {c.name}
             <span className="tab-count">{c.job_count}</span>
+            {c.is_fetching && <span className="tab-spinner" title="Fetching new offers..." />}
+            {!c.is_fetching && isStale(c.last_fetched_at) && (
+              <span className="tab-outdated" title={`Last updated: ${c.last_fetched_at ? new Date(c.last_fetched_at).toLocaleString() : 'never'}`} />
+            )}
             <span className="tab-close" onClick={(e) => handleUnfollow(c.id, e)} title="Unfollow">x</span>
           </button>
         ))}

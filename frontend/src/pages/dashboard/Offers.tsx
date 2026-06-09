@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useLoaderData } from 'react-router';
+import { useState, useEffect, useRef } from 'react';
+import { useLoaderData, useRevalidator } from 'react-router';
 import { CategoriesBar, NotesModal, KeywordTag, CvModal } from '../../components';
 import { fetchWithAuth, formatDescription, getMatchPct, getMatchClass, isRecent } from '../../utils';
 import { useToast, useAuth } from '../../context';
@@ -21,11 +21,50 @@ function OffersContent() {
   const [userKeywords, setUserKeywords] = useState<Record<string, UserKeyword>>(initialKeywords);
   const [jobs, setJobs] = useState<Job[]>(initialJobs);
   const [expandedId, setExpandedId] = useState<number | null>(null);
+  const [isFetching, setIsFetching] = useState(false);
+  const revalidator = useRevalidator();
+  const fetchPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     setUserKeywords(initialKeywords);
     setJobs(initialJobs);
   }, [initialKeywords, initialJobs]);
+
+  useEffect(() => {
+    if (!categoryId) return;
+
+    const isStale = !lastFetchedAt || new Date(lastFetchedAt).getTime() < Date.now() - 12 * 60 * 60 * 1000;
+    if (!isStale) return;
+
+    let wasFetching = false;
+
+    fetchPollRef.current = setInterval(async () => {
+      try {
+        const res = await fetchWithAuth(`/api/categories/${categoryId}/fetch-status`);
+        const json = await res.json();
+        if (json.success) {
+          const fetching = json.data.is_fetching;
+          setIsFetching(fetching);
+
+          if (wasFetching && !fetching) {
+            revalidator.revalidate();
+            if (fetchPollRef.current) {
+              clearInterval(fetchPollRef.current);
+              fetchPollRef.current = null;
+            }
+          }
+          wasFetching = fetching;
+        }
+      } catch { /* ignore */ }
+    }, 3000);
+
+    return () => {
+      if (fetchPollRef.current) {
+        clearInterval(fetchPollRef.current);
+        fetchPollRef.current = null;
+      }
+    };
+  }, [categoryId, lastFetchedAt, revalidator]);
   const [notesJob, setNotesJob] = useState<Job | null>(null);
   const [editingTitle, setEditingTitle] = useState<{ jobId: number; title: string } | null>(null);
   const [cvJob, setCvJob] = useState<Job | null>(null);
@@ -110,6 +149,20 @@ function OffersContent() {
               </span>
             )}
           </p>
+        )}
+
+        {isFetching && (
+          <div className="fetching-line">
+            <span className="pulse-dot" />
+            Fetching new offers...
+          </div>
+        )}
+
+        {lastFetchedAt && !isFetching && new Date(lastFetchedAt).getTime() < Date.now() - 12 * 60 * 60 * 1000 && (
+          <div className="fetching-line stale">
+            <span className="pulse-dot" />
+            Outdated &mdash; last updated {formatLastFetched(lastFetchedAt)}
+          </div>
         )}
 
         <div id="ofertas-list">

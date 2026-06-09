@@ -71,6 +71,9 @@ public partial class JobFetchService : BackgroundService, IJobFetchService
         return status;
     }
 
+    public bool IsCategoryFetching(int categoryId)
+        => _categoryInProgress.ContainsKey(categoryId);
+
     public bool IsFetchAllRunning => Volatile.Read(ref _fetchAllRunning) == 1;
 
     public QueueStatsDto GetQueueStats()
