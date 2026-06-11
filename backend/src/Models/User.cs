@@ -21,6 +21,7 @@ public class User
     public DateTime? LastGithubImportAt { get; set; }
     public string? PreferredLocation { get; set; }
     public string? Photo { get; set; }
+    public DateTime? LastLoginAt { get; set; }
 
     public List<Language> Languages { get; set; } = [];
     public List<Certification> Certifications { get; set; } = [];

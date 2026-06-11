@@ -25,6 +25,9 @@ public partial class UsersController
             return Unauthorized(new { error = "Invalid email or password" });
         }
 
+        user.LastLoginAt = DateTime.UtcNow;
+        await _db.SaveChangesAsync();
+
         var token = _jwt.Generate(user);
         var cookieOptions = _jwt.GetCookieOptions();
 

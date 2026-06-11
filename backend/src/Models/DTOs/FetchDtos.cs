@@ -28,4 +28,6 @@ public class QueueStatsDto
     public int Completed { get; set; }
     public int Failed { get; set; }
     public bool FetchAllRunning { get; set; }
+    public int MonthlyApiCalls { get; set; }
+    public int MonthlyApiLimit { get; set; }
 }

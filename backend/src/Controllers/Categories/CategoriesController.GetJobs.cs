@@ -63,33 +63,6 @@ public partial class CategoriesController
                 job.Notes = uj.Notes;
         }
 
-        _ = TriggerFetchIfStale(id, user?.PreferredLocation);
-
         return Ok(new { success = true, data = jobs });
-    }
-
-    private async Task TriggerFetchIfStale(int categoryId, string? preferredLocation)
-    {
-        try
-        {
-            var category = await _db.Categories.FindAsync(categoryId);
-            if (category is null) return;
-
-            if (category.LastFetchedAt.HasValue && category.LastFetchedAt.Value > DateTime.UtcNow.AddHours(-12))
-                return;
-
-            var location = !string.IsNullOrEmpty(preferredLocation) ? preferredLocation : "Barcelona";
-            _fetchService.Enqueue(category.Id, category.Name, new FetchRequestDto
-            {
-                Location = location,
-                Limit = 10,
-                DatePosted = "past-24h",
-                SortBy = "recent",
-            });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "Failed to trigger on-demand fetch for category {CategoryId}", categoryId);
-        }
     }
 }

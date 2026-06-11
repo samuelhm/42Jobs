@@ -12,10 +12,14 @@ public class LinkedInRapidApiProvider : IJobProvider
     private readonly ILogger<LinkedInRapidApiProvider> _logger;
 
     private static readonly TimeSpan RateWindow = TimeSpan.FromMinutes(1);
-    private static readonly int MaxRequestsPerWindow = 8;
-    private const int MaxRetries = 10;
+    private static readonly int MaxRequestsPerWindow = 90;
+    private const int MaxRetries = 5;
+    private const int MonthlyLimit = 50000;
+    private const int MonthlyHardStop = 48500;
     private readonly ConcurrentQueue<DateTime> _requestTimestamps = new();
     private readonly Lock _rateLock = new();
+    private int _monthlyCalls;
+    private int _currentMonth = DateTime.UtcNow.Month;
 
     public static string Portal => "LinkedIn";
     public static string ProviderNameValue => "RapidAPI";
@@ -87,6 +91,22 @@ public class LinkedInRapidApiProvider : IJobProvider
         for (var retry = 0; retry <= MaxRetries; retry++)
         {
             ct.ThrowIfCancellationRequested();
+
+            var now = DateTime.UtcNow;
+            if (now.Month != _currentMonth)
+            {
+                Interlocked.Exchange(ref _monthlyCalls, 0);
+                Interlocked.Exchange(ref _currentMonth, now.Month);
+            }
+
+            var current = Interlocked.Increment(ref _monthlyCalls);
+            if (current > MonthlyHardStop)
+            {
+                Interlocked.Decrement(ref _monthlyCalls);
+                throw new InvalidOperationException(
+                    $"LinkedIn RapidAPI monthly limit approaching: {current}/{MonthlyHardStop} hard stop. Limit: {MonthlyLimit}/month.");
+            }
+
             await WaitForRateLimitAsync(ct);
 
             await _log.LogAsync("LinkedInRapidAPI", action, logData, logInfo, "sent", correlationId);
@@ -252,6 +272,11 @@ public class LinkedInRapidApiProvider : IJobProvider
             $"/job/{Uri.EscapeDataString(externalId)}", "received:200, no job data", correlationId);
 
         return null;
+    }
+
+    public (int Calls, int Limit) GetMonthlyStats()
+    {
+        return (Volatile.Read(ref _monthlyCalls), MonthlyLimit);
     }
 
     private static DateOnly? TryGetDateOnly(JsonElement element, string property)

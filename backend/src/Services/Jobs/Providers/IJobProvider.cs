@@ -6,6 +6,8 @@ public interface IJobProvider
     string ProviderName { get; }
     Task<JobSearchResult> SearchAsync(JobSearchRequest request, ProviderConfig config, CancellationToken ct);
     Task<JobDetailResult?> GetDetailsAsync(string externalId, ProviderConfig config, CancellationToken ct);
+
+    (int Calls, int Limit) GetMonthlyStats() => (0, 50000);
 }
 
 public record ProviderConfig(string? BaseUrl, string? ApiKey, string? ConfigJson);

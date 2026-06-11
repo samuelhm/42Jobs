@@ -39,6 +39,7 @@ public partial class AppDbContext
             entity.Property(u => u.UpdatedAt)
                   .HasDefaultValueSql("NOW()")
                   .ValueGeneratedOnAddOrUpdate();
+            entity.Property(u => u.LastLoginAt);
         });
     }
 }
