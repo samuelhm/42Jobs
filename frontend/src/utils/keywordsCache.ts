@@ -13,11 +13,18 @@ export async function getCachedKeywords(): Promise<UserKeyword[]> {
   if (cached) return cached;
   if (promise) return promise;
 
-  promise = get<UserKeyword[]>('/api/keywords').then((res) => {
-    cached = res.success ? res.data : [];
-    promise = null;
-    return cached;
-  });
+  promise = get<UserKeyword[]>('/api/keywords')
+    .then((res) => {
+      if (res.success) {
+        cached = res.data;
+      }
+      promise = null;
+      return cached ?? [];
+    })
+    .catch(() => {
+      promise = null;
+      return [];
+    });
 
   return promise;
 }

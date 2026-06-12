@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router';
 import { ToastProvider, useAuth } from '../../context';
+import { clearKeywordsCache } from '../../utils/keywordsCache';
 import FreeTierBanner from './FreeTierBanner';
 import Footer from './Footer';
 import ToastContainer from '../ui/ToastContainer';
@@ -24,6 +25,7 @@ function AuthLayoutInner() {
     setLoggingOut(true);
     try {
       await fetch('/api/users/logout', { method: 'POST' });
+      clearKeywordsCache();
       await refresh();
     } finally {
       navigate('/', { replace: true });
