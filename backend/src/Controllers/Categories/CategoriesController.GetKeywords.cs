@@ -15,12 +15,12 @@ public partial class CategoriesController
         if (!follows)
             return NotFound(new { error = "Category not found" });
 
-        var totalJobs = await _db.Jobs.CountAsync();
-        var minJobs = Math.Max(1, (int)Math.Ceiling(totalJobs * 0.0065));
+        var totalInCategory = await _db.Jobs.CountAsync(j => j.Categories.Any(c => c.Id == id));
+        var minJobs = Math.Max(1, (int)Math.Ceiling(totalInCategory * 0.02));
 
         var keywords = await _db.Keywords
             .Where(k => k.Jobs.Any(j => j.Categories.Any(c => c.Id == id)))
-            .Where(k => k.Jobs.Count >= minJobs)
+            .Where(k => k.Jobs.Count(j => j.Categories.Any(c => c.Id == id)) >= minJobs)
             .Select(k => new CategoryKeywordDto
             {
                 Name = k.Name,

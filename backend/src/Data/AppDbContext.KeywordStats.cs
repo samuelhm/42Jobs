@@ -4,18 +4,27 @@ namespace src.Data;
 
 public partial class AppDbContext
 {
-    public async Task<HashSet<int>> GetSignificantKeywordIdsAsync(double threshold = 0.0065)
+    public async Task<HashSet<int>> GetSignificantKeywordIdsAsync(double threshold = 0.02)
     {
-        var totalJobs = await Jobs.CountAsync();
-        if (totalJobs == 0) return [];
-
-        var minJobs = Math.Max(1, (int)Math.Ceiling(totalJobs * threshold));
-
-        var ids = await Keywords
-            .Where(k => k.Jobs.Count >= minJobs)
-            .Select(k => k.Id)
+        var categories = await Categories
+            .Where(c => c.Jobs.Any())
+            .Select(c => new { c.Id, Total = c.Jobs.Count })
             .ToListAsync();
 
-        return [..ids];
+        if (categories.Count == 0) return [];
+
+        var significantIds = new HashSet<int>();
+
+        foreach (var cat in categories)
+        {
+            var minJobs = Math.Max(1, (int)Math.Ceiling(cat.Total * threshold));
+            var ids = await Keywords
+                .Where(k => k.Jobs.Count(j => j.Categories.Any(c => c.Id == cat.Id)) >= minJobs)
+                .Select(k => k.Id)
+                .ToListAsync();
+            significantIds.UnionWith(ids);
+        }
+
+        return significantIds;
     }
 }
