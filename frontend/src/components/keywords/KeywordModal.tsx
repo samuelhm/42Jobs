@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { get, patch, post } from '../../utils/api';
+import { clearKeywordsCache } from '../../utils/keywordsCache';
 
 interface Props {
   keywordName: string;
@@ -58,6 +59,7 @@ export default function KeywordModal({ keywordName, keywordId, currentStatus, is
   async function handleSelect(status: string) {
     try {
       await patch(`/api/keywords/${keywordId}`, { learning_status: status });
+      clearKeywordsCache();
       onStatusChange(keywordId, status);
     } catch { }
     onClose();
@@ -70,6 +72,7 @@ export default function KeywordModal({ keywordName, keywordId, currentStatus, is
       const body: { keyword_id: number; redirect_to_name?: string } = { keyword_id: keywordId };
       if (redirectName.trim()) body.redirect_to_name = redirectName.trim();
       await post('/api/admin/block-keyword', body);
+      clearKeywordsCache();
       onDelete(keywordId);
     } catch { }
     onClose();

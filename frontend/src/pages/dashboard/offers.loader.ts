@@ -1,4 +1,5 @@
 import { get } from '../../utils/api';
+import { getCachedKeywords } from '../../utils/keywordsCache';
 import type { UserKeyword, Job, Category } from '../../types';
 
 export interface OffersData {
@@ -15,17 +16,15 @@ function getCategoryId(url: string): string | null {
 export async function offersLoader({ request }: { request: Request }): Promise<OffersData> {
   const categoryId = getCategoryId(request.url);
 
-  const [kwRes, jobsRes] = await Promise.all([
-    get<UserKeyword[]>('/api/keywords'),
+  const [keywords, jobsRes] = await Promise.all([
+    getCachedKeywords(),
     categoryId
       ? get<Job[]>(`/api/categories/${categoryId}/jobs`)
       : Promise.resolve({ success: true, data: [] }),
   ]);
 
   const userKeywords: Record<string, UserKeyword> = {};
-  if (kwRes.success) {
-    kwRes.data.forEach((k: UserKeyword) => { userKeywords[k.name] = k; });
-  }
+  keywords.forEach((k: UserKeyword) => { userKeywords[k.name] = k; });
 
   let lastFetchedAt: string | null = null;
   if (categoryId) {

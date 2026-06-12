@@ -1,4 +1,4 @@
-import { get } from '../../utils/api';
+import { getCachedKeywords } from '../../utils/keywordsCache';
 
 interface KeywordItem {
   id: number;
@@ -11,6 +11,6 @@ export interface KeywordsPageData {
 }
 
 export async function keywordsPageLoader(): Promise<KeywordsPageData> {
-  const res = await get<KeywordItem[]>('/api/keywords');
-  return { keywords: res.success ? res.data : [] };
+  const keywords = await getCachedKeywords();
+  return { keywords };
 }
