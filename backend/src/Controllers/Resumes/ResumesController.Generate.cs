@@ -57,6 +57,8 @@ public partial class ResumesController
             .Include(uk => uk.Keyword)
             .ToListAsync();
 
+        var significantIds = await _db.GetSignificantKeywordIdsAsync();
+
         var template = await _db.Set<CvTemplate>()
             .FirstOrDefaultAsync(t => t.IsActive);
 
@@ -65,7 +67,7 @@ public partial class ResumesController
             ["job_title"] = job.Title ?? "",
             ["company"] = job.Company?.Name ?? "Not specified",
             ["job_description"] = job.Description ?? "",
-            ["job_keywords"] = string.Join(", ", job.Keywords.Select(k => k.Name)),
+            ["job_keywords"] = string.Join(", ", job.Keywords.Where(k => significantIds.Contains(k.Id)).Select(k => k.Name)),
             ["user_presentation"] = user.Presentation ?? "",
             ["user_languages"] = string.Join(", ", user.Languages.Select(l => l.Name)),
             ["user_experiences"] = string.Join("\n", experiences.Select(e =>
@@ -75,7 +77,7 @@ public partial class ResumesController
             ["user_projects"] = string.Join("\n", projects.Select(p =>
                 $"- {p.Name} ({p.Type}): {p.Description ?? ""}. Keywords: {string.Join(", ", p.Keywords.Select(k => k.Name))}")),
             ["user_keywords"] = string.Join(", ", userKeywords
-                .Where(uk => uk.LearningStatus != "not_learned")
+                .Where(uk => uk.LearningStatus != "not_learned" && significantIds.Contains(uk.KeywordId))
                 .Select(uk => uk.Keyword.Name)),
         };
 
