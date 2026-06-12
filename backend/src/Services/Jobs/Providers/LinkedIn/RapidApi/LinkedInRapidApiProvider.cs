@@ -13,7 +13,7 @@ public class LinkedInRapidApiProvider : IJobProvider
 
     private static readonly TimeSpan RateWindow = TimeSpan.FromMinutes(1);
     private static readonly int MaxRequestsPerWindow = 90;
-    private const int MaxRetries = 5;
+    private const int MaxRetries = 10;
     private const int MonthlyLimit = 50000;
     private const int MonthlyHardStop = 48500;
     private readonly ConcurrentQueue<DateTime> _requestTimestamps = new();

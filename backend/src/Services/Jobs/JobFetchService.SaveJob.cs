@@ -185,7 +185,7 @@ public partial class JobFetchService
     private async Task<JobDetailResult?> GetDetailsWithRetryAsync(
         List<(IJobProvider Provider, ProviderConfig Config)> providers, JobItem job, CancellationToken ct)
     {
-        for (var retry = 0; retry < 3; retry++)
+        for (var retry = 0; retry < 10; retry++)
         {
             foreach (var (provider, config) in providers)
             {
@@ -202,10 +202,10 @@ public partial class JobFetchService
                 }
             }
 
-            if (retry < 2)
+            if (retry < 9)
             {
                 var delay = (int)Math.Pow(2, retry) * 1200 + Random.Shared.Next(800);
-                _logger.LogWarning("GetDetails for \"{Title}\" returned no description, retry {Retry}/3 in {Delay}ms",
+                _logger.LogWarning("GetDetails for \"{Title}\" returned no description, retry {Retry}/10 in {Delay}ms",
                     job.Title, retry + 1, delay);
                 await Task.Delay(delay, ct);
             }
