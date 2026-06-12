@@ -4,7 +4,7 @@ namespace src.Data;
 
 public partial class AppDbContext
 {
-    public async Task<HashSet<int>> GetSignificantKeywordIdsAsync(double threshold = 0.05)
+    public async Task<HashSet<int>> GetSignificantKeywordIdsAsync(double threshold = 0.0065)
     {
         var totalJobs = await Jobs.CountAsync();
         if (totalJobs == 0) return [];

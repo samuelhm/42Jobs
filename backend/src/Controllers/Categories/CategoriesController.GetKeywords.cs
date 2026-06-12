@@ -16,7 +16,7 @@ public partial class CategoriesController
             return NotFound(new { error = "Category not found" });
 
         var totalJobs = await _db.Jobs.CountAsync();
-        var minJobs = Math.Max(1, (int)Math.Ceiling(totalJobs * 0.05));
+        var minJobs = Math.Max(1, (int)Math.Ceiling(totalJobs * 0.0065));
 
         var keywords = await _db.Keywords
             .Where(k => k.Jobs.Any(j => j.Categories.Any(c => c.Id == id)))
