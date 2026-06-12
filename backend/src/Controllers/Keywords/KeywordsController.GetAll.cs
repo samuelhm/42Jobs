@@ -17,6 +17,8 @@ public partial class KeywordsController
 
         var blockedSet = new HashSet<string>(blockedNames);
 
+        var significantIds = await _db.GetSignificantKeywordIdsAsync();
+
         var keywords = await _db.Keywords
             .OrderBy(k => k.Name)
             .Select(k => new KeywordResponseDto
@@ -32,6 +34,7 @@ public partial class KeywordsController
 
         var filtered = keywords
             .Where(k => !blockedSet.Contains(k.Name.ToLowerInvariant()))
+            .Where(k => significantIds.Contains(k.Id))
             .ToList();
 
         return Ok(new { success = true, data = filtered });

@@ -28,28 +28,31 @@ public partial class CategoriesController
         if (!string.IsNullOrEmpty(loc))
             query = query.Where(j => j.Location != null && EF.Functions.ILike(j.Location, $"%{loc}%"));
 
-        var jobs = await query
+        var significantIds = await _db.GetSignificantKeywordIdsAsync();
+
+        var jobEntities = await query
             .Include(j => j.Company)
             .Include(j => j.Keywords)
             .OrderByDescending(j => j.PostedDate)
-            .Select(j => new JobResponseDto
-            {
-                Id = j.Id,
-                Title = j.Title ?? string.Empty,
-                Description = j.Description,
-                Location = j.Location,
-                PostedDate = j.PostedDate.HasValue ? j.PostedDate.Value.ToString("yyyy-MM-dd") : null,
-                Salary = j.Salary,
-                Benefits = j.Benefits,
-                JobType = j.JobType,
-                ExperienceLevel = j.ExperienceLevel,
-                JobUrl = j.JobUrl,
-                CompanyName = j.Company != null ? j.Company.Name : null,
-                CompanyType = j.Company != null ? j.Company.CompanyType : null,
-                Keywords = j.Keywords.Select(k => k.Name).ToList(),
-                CreatedAt = j.CreatedAt,
-            })
             .ToListAsync();
+
+        var jobs = jobEntities.Select(j => new JobResponseDto
+        {
+            Id = j.Id,
+            Title = j.Title ?? string.Empty,
+            Description = j.Description,
+            Location = j.Location,
+            PostedDate = j.PostedDate.HasValue ? j.PostedDate.Value.ToString("yyyy-MM-dd") : null,
+            Salary = j.Salary,
+            Benefits = j.Benefits,
+            JobType = j.JobType,
+            ExperienceLevel = j.ExperienceLevel,
+            JobUrl = j.JobUrl,
+            CompanyName = j.Company != null ? j.Company.Name : null,
+            CompanyType = j.Company != null ? j.Company.CompanyType : null,
+            Keywords = j.Keywords.Where(k => significantIds.Contains(k.Id)).Select(k => k.Name).ToList(),
+            CreatedAt = j.CreatedAt,
+        }).ToList();
 
         var jobIds = jobs.Select(j => j.Id).ToList();
         var userJobs = await _db.UserJobs
